@@ -21,7 +21,7 @@ Two checks (request-header echo, two-origin cross-site) need a real origin:
 python serve.py        # http://localhost:8000, loopback only
 ```
 
-Serve over http rather than `file://`: some anti-fingerprinting browsers letterbox window and screen size only on web origins, so `file://` can under-score them.
+Serve over http rather than `file://`. The two-origin cross-site test needs a real origin and is skipped on `file://`, so a `file://` run reports single-site numbers only. LibreWolf was re-measured on both and scored the same 43 either way, so the origin does not shift the single-site score on the browsers checked here.
 
 ## Benchmark it in CI
 

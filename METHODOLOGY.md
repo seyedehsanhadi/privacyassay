@@ -49,7 +49,7 @@ Over `http://` the catalog runs on two origins and compares. A reading counts as
 
 The supercookie surface scores only the persistent stores: cookies, localStorage, IndexedDB, CacheStorage, CookieStore, and OPFS. The HTTP-cache probes (script, stylesheet, image, prefetch, and the rest) are reported but left out of the score, because browsers now partition the cache per site and the load-timing read is too noisy to score reliably.
 
-Most browsers are read in a hidden same-page frame. A per-domain farbler (Brave) gives that frame the top page's seed, so it is measured in a first-party window opened on the run instead; a blocked pop-up falls back to a button. Score over http, not `file://` — some browsers letterbox window and screen size only on web origins.
+Most browsers are read in a hidden same-page frame. A per-domain farbler (Brave) gives that frame the top page's seed, so it is measured in a first-party window opened on the run instead; a blocked pop-up falls back to a button. Score over http, not `file://`, because the two-origin comparison needs a real origin and is skipped otherwise. The single-site score itself did not move between origins on the browser tested for it: LibreWolf reads 43 on both.
 
 ## Cross-browser
 

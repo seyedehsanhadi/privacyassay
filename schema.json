@@ -1,49 +1,157 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "privacyassay-summary/1.0",
-  "description": "On-device browser-fingerprint benchmark result. Two producers write this schema id: the CLI runner bin/privacyassay.mjs, and the in-page Save-summary button. They agree on schema, score, grade, verdict, randomizer, crossSite and note, but each adds its own fields, and the in-page file uses friendlier names for three of them: cappedBy is the CLI's strongest, topLeaks is its exposedStrong, and counts.readingsHidden/readingsTotal are its shownCount/readingsTotal. Both sets are described below, so read defensively rather than assuming the CLI vocabulary. Nothing in this document leaves the machine unless a human chooses to share it.",
+  "description": "On-device browser-fingerprint benchmark result. Two producers write this schema id: the CLI runner bin/privacyassay.mjs, and the in-page Save-summary button. They agree on schema, score, grade, verdict, randomizer, crossSite and note, but each adds its own fields, and the in-page file uses friendlier names for three of them: cappedBy is the CLI's strongest, topLeaks is its exposedStrong, and counts.readingsTotal is its readingsTotal, but counts.readingsHidden is the COMPLEMENT of shownCount, not the same number: readingsHidden equals readingsTotal minus shownCount. Reading one as the other inverts it. Both sets are described below, so read defensively rather than assuming the CLI vocabulary. Nothing in this document leaves the machine unless a human chooses to share it.",
   "type": "object",
-  "required": ["schema", "score", "grade"],
+  "required": [
+    "schema",
+    "score",
+    "grade"
+  ],
   "additionalProperties": true,
   "properties": {
-    "schema": { "const": "privacyassay-summary/1.0" },
-    "tool": { "type": "string" },
-    "version": { "type": ["string", "null"], "description": "PRIORS catalog version the score was computed against" },
-    "userAgent": { "type": "string" },
-    "score": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Share of the scored surfaces the browser hides. Higher is more private." },
-    "grade": { "type": "string", "enum": ["A", "B", "C", "D", "F"] },
-    "verdict": { "type": ["string", "null"], "description": "Plain-language summary of the score" },
-    "strongest": { "type": ["string", "null"], "description": "The heaviest reading still shown" },
-    "exposedStrong": { "type": "array", "items": { "type": "string" }, "description": "Strong (weight-3) readings still shown" },
-    "shownCount": { "type": ["integer", "null"] },
-    "readingsTotal": { "type": ["integer", "null"] },
-    "randomizer": { "type": "boolean", "description": "True if the browser randomizes per site; then the single-site score is exposure on one page, not a grade" },
+    "schema": {
+      "const": "privacyassay-summary/1.0"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "PRIORS catalog version the score was computed against"
+    },
+    "userAgent": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Share of the scored surfaces the browser hides. Higher is more private."
+    },
+    "grade": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F"
+      ]
+    },
+    "verdict": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Plain-language summary of the score"
+    },
+    "strongest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The heaviest reading still shown"
+    },
+    "exposedStrong": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Strong (weight-3) readings still shown"
+    },
+    "shownCount": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "readingsTotal": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "randomizer": {
+      "type": "boolean",
+      "description": "True if the browser randomizes per site; then the single-site score is exposure on one page, not a grade"
+    },
     "crossSite": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "Two-origin cross-site result. The CLI serves a single origin and emits null here; the in-page two-origin test populates it.",
       "properties": {
-        "score": { "type": "integer" },
-        "grade": { "type": "string" },
-        "signalsChanged": { "type": "integer" },
-        "signalsCompared": { "type": "integer" },
-        "recognizedOnSecondSite": { "type": "boolean" }
+        "score": {
+          "type": "integer"
+        },
+        "grade": {
+          "type": "string"
+        },
+        "signalsChanged": {
+          "type": "integer"
+        },
+        "signalsCompared": {
+          "type": "integer"
+        },
+        "recognizedOnSecondSite": {
+          "type": "boolean"
+        }
       }
     },
-    "runs": { "type": "integer", "minimum": 1, "description": "Number of runs when --runs N>1; the reported score is the median" },
-    "runScores": { "type": "array", "items": { "type": "integer" }, "description": "Per-run scores when --runs N>1" },
-    "generated": { "type": "string", "description": "In-page only: ISO 8601 timestamp of the run" },
-    "browser": { "type": "string", "description": "In-page only: the browser and add-ons the tool identified, or 'not identified'" },
-    "cappedBy": { "type": ["string", "null"], "description": "In-page only: the heaviest reading still shown. Same value the CLI calls 'strongest'" },
-    "topLeaks": { "type": "array", "items": { "type": "string" }, "description": "In-page only: strong readings still shown. Same value the CLI calls 'exposedStrong'" },
+    "runs": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of runs when --runs N>1; the reported score is the median"
+    },
+    "runScores": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "description": "Per-run scores when --runs N>1"
+    },
+    "generated": {
+      "type": "string",
+      "description": "In-page only: ISO 8601 timestamp of the run"
+    },
+    "browser": {
+      "type": "string",
+      "description": "In-page only: the browser and add-ons the tool identified, or 'not identified'"
+    },
+    "cappedBy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "In-page only: the heaviest reading still shown. Same value the CLI calls 'strongest'"
+    },
+    "topLeaks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "In-page only: strong readings still shown. Same value the CLI calls 'exposedStrong'"
+    },
     "handedOver": {
       "type": "array",
       "description": "In-page only: every shown surface, heaviest first",
       "items": {
         "type": "object",
         "properties": {
-          "surface": { "type": "string" },
-          "weight": { "type": "integer" },
-          "exposed": { "type": "string" }
+          "surface": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "integer"
+          },
+          "exposed": {
+            "type": "string"
+          }
         }
       }
     },
@@ -51,13 +159,25 @@
       "type": "object",
       "description": "In-page only: reading tallies. readingsHidden and readingsTotal are the CLI's shownCount and readingsTotal",
       "properties": {
-        "readingsHidden": { "type": "integer" },
-        "readingsTotal": { "type": "integer" },
-        "strongLeaks": { "type": "integer" },
-        "masked": { "type": "integer" },
-        "notReadable": { "type": "integer" }
+        "readingsHidden": {
+          "type": "integer"
+        },
+        "readingsTotal": {
+          "type": "integer"
+        },
+        "strongLeaks": {
+          "type": "integer"
+        },
+        "masked": {
+          "type": "integer"
+        },
+        "notReadable": {
+          "type": "integer"
+        }
       }
     },
-    "note": { "type": "string" }
+    "note": {
+      "type": "string"
+    }
   }
 }
