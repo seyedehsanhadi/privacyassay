@@ -1,0 +1,16 @@
+Privacyassay
+Copyright 2026 Seyed Ehsan Hadi
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+--------------------------------------------------------------------------------
+
+This product includes software derived from:
+
+  wasm-feature-detect
+  https://github.com/GoogleChromeLabs/wasm-feature-detect
+  Copyright Google LLC
+  Licensed under the Apache License, Version 2.0.
+
+  The WebAssembly feature-detection modules in index.html (the byte-array
+  probes passed to WebAssembly.validate) are derived from this project.

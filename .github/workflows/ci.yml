@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Fast gate. Node only, no browser: scoring arithmetic, PRIORS consistency, and the checks that
+  # recompute METHODOLOGY.md's numbers from the code so the documentation cannot drift silently.
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+
+  # The job that matters most, and the reason this file is not just `npm test`.
+  #
+  # The tool credits a REFUSED reading as protection, and nothing in the scoring path distinguishes
+  # "the browser withheld this" from "our own probe broke". That is not hypothetical: an extension
+  # scan that found nothing was once scored as protection, and every published benchmark number was
+  # three points too high until the arithmetic was re-derived by hand. The fault-injection matrix is
+  # the only thing that catches that class, so it runs on every change rather than when somebody
+  # remembers to run it.
+  #
+  # Slow by construction: each surface is injected on its own, one browser launch apiece, because a
+  # batched failure only ever said "the page died" and named no surface.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+        with:
+          chrome-version: stable
+      - run: npm run test:browser
+        env:
+          PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+
+  # Repeated audits in one page, re-entrant Run clicks, viewport extremes, and a server that 404s
+  # every helper endpoint. Guards resource exhaustion: the per-read-noise check runs observeVectors
+  # twice per audit, so six audits build twelve WebGL contexts against a ceiling near sixteen.
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+        with:
+          chrome-version: stable
+      - run: npm run test:stress
+        env:
+          PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+
+# Deliberately NOT here: the seven-browser ranking. Tor Browser and Mullvad Browser cannot be
+# installed on a hosted runner, and a job that quietly skipped them would report a green tick for a
+# benchmark that never measured its two most important rows. That suite stays local and its results
+# are committed as a dated table instead.

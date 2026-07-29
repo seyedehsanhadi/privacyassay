@@ -1,0 +1,39 @@
+{
+  "name": "privacyassay",
+  "version": "1.1.0",
+  "description": "Run the Privacyassay browser-fingerprint benchmark headless and print the score as JSON. On-device, uploads nothing.",
+  "type": "module",
+  "bin": {
+    "privacyassay": "bin/privacyassay.mjs"
+  },
+  "files": [
+    "index.html",
+    "bin/privacyassay.mjs",
+    "serve.py",
+    "schema.json",
+    "METHODOLOGY.md",
+    "README.md",
+    "NOTICE"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\" \"test/helpers/extract.test.mjs\"",
+    "test:browser": "node --test --test-concurrency=1 --test-timeout=1800000 \"test/browser/*.test.mjs\" \"test/helpers/browser.test.mjs\"",
+    "test:stress": "node test/stress.mjs 6",
+    "test:all": "npm test && npm run test:browser && npm run test:stress",
+    "bench": "node bin/privacyassay.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "Apache-2.0",
+  "author": "Seyed Ehsan Hadi",
+  "homepage": "https://github.com/seyedehsanhadi/privacyassay",
+  "keywords": [
+    "fingerprint",
+    "privacy",
+    "benchmark",
+    "browser-fingerprinting",
+    "anti-fingerprinting",
+    "ci"
+  ]
+}
