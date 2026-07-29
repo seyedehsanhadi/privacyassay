@@ -39,6 +39,8 @@ Runs headless, prints the result as JSON, and exits non-zero below the threshold
 - **See behaviour** — mouse, typing and scroll are not measured.
 - **Test true cross-site behaviour** — the two-origin test uses `localhost` and `127.0.0.1`, which browsers treat more permissively than two registered domains.
 
+Seven browsers measured on one machine are tabulated in [METHODOLOGY.md](METHODOLOGY.md#reference-measurements), with the caveats that make those numbers mean anything. Chrome and Edge read 0; Tor and Mullvad read 71.
+
 A high score means most of what it checks is hidden, not that you are anonymous. The method and the scored catalog are in [METHODOLOGY.md](METHODOLOGY.md).
 
 ## License

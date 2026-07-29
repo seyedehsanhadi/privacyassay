@@ -65,6 +65,32 @@ The masking is default-deny. Instead of listing values to strip, it keeps only w
 
 Turning Redact off reveals your real values, on screen and in anything saved afterwards. The score is identical either way, because redaction touches only display and export, never the readings the score is computed from.
 
+## Reference measurements
+
+One machine running Windows 11, measured 2026-07-29. Every row went through the same path: a real top-level window, three runs, a single origin, both opt-ins off. Read the caveats under the table before quoting any number from it.
+
+| Browser | Version | Score | Grade | Runs |
+|---|---|---|---|---|
+| Mullvad Browser | 140.13.0 | 71 | C | 71, 71, 71 |
+| Tor Browser | 140.13.0 | 71 | C | 71, 71, 71 |
+| LibreWolf | 152.0.6-1 | 43 | D | 43, 43, 43 |
+| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 |
+| Firefox | 153.0.1 | 5 | F | 5, 5, 5 |
+| Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 |
+| Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 |
+
+**Your result will differ.** These are one machine's readings. The score depends on the fonts installed, the screen, the GPU and the window size, so the same browser on your hardware will not necessarily land on the same number. Run it yourself; that is what the tool is for.
+
+**This measures one visit to one site.** Both opt-ins were off and the runs were single-origin, so the WebRTC and supercookie categories are absent and nothing here describes cross-site linkability. The score is what a single site learns on a single visit.
+
+**Brave's 5 is not a verdict on Brave.** It re-seeds its farbling per session and keys it per site, so inside one page load its values are perfectly stable and it correctly reads as exposed. Its protection is real and lives between visits, which is what the two-origin comparison measures and this table does not. The same caution applies to any randomizing browser.
+
+**Tor and Mullvad were measured with the proxy forced to a direct connection.** Both numbers are therefore pure resistFingerprinting engine tests and say nothing about the Tor network, which is the larger part of what Tor Browser actually provides. Tor additionally needed its bundled NoScript moved aside for the capture, because NoScript intermittently blocks all script loading on a plain http origin and no script means no measurement. Neither change touches resistFingerprinting, but both differ from the browser as a user runs it.
+
+**This is fingerprint findability only.** Tracker blocking, state partitioning and network privacy are not scored, and a browser can be excellent at those while scoring poorly here. privacytests.org covers that ground across roughly 156 checks and ranks these browsers differently, with Brave near the top. Neither ordering is wrong; they answer different questions.
+
+**Numbers drift as browsers ship.** The date above is part of the result. A row without its date and version is not a measurement.
+
 ## Limits
 
 The score is not a proof of anonymity. Your IP and the TLS handshake are sent before any script and cannot be read here. Blended is credited only for values a browser is documented to report for every user, checked against engine source, not a live crowd; a value masked to a per-machine constant could be over-credited, so the blended set is kept narrow.

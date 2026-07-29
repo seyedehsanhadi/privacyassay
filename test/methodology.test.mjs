@@ -53,3 +53,59 @@ test("methodology: the cross-browser anchor count matches the surfaces marked as
   const missing = anchors.filter((a) => !labels.has(a));
   assert.deepEqual(missing, [], "an anchor named in the document must be a real scored reading");
 });
+
+// The published reference table is the single most quotable thing in this repo, and the last one
+// was wrong for weeks: every row was three points high because an extension scan that found
+// nothing was scored as protection. These checks cannot re-measure a browser, but they catch a
+// table that contradicts the tool's own documented arithmetic or its own stated runs.
+function referenceRows() {
+  return DOC.split("\n")
+    .filter((l) => /^\| [A-Z][A-Za-z ]* \| \d+[\d.]*[\w.-]* \| \d+ \| [A-F] \|/.test(l))
+    .map((l) => {
+      const c = l.split("|").map((x) => x.trim()).filter(Boolean);
+      return { browser: c[0], version: c[1], score: Number(c[2]), grade: c[3], runs: (c[4] || "").split(",").map((n) => Number(n.trim())) };
+    });
+}
+
+test("reference table: every row is present and parses", () => {
+  const rows = referenceRows();
+  assert.equal(rows.length, 7, `expected seven browsers, parsed ${rows.length}: ${rows.map((r) => r.browser).join(", ")}`);
+});
+
+test("reference table: each grade matches the score under the documented bands", () => {
+  const band = (n) => (n >= 90 ? "A" : n >= 75 ? "B" : n >= 60 ? "C" : n >= 40 ? "D" : "F");
+  const bad = referenceRows().filter((r) => band(r.score) !== r.grade)
+    .map((r) => `${r.browser} ${r.score} labelled ${r.grade}, bands say ${band(r.score)}`);
+  assert.deepEqual(bad, []);
+});
+
+test("reference table: the published score is the median of the runs beside it", () => {
+  const bad = [];
+  for (const r of referenceRows()) {
+    if (!r.runs.length || r.runs.some((n) => !Number.isFinite(n))) { bad.push(`${r.browser}: runs unparseable`); continue; }
+    const sorted = r.runs.slice().sort((a, b) => a - b);
+    const median = sorted[Math.floor((sorted.length - 1) / 2)];
+    if (median !== r.score) bad.push(`${r.browser}: score ${r.score} but runs ${r.runs.join(",")} median ${median}`);
+  }
+  assert.deepEqual(bad, []);
+});
+
+test("reference table: every score is a whole number in range", () => {
+  const bad = referenceRows().filter((r) => !Number.isInteger(r.score) || r.score < 0 || r.score > 100).map((r) => `${r.browser}=${r.score}`);
+  assert.deepEqual(bad, []);
+});
+
+test("reference table: the caveats that make the numbers honest are all present", () => {
+  const required = [
+    ["your result will differ", /Your result will differ/i],
+    ["single visit scope", /one visit to one site/i],
+    ["Brave is not a verdict", /Brave's 5 is not a verdict/i],
+    ["Tor proxy forced direct", /proxy forced to a direct connection/i],
+    ["NoScript moved aside", /NoScript/],
+    ["fingerprint findability only", /fingerprint findability only/i],
+    ["dated and drifts", /Numbers drift as browsers ship/i],
+    ["measurement date", /2026-07-29/],
+  ];
+  const missing = required.filter(([, re]) => !re.test(DOC)).map(([n]) => n);
+  assert.deepEqual(missing, [], "a published table without its caveats overstates what was measured");
+});
