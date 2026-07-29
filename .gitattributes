@@ -1,0 +1,3 @@
+# The single-file kit is verified by hash and mirrored byte-identically to a companion
+# origin, so line endings must never be rewritten on checkout.
+* -text
