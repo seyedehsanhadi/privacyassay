@@ -1597,7 +1597,7 @@ function findability(observed,familyKey){
   var nShown=rows.filter(function(r){return r.state==="shown";}).length;
   var verdict;
   if(!nShown)verdict="Nothing we check singles you out here.";
-  else verdict="You hide "+score+"% of what could identify you"+(topShown?". Biggest leak: "+topShown:"")+
+  else verdict="You hide "+score+"% of what this tool checks for"+(topShown?". Biggest leak: "+topShown:"")+
     (exposedStrong.length?". Still exposed: "+exposedStrong.slice(0,3).join(", ")+(exposedStrong.length>3?" and "+(exposedStrong.length-3)+" more":""):"")+".";
   return {score:score, grade:grade, hiddenPct:score,
     checks:{total:rows.length, held:rows.length-nShown, exposed:nShown},
@@ -1952,14 +1952,22 @@ function sharedWorkerCheck(){
     }catch(e){res({err:""+e});}
   });
 }
+// These two are the only awaited probes, so a SYNCHRONOUS throw from either one rejects the
+// whole run and the audit never produces a score. A .catch on the returned promise does not
+// help: if the call throws before returning a promise there is nothing to attach to. Every
+// other probe is wrapped, and a browser or extension that makes an API throw on call is
+// exactly the case this tool exists to measure, so it must degrade to a refused reading.
 function highEntropy(){
   return new Promise(function(res){
     if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues){res(null);return;}
-    navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"]).then(res).catch(function(){res(null);});
+    try{navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"]).then(res).catch(function(){res(null);});}
+    catch(e){res(null);}
   });
 }
 function headers(){
-  return new Promise(function(res){if(!/^https?:$/.test(location.protocol))return res(null);fetch("/__headers",{cache:"no-store"}).then(function(r){return r.json();}).then(res).catch(function(){res(null);});});
+  return new Promise(function(res){if(!/^https?:$/.test(location.protocol))return res(null);
+    try{fetch("/__headers",{cache:"no-store"}).then(function(r){return r.json();}).then(res).catch(function(){res(null);});}
+    catch(e){res(null);}});
 }
 
 /* RENDER HELPERS ============================================================ */
@@ -2510,7 +2518,7 @@ async function runKit(){
       F.checks.held+" of "+F.checks.total+" readings gave nothing away. The other "+F.checks.exposed+
       " handed over your real value."]);
     fRows.push(["Protection score",
-      "You hide "+F.score+"% of what could identify you (grade "+F.grade+")."+
+      "You hide "+F.score+"% of what this tool checks for (grade "+F.grade+")."+
       (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")]);
     F.rows.forEach(function(r){
       var tag=r.state==="shown"?(STATEWORD.shown+" ("+(TIERWORD[r.tier]||"")+" clue)"):STATEWORD[r.state];

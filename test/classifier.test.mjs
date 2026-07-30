@@ -192,6 +192,38 @@ test("cross: a probe that failed on the second origin is not a value that differ
   }
 });
 
+// ---- the ceiling the catalog imposes ----
+// A reading with no uniform value in any family can only be credited by being refused, so the
+// readings that have none set a hard cap on the score. METHODOLOGY states that cap; if a credit
+// is added or dropped without updating it, the published ceiling silently becomes wrong.
+test("ceiling: the readings with no uniform value in any family cap the score where the document says", () => {
+  const NAMED = ["element geometry (subpixel)", "MathML render size", "text metrics", "font measurement",
+    "media codecs", "rendered sound", "device details (client hints)"];
+  const byLabel = Object.fromEntries(PRIORS.surfaces.map((s) => [s.label, s]));
+  const credited = new Set();
+  for (const f of Object.keys(PRIORS.browsers))
+    for (const k of Object.keys(PRIORS.browsers[f].implies || {})) credited.add(k);
+
+  for (const label of NAMED) {
+    const s = byLabel[label];
+    assert.ok(s, `${label} is named in METHODOLOGY but is not a reading`);
+    assert.ok(!credited.has(s.k), `${label} now has a uniform value somewhere, so the documented ceiling is stale`);
+  }
+
+  const groupTotal = {}, groupFloor = {};
+  for (const s of PRIORS.surfaces) {
+    if (s.optional) continue;
+    groupTotal[s.group] = Math.max(groupTotal[s.group] || 0, s.tier);
+    if (NAMED.includes(s.label)) groupFloor[s.group] = Math.max(groupFloor[s.group] || 0, s.tier);
+  }
+  const total = Object.values(groupTotal).reduce((a, b) => a + b, 0);
+  const floor = Object.values(groupFloor).reduce((a, b) => a + b, 0);
+
+  assert.equal(total, 21, "the non-optional denominator the document states");
+  assert.equal(floor, 10, "the seven readings must account for the documented 10 points");
+  assert.equal(Math.round(100 * (total - floor) / total), 52, "the documented ceiling for a browser that shows all seven");
+});
+
 // ---- the row shape the methodology promises ----
 
 test("rows: every row carries its catalog weight, and tier is zero unless the reading is shown", () => {

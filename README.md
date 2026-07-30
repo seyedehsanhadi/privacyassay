@@ -2,7 +2,7 @@
 
 One HTML file that shows what a website can read about your browser and how much of it singles you out. Everything runs on your machine; the fingerprint is never uploaded.
 
-Each reading is your real value (**shown**), a value every user of that browser shares or one that changes on every read (**blended**), or nothing (**refused**). The score is the share of what could identify you that your browser hides, weighted by how much each reading gives away. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
+Each reading is your real value (**shown**), a value every user of that browser shares or one that changes on every read (**blended**), or nothing (**refused**). The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
 Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
@@ -41,8 +41,8 @@ The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. 
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # 66 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
-npm run test:browser  # 25 checks in a real browser, including deliberate probe sabotage
+npm test              # 75 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm run test:browser  # 26 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```
 

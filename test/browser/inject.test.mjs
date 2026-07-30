@@ -336,7 +336,12 @@ test("inject-crash regression: a throw in deviceMemory, platform or languages st
   } finally { await page.close(); }
 });
 
-test("inject-hang: a synchronously-throwing getHighEntropyValues leaves __KIT_DONE unset (the audit never finishes)", async () => {
+// This used to assert the opposite: that the audit never finished. getHighEntropyValues and the
+// header fetch are the only awaited probes, so a synchronous throw from either rejected the whole
+// run and no score was ever produced. Pinning that as expected behaviour made the suite defend a
+// bug. A browser that makes an API throw on call is the case this tool exists to measure, so the
+// reading must degrade to refused and the audit must still finish.
+test("inject-hang: a synchronously-throwing getHighEntropyValues still produces a score", async () => {
   const srv = await getServer();
   const preload = `
 (function(){
@@ -349,12 +354,11 @@ test("inject-hang: a synchronously-throwing getHighEntropyValues leaves __KIT_DO
 })();`;
   const page = await launch({ port: srv.port, preload });
   try {
-    await assert.rejects(
-      () => runAudit(page, { timeout: 6000 }),
-      /findability/,
-      "expected runAudit to time out and reject because window.__KIT was never populated"
-    );
-    const done = await page.ev("!!window.__KIT_DONE");
-    assert.equal(done, false, "expected __KIT_DONE to still be false: runKit()'s unhandled rejection (no .catch on the click handler's runKit().then(...)) means it never reaches the __KIT_DONE=true line");
+    const kit = await runAudit(page);
+    assert.equal(await page.ev("!!window.__KIT_DONE"), true, "the audit must finish even when a probe throws on call");
+    assert.ok(Number.isFinite(kit.findability.score), "a throwing probe must still leave a score");
+    const uaCh = kit.findability.rows.find((r) => r.label === "device details (client hints)");
+    assert.ok(uaCh, "the client-hints reading must still be present");
+    assert.notEqual(uaCh.state, "shown", "a probe that threw cannot have handed a value over");
   } finally { await page.close(); }
 });

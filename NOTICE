@@ -14,3 +14,10 @@ This product includes software derived from:
 
   The WebAssembly feature-detection modules in index.html (the byte-array
   probes passed to WebAssembly.validate) are derived from this project.
+
+  Feather
+  https://github.com/feathericons/feather
+  Copyright (c) 2013-2023 Cole Bemis
+  Licensed under the MIT License.
+
+  Interface icon path geometry in index.html is derived from this project.

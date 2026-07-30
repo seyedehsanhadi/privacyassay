@@ -1,6 +1,6 @@
 # Methodology 0.9.0-beta
 
-The score is how much of what could identify you your browser hides. Recomputable by hand from the report the tool prints.
+The score is how much of what this tool checks your browser hides, weighted by how identifying each reading is. It is not an estimate of how rare you are: that needs a population of real fingerprints, and nothing here has one. Every number below is recomputable by hand from the report the tool prints.
 
 ## Three states
 
@@ -47,11 +47,11 @@ grade = A 90+ | B 75-89 | C 60-74 | D 40-59 | F below 40
 
 The ordering is the result; the number is an indicator. Recomputed under five alternative weightings — all readings equal, tiers inverted, tiers squared, and the shipped and equal weightings again with the category rule dropped — the ordering never changed. A jackknife dropping each of the thirteen categories in turn did not change it either.
 
-Absolute values do move. LibreWolf reads 43 as shipped, 50 under equal weights, 63 with tiers inverted and 67 with equal weights and no category rule: same readings, a 24-point range. Treat a few points as noise and a tier as real.
+Absolute values do move. LibreWolf reads 33 as shipped, 40 under equal weights, 54 with tiers inverted and 63 with equal weights and no category rule: same readings, a 32-point range. Treat a few points as noise and a tier as real.
 
 So the ordering is supported. A particular absolute score is not, being one weighting, one machine, one date.
 
-There is also a ceiling. Six readings have no uniform value recorded for any browser family and no mask this code detects: element geometry, MathML render size, text metrics, font measurement, media codecs and device details. A browser that returns a real value for all of them cannot score above 62, whatever else it hides, and Tor and Mullvad sit exactly there. Grades A and B need a browser that refuses readings no shipping browser refuses, so nothing here reaches them.
+There is also a ceiling. Seven readings have no uniform value recorded for any browser family, so a browser that returns a real value for one of them cannot be credited for it: element geometry, MathML render size, text metrics, font measurement, media codecs, rendered sound and device details. They sit in five categories worth 10 of the 21 non-optional points, so showing all seven caps the score at 52. Tor and Mullvad hide everything else and refuse only device details, which is exactly their 62. Grades A and B need a browser that refuses readings no shipping browser refuses, so nothing measured here reaches them.
 
 ## Cross-site
 
@@ -77,21 +77,22 @@ Default-deny: only recognised-harmless values pass, meaning status words and pla
 
 ## Reference measurements
 
-One machine, Windows 11, 2026-07-29. Real top-level window, three runs, single origin, opt-ins off.
+One machine, Windows 11, 2026-07-30. Real top-level window, three runs, a fresh browser launch per run, single origin, opt-ins off.
 
 | Browser | Version | Score | Grade | Runs | Cross-site |
 |---|---|---|---|---|---|
-| Mullvad Browser | 140.13.0 | 71 | C | 71, 71, 71 | 71, nothing differed |
-| Tor Browser | 140.13.0 | 71 | C | 71, 71, 71 | 71, nothing differed |
-| LibreWolf | 152.0.6-1 | 43 | D | 43, 43, 43 | probe blocked, not measurable |
-| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 | 14, range 10 to 14 |
-| Firefox | 153.0.1 | 5 | F | 5, 5, 5 | 5, nothing differed |
+| Mullvad Browser | 140.13.0 | 62 | C | 62, 62, 62 | 62, nothing differed |
+| Tor Browser | 140.13.0 | 62 | C | 62, 62, 62 | 62, nothing differed |
+| LibreWolf | 152.0.6-1 | 33 | F | 33, 33, 33 | 33 on the one run of three that completed |
+| Firefox | 153.0.1 | 5 | F | 5, 5, 5 | 5 on the one run of three that completed |
+| Brave | 150.1.92.144 | 0 | F | 0, 0, 0 | 14, five readings differed |
 | Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
 | Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
 
 - **Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
-- **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement.
-- **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits.
+- **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
+- **Brave's 0 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, which is what its 14 measures.
+- **The two-origin probe is unreliable on Gecko over loopback.** Firefox and LibreWolf each completed it on one of three runs; the other four runs timed out and are reported as not measurable rather than as zero.
 - **Tor and Mullvad ran with the proxy forced to a direct connection and their bundled NoScript moved aside**, so both are resistFingerprinting engine tests and say nothing about the Tor network. NoScript intermittently blocks all script loading on plain http, which makes a benchmark unusable; it is not a fingerprinting defence and does not touch resistFingerprinting.
 - **Fingerprint findability only.** Not tracker blocking, state partitioning, or the network layer.
 - **Numbers drift as browsers ship.** The date and versions are part of the result.
@@ -99,12 +100,14 @@ One machine, Windows 11, 2026-07-29. Real top-level window, three runs, single o
 ## Limits
 
 - Your IP and the TLS handshake are sent before any script and cannot be read here.
-- Most of the uniform-value credits name a target in Firefox's `RFPTargets.inc`, and the readings Tor still shows have none. Four do not come from engine source: device memory, which Gecko never implemented, and three hashes (SVG text metrics, WebGL extensions, WebGL params) measured on one machine. Those three are the weakest credits here.
+- The uniform-value credits are checked against Firefox's `RFPTargets.inc`. Most name a target there. Four do not: device memory, which Gecko never implemented, and three hashes (SVG text metrics, WebGL extensions, WebGL params) measured on one machine rather than read from source. Those three are the weakest credits here.
+- Of the six readings Tor still shows, four have no target at all: element geometry, MathML render size, text metrics and font measurement. The other two do. `MediaCapabilities` and `AudioContext` both exist as targets, but they cover `mediaCapabilities.decodingInfo` and the audio graph rather than the `MediaSource.isTypeSupported` list and the rendered-output check this scores, so those two readings are scored as shown against a browser that does normalize a neighbouring API.
+- WebGPU is read in full and scored in nothing. The adapter, its limits, its feature set and its texture-format matrix appear in the raw view only, so a browser that hides them gets no credit and a browser that hands them over pays nothing. `RFPTargets.inc` has three WebGPU targets, so this is a gap in the catalog, not in the engines.
 - Two readings, rendered sound and 3D rendered image, are classified on whether the render produced output, not on the output itself. The hash is in the raw view but is not what the score reads. An earlier version credited every Firefox-family browser as protected because its rendered sound was present, which is what a working audio pipeline reports in any browser; that credit is gone.
 - The two-read check that detects a per-read randomizer reaches only the readings taken live. Twelve are pulled from rows the collectors already computed, so a second call returns them unchanged and they can never be credited for varying. Canvas is covered separately by drawing twice. This under-credits rather than over-credits.
 - **A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** It fails in the flattering direction. It has happened: an extension scan that found nothing was scored as protection and every published number was three points too high. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as shown.
-- The category rule under-counts when readings in a category are independent. Dropping it moves Tor 71 to 80 and LibreWolf 43 to 59, without changing the order.
-- For a per-session farbler the cross-site number needs the median across fresh launches, not the single-site one: runs sharing a launch share a farbling seed. The CLI launches a fresh browser per run but reports `crossSite: null`, so it gives the single-site median only. The cross-site figures here come from the page, driven one launch at a time.
+- The category rule under-counts when readings in a category are independent. Dropping it moves Tor 62 to 76 and LibreWolf 33 to 55, without changing the order.
+- For a per-session farbler the single-site number says nothing: Brave reads 0 there and 14 across origins. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run but reports `crossSite: null`, so it gives the single-site number only; the cross-site figures here come from the page.
 - The cross-site second origin is `localhost` against `127.0.0.1`, which browsers treat more permissively than two registered domains, so a randomizer's cross-site figure is a floor.
 
 ## Checking
