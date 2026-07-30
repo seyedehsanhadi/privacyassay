@@ -41,8 +41,8 @@ The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. 
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # 78 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
-npm run test:browser  # 30 checks in a real browser, including deliberate probe sabotage
+npm test              # 80 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm run test:browser  # 33 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```
 

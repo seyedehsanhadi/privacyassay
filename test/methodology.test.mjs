@@ -181,3 +181,25 @@ test("reference table: the per-site randomizer's two figures differ", () => {
   assert.ok(Number.isFinite(single) && Number.isFinite(cross), `unparsed Brave row: ${brave}`);
   assert.notEqual(single, cross, "Brave's defence is between sites, so the two columns must not agree");
 });
+
+// A score depends on the opt-in setting it was taken under, and turning a leak test ON can raise
+// it: Tor refuses WebRTC, so enabling that test adds 3 to what it hides and 3 to the total. Two
+// numbers taken under different settings are not comparable, and the document has to say so.
+test("methodology: the opt-in range and the reason for it are published", () => {
+  assert.match(DOC, /Both off\s*\|\s*WebRTC on\s*\|\s*Supercookies on/i,
+    "the per-opt-in table must be present");
+  assert.match(DOC, /can raise your score/i,
+    "the counter-intuitive direction must be stated, not left to be discovered");
+  assert.match(DOC, /cannot be compared|not comparable/i,
+    "the document must say scores under different settings are not comparable");
+  assert.match(DOC, /re-seeds|per session/i, "session-to-session variance must be named separately");
+  assert.match(DOC, /identical score on all three runs|Run-to-run variation is not/i,
+    "run-to-run stability must be stated so the three causes stay separate");
+});
+
+// Tor and Mullvad block the pop-up the supercookie test needs, so their opt-in column is not a
+// measurement. Publishing it as one would be the flattering-direction error again.
+test("methodology: an opt-in test that could not run is disclosed rather than scored", () => {
+  assert.match(DOC, /needs a pop-up|blocked it/i, "the reason the supercookie test can fail must be stated");
+  assert.match(DOC, /did not run/i, "the report's behaviour when it cannot run must be documented");
+});

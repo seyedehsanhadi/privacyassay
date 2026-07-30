@@ -2162,6 +2162,7 @@ function paCrossData(R){
       ? ("Enough stayed identical on both sites that a tracker present on each could link the visits to one person. "+anon+" of "+total+" signals changed; the rest matched.")
       : ("Your fingerprint changed enough between the two sites that linking the visits is unreliable. "+anon+" of "+total+" signals differed.")};
   var p=R.partitioning;
+  if(!p&&window.__paStoreBlocked)cs.partitionBlocked=window.__paStoreBlocked;
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
   return cs;
 }
@@ -2248,6 +2249,10 @@ function paRenderView(R){
     h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:15px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
     if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' storage mechanisms stayed partitioned'+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):'; no persistent supercookie carried')+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); browsers partition it per site on real cross-origin domains, so it is shown but not scored':'')+'.</div>';
   }
+// The supercookie test is opted into separately from the cross-site test, so its outcome has to
+// render whether or not the cross-site comparison succeeded. Nested inside the success branch it
+// stayed invisible in exactly the case it exists for: a browser that blocked the pop-up.
+  if(cs.partitionBlocked)h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--amber);line-height:1.5;"><b>Supercookie test did not run.</b> '+paEsc(cs.partitionBlocked)+'</div>';
   h+='</div></div>';
   var xb=R.crossBrowser;
   if(xb){
@@ -2811,6 +2816,16 @@ async function runKit(){
   R.score={total:score,coveragePct:Math.round(100*coverFrac),coherencePct:Math.round(100*cohFrac),model:"diagnostic only: which vectors are masked and coherent. This is NOT the published score. The score is in R.findability.",unlinkabilityNote:"per-site unlinkability is measured cross-site by the two-origin check",trace:_trace,surfaceCoverage:_surf,objectives:OBJ.map(function(o){return {k:o.k,l:o.l,w:o.w,v:o.v,grp:o.grp,pend:!!o.pend,na:!!o.na,contribution:o.contribution};})};
   window.__KIT=R;
   paRenderView(R);
+// findability runs as soon as the synchronous readings are in, but the supercookie probe finishes
+// later, so the storage reading does not exist yet when the headline score is first computed.
+// Without this the score silently ignored a supercookie the cross-site score was already counting:
+// a run where cookies demonstrably carried across origins scored 3 single-site and 2 cross-site,
+// from one set of readings. Re-attach observed and familyKey, which findability does not return.
+  var _rescore=function(){
+    var o=R.findability&&R.findability.observed,f=R.findability&&R.findability.familyKey;
+    if(!o)return;
+    try{R.findability=findability(o,f);R.findability.observed=o;R.findability.familyKey=f;}catch(e){}
+  };
   window.__paApplyCross=function(obsB){
     if(!R.findability||!obsB)return;
     try{
@@ -2834,6 +2849,7 @@ async function runKit(){
       if(total&&R.findability&&R.findability.observed){
         var sc=leakedPersistent.length?("carried: "+leakedPersistent.join(", ")):"";
         R.findability.observed.storageCarry=sc;
+        _rescore();
         if(window.__paObsB){window.__paObsB.storageCarry=sc;window.__paApplyCross(window.__paObsB);return;}
       }
     }catch(e){}
@@ -2883,7 +2899,16 @@ document.getElementById("runBtn").addEventListener("click",function(){
   if(pop){try{pop.document.write('<!doctype html><meta charset="utf-8"><title>Privacyassay - second site</title><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;font:14px system-ui,sans-serif;background:#0f1420;color:#dbe4f0"><div style="max-width:300px;padding:24px">Measuring this browser on a second site, then closing on its own.</div></body>');pop.document.close();}catch(e){}}
   var ifr=(oh&&(!useWindow||!pop))?(function(){var f=document.createElement("iframe");f.setAttribute("aria-hidden","true");f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(f);return f;})():null;
   btn.disabled=true;
-  var storeWrite=(wantStore&&pop)?paPartitionWrite(xTok).catch(function(){return null;}):Promise.resolve(null);
+// The supercookie test needs a real second-origin window to read the state back, so a blocked
+// pop-up means it cannot run at all. Tor and Mullvad block it, and because the cross-site test
+// quietly falls back to an iframe nothing looked wrong: the reading simply never appeared and
+// the user who ticked the box was told nothing. Record it so the report can say so.
+  var storeWrite=Promise.resolve(null);
+  window.__paStoreBlocked="";
+  if(wantStore){
+    if(pop)storeWrite=paPartitionWrite(xTok).catch(function(){return null;});
+    else window.__paStoreBlocked="The supercookie test needs a pop-up window to read your storage back from a second site, and this browser blocked it. Allow pop-ups for this page and run again.";
+  }
   runKit().then(function(){
     btn.disabled=false;lbl.textContent="Re-run";btn.setAttribute("aria-label","Re-run benchmark");
     

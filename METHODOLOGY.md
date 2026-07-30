@@ -99,12 +99,37 @@ One machine, Windows 11, 2026-07-30. Real top-level window, three runs, a fresh 
 | Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
 
 - **Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
+- **A score is only comparable to another score taken the same way.** See the range below.
 - **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
-- **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, which is what its 22 measures.
+- **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, and that figure is a range rather than a number: 19 to 30 across the sessions measured here.
 - **The two-origin probe is intermittent on Gecko over loopback.** All three runs completed for every browser here, but in an earlier round Firefox and LibreWolf each managed only one of three. A run that does not complete is reported as not measurable, never as a zero.
 - **Tor and Mullvad ran with the proxy forced to a direct connection and their bundled NoScript moved aside**, so both are resistFingerprinting engine tests and say nothing about the Tor network. NoScript intermittently blocks all script loading on plain http, which makes a benchmark unusable; it is not a fingerprinting defence and does not touch resistFingerprinting.
 - **Fingerprint findability only.** Not tracker blocking, state partitioning, or the network layer.
 - **Numbers drift as browsers ship.** The date and versions are part of the result.
+
+## Why a browser has a range, not a number
+
+The Score column above is one configuration: both opt-ins off, three runs, one machine. Turn the opt-ins on and the same browser on the same machine reads differently, because each opt-in adds a category to the denominator.
+
+| Browser | Both off | WebRTC on | Supercookies on | Both on | Range |
+|---|---|---|---|---|---|
+| Tor Browser | 74 | 78 | 74 | 78 | 74-78 |
+| Mullvad Browser | 74 | 78 | 74 | 78 | 74-78 |
+| LibreWolf | 48 | 42 | 55 | 49 | 42-55 |
+| Firefox | 9 | 8 | 20 | 18 | 8-20 |
+| Brave | 5 | 5 | 5 | 4 | 4-5 |
+| Chrome | 0 | 0 | 0 | 0 | 0 |
+| Edge | 0 | 0 | 0 | 0 | 0 |
+
+Three separate things move a score, and they should not be blurred together.
+
+**The opt-in setting.** Both opt-ins are off by default and each adds a category worth 3. A browser that *blocks* the thing being tested gains: Tor refuses WebRTC, so turning the test on adds 3 to what it hides and 3 to the total, and its score rises from 74 to 78. A browser that leaks it loses: LibreWolf drops 48 to 42 for the same reason in reverse. **Turning on a leak test can raise your score, so two numbers taken under different settings cannot be compared.** Firefox moves most, 9 to 20, because it partitions storage well and that only counts when you ask for it.
+
+**The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 30, 27, 21 and 19 across the four settings above, and 22 in an earlier round with both off. Every one of those is correct for the session it was taken in.
+
+**The run.** Within a single launch and setting, every browser measured here returned an identical score on all three runs. Run-to-run variation is not a source of spread in this data.
+
+Two things the opt-ins cannot always measure. The supercookie test needs a pop-up to read state back from a second origin; Tor and Mullvad block it, so their Supercookies column is the same as their default column and the report says the test did not run rather than scoring it either way. A cross-site figure that times out is reported as not measurable, never as a zero.
 
 ## Limits
 
