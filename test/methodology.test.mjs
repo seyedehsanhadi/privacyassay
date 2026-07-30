@@ -109,3 +109,37 @@ test("reference table: the caveats that make the numbers honest are all present"
   const missing = required.filter(([, re]) => !re.test(DOC)).map(([n]) => n);
   assert.deepEqual(missing, [], "a published table without its caveats overstates what was measured");
 });
+
+// The calibration statement is the part of the document most likely to be trimmed by a future
+// editor who thinks it reads as hedging. It is not hedging: it is the finding that the ordering
+// survived five reweightings and a thirteen-category jackknife while the absolute values moved by
+// up to 24 points. Losing it turns a defensible ranking back into an overclaimed number.
+test("methodology: the calibration statement survives, with the evidence that earns it", () => {
+  const required = [
+    ["ordering is the result", /ordering is the result/i],
+    ["number is an indicator", /number is an indicator/i],
+    ["reweighting was actually run", /inverted/i],
+    ["jackknife over the categories", /jackknife/i],
+    ["the 24-point spread is quantified", /24-point range|43 as shipped/i],
+    ["what the method does and does not support", /is a claim this method supports/i],
+  ];
+  const missing = required.filter(([, re]) => !re.test(DOC)).map(([n]) => n);
+  assert.deepEqual(missing, [], "the ordering-versus-number distinction must stay, or the table overclaims");
+});
+
+test("methodology: the refused-is-credited limit stays disclosed", () => {
+  assert.match(DOC, /refused reading is credited as protection/i, "the structural weakness must be stated, not implied");
+  assert.match(DOC, /three points too high/i, "the disclosure keeps its worked example, which is what makes it credible");
+});
+
+test("methodology: a blocked cross-site probe is never presented as a zero", () => {
+  assert.match(DOC, /cannot be obtained is not a zero/i);
+  const rows = DOC.split("\n").filter((l) => /^\| [A-Z][A-Za-z ]* \| \d+[\d.]*[\w.-]* \| \d+ \| [A-F] \|/.test(l));
+  const libre = rows.find((l) => l.includes("LibreWolf"));
+  assert.ok(libre && /blocked/i.test(libre), "LibreWolf's cross-site cell must say blocked rather than carry a number");
+});
+
+test("methodology: the cross-site median advice points at the cross-site number", () => {
+  assert.match(DOC, /cross-site\*{0,2} number that needs the median/i, "a per-session farbler needs the median on the cross-site figure, not the single-site one");
+  assert.match(DOC, /launches a fresh browser per run/i, "the reason the CLI's median is meaningful must be stated");
+});

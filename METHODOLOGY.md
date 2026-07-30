@@ -69,15 +69,23 @@ Turning Redact off reveals your real values, on screen and in anything saved aft
 
 One machine running Windows 11, measured 2026-07-29. Every row went through the same path: a real top-level window, three runs, a single origin, both opt-ins off. Read the caveats under the table before quoting any number from it.
 
-| Browser | Version | Score | Grade | Runs |
-|---|---|---|---|---|
-| Mullvad Browser | 140.13.0 | 71 | C | 71, 71, 71 |
-| Tor Browser | 140.13.0 | 71 | C | 71, 71, 71 |
-| LibreWolf | 152.0.6-1 | 43 | D | 43, 43, 43 |
-| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 |
-| Firefox | 153.0.1 | 5 | F | 5, 5, 5 |
-| Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 |
-| Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 |
+| Browser | Version | Score | Grade | Runs | Cross-site |
+|---|---|---|---|---|---|
+| Mullvad Browser | 140.13.0 | 71 | C | 71, 71, 71 | 71, nothing differed |
+| Tor Browser | 140.13.0 | 71 | C | 71, 71, 71 | 71, nothing differed |
+| LibreWolf | 152.0.6-1 | 43 | D | 43, 43, 43 | probe blocked, not measurable |
+| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 | 14, range 10 to 14 |
+| Firefox | 153.0.1 | 5 | F | 5, 5, 5 | 5, nothing differed |
+| Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
+| Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
+
+**The ordering is the result. The number is an indicator.** This is the most important thing to know before quoting anything above, and it comes from testing the model against its own arbitrary choices rather than from modesty.
+
+The weights are judgment, as this document says plainly. So the table was recomputed from the same captured readings under five alternative weightings: every reading equal, the tiers inverted so weak counts 3 and strong counts 1, the tiers squared, and both with and without the rule that only a category's heaviest reading counts. **The ordering did not change once, in any scheme, including with the tiers fully inverted.** A jackknife that dropped each of the thirteen categories in turn did not change it either. No single category is load-bearing.
+
+The absolute values are a different story. LibreWolf reads 43 as shipped, 50 with equal weights, 63 with inverted tiers and 67 without the category rule: the same data, a 24-point range. Tor moves between 71 and 81 across the same schemes.
+
+So `Tor scores higher than LibreWolf, which scores higher than Brave, which scores higher than stock Chromium` is a claim this method supports. `Tor scores exactly 71` is a claim about this weighting, on this machine, on this date. Treat a difference of a few points as noise and a difference of a tier as real.
 
 **Your result will differ.** These are one machine's readings. The score depends on the fonts installed, the screen, the GPU and the window size, so the same browser on your hardware will not necessarily land on the same number. Run it yourself; that is what the tool is for.
 
@@ -95,9 +103,15 @@ One machine running Windows 11, measured 2026-07-29. Every row went through the 
 
 The score is not a proof of anonymity. Your IP and the TLS handshake are sent before any script and cannot be read here. Blended is credited only for values a browser is documented to report for every user, checked against engine source, not a live crowd; a value masked to a per-machine constant could be over-credited, so the blended set is kept narrow.
 
-A browser that randomizes (Brave, Tor, Mullvad, Firefox private) changes its raw fingerprint between runs while its score stays put. Measured over three runs each on one machine, Brave scored 5, 5, 5 and Tor and Mullvad each scored 71, 71, 71, with their canvas and audio hashes differing on every run. That is the intended behaviour: a value that will not repeat cannot follow you between visits, so it is credited as blended and the score does not move when the noise does. The CLI's `--runs N` reports a median for the cases where a browser does wobble, but a stable score under a shifting fingerprint is the expected result rather than a lucky one.
+**A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** That is a property of the design rather than a bug, and it fails in the flattering direction, so it is worth stating outright. It has happened: an extension scan that found nothing was once scored as protection, and every published number was three points too high until the arithmetic was re-derived by hand. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as a value handed over, plus a check that every reading the scorer looks up actually resolves to a live row. Those run on every change. They are the only thing standing between a future refactor and a quietly inflated score.
 
-What that stability does not tell you is how much a randomizer protects you across sites, because a browser that re-seeds per site or per session looks fully exposed within a single visit. Brave scores 5 here for exactly that reason: inside one page load its values are constant, and its defence only appears between origins. For any randomizing browser, read the cross-site number alongside the single-site one.
+A browser that randomizes (Brave, Tor, Mullvad, Firefox private) changes its raw fingerprint between runs while its score stays put. Measured over three runs each on one machine, Brave scored 5, 5, 5 and Tor and Mullvad each scored 71, 71, 71, with their canvas and audio hashes differing on every run. That is the intended behaviour: a value that will not repeat cannot follow you between visits, so it is credited as blended and the score does not move when the noise does.
+
+For a per-session farbler it is the **cross-site** number that needs the median, not the single-site one. That is the opposite of the obvious guess and it was measured: Brave's single-site score was 5 on every run without exception, while its cross-site score read 10, 14 and 14 across three separate launches. Farbling re-seeds per session, so several runs inside one browser launch all share a seed and agree with each other for the wrong reason. The CLI's `--runs N` launches a fresh browser per run, which is what makes its median meaningful.
+
+What single-site stability does not tell you is how much a randomizer protects you across sites, because a browser that re-seeds per site or per session looks fully exposed within a single visit. Brave scores 5 here for exactly that reason: inside one page load its values are constant, and its defence only appears between origins, where it gained nine points. For any randomizing browser, read the cross-site number alongside the single-site one.
+
+A cross-site number that cannot be obtained is not a zero. LibreWolf blocked the second-site probe outright, which for a browser that reshuffles per site is protection working; its cross-site figure is unmeasurable here rather than nil. The table above says blocked for that reason.
 
 ## Checking
 
