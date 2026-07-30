@@ -42,7 +42,7 @@ The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. 
 
 ```bash
 npm test              # 75 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
-npm run test:browser  # 26 checks in a real browser, including deliberate probe sabotage
+npm run test:browser  # 28 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```
 

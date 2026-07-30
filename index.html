@@ -602,11 +602,18 @@ function collectFonts(){
   var rows=[];
   var list=["Arial","Arial Black","Calibri","Cambria","Candara","Comic Sans MS","Consolas","Constantia","Corbel","Courier New","Ebrima","Franklin Gothic","Gabriola","Georgia","Impact","Lucida Console","Lucida Sans","Marlett","Microsoft Sans Serif","Palatino Linotype","Segoe Print","Segoe Script","Segoe UI","Sylfaen","Tahoma","Times New Roman","Trebuchet MS","Verdana","Webdings","Wingdings","Helvetica","Menlo","Monaco","San Francisco","Ubuntu","Roboto","Noto Sans","DejaVu Sans","Liberation Sans","Cantarell"];
   var base=["monospace","sans-serif","serif"];var span=document.createElement("span");span.style.cssText="position:absolute;left:-9999px;top:-9999px;font-size:72px";span.textContent="mmMwWLl0O\u{1F600}il1";document.body.appendChild(span);
-  var def={};base.forEach(function(b){span.style.fontFamily=b;def[b]=[span.offsetWidth,span.offsetHeight];});
-  var found=[];list.forEach(function(f){for(var i=0;i<base.length;i++){span.style.fontFamily="'"+f+"',"+base[i];if(span.offsetWidth!==def[base[i]][0]||span.offsetHeight!==def[base[i]][1]){found.push(f);break;}}});
+// A broken measurement and a browser that hides every font both end with an empty list, and
+// fnv("") is a normal-looking hash that scores as a font list handed over. The baseline widths
+// decide which happened: if they are not usable numbers nothing was measured, so the reading is
+// an error rather than a fingerprint.
+  var def={},measurable=true;
+  base.forEach(function(b){span.style.fontFamily=b;var w=span.offsetWidth,h=span.offsetHeight;
+    if(typeof w!=="number"||typeof h!=="number"||!isFinite(w)||!isFinite(h)||(w===0&&h===0))measurable=false;
+    def[b]=[w,h];});
+  var found=[];if(measurable)list.forEach(function(f){for(var i=0;i<base.length;i++){span.style.fontFamily="'"+f+"',"+base[i];if(span.offsetWidth!==def[base[i]][0]||span.offsetHeight!==def[base[i]][1]){found.push(f);break;}}});
   document.body.removeChild(span);
-  rows.push(["detected fonts",found.length+" of "+list.length]);
-  rows.push(["font list hash",fnv(found.join(","))]);
+  rows.push(["detected fonts",measurable?(found.length+" of "+list.length):"ERR"]);
+  rows.push(["font list hash",measurable?fnv(found.join(",")):"ERR"]);
   try{
     var TELLS=[
       ["Segoe Fluent Icons","Windows 11"],["Segoe UI Variable","Windows 11"],
@@ -1538,8 +1545,7 @@ function observeVectors(){
     webglExt:paRow("Active Rendering & GPU","webgl extensions"),
     webglParams:paRow("Active Rendering & GPU","webgl params"),
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
-    codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
-    intlLocale:paRow("Timezone & Locale","intl.supportedvaluesof")
+    codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported")
   };
 }
 var TIERWORD={3:"strong",2:"medium",1:"weak"};

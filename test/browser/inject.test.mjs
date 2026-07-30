@@ -21,11 +21,14 @@ const OVERRIDE = (prop, mode) => `
   try { Object.defineProperty(target, name, { get: impl, configurable: true }); } catch(e) {}
 })();`;
 
-async function scoreWith(port, preload) {
+// probeExpr lets a caller confirm its injection actually took. An injection that silently fails
+// makes the test pass while proving nothing, which is how a broken helper survived here unnoticed.
+async function scoreWith(port, preload, probeExpr) {
   const page = await launch({ port, preload });
   try {
     const kit = await runAudit(page);
-    return { score: kit.findability.score, rows: kit.findability.rows };
+    const patched = probeExpr ? await page.ev(probeExpr) : undefined;
+    return { score: kit.findability.score, rows: kit.findability.rows, patched };
   } finally { await page.close(); }
 }
 
@@ -130,14 +133,22 @@ const METHOD_BREAK = (targetExpr, name, mode) => `
   }catch(e){}
 })();`;
 
-const UACH_SAFE = (mode) => `
+// navigator.userAgentData returns a FRESH NavigatorUAData on every access - in Chrome
+// navigator.userAgentData === navigator.userAgentData is false - so defining the method on the
+// object this preload sees patches a throwaway and the page still gets the real values. The
+// patch has to go on the prototype. An earlier instance-patching version of this helper injected
+// nothing, which is why any test using it passed without proving anything.
+const UACH_BREAK = (mode) => `
 (function(){
   try{
-    if(!navigator.userAgentData) return;
-    var impl = (${JSON.stringify(mode)} === "throw")
-      ? function(){ return Promise.reject(new Error("injected")); }
-      : function(){ return Promise.resolve(undefined); };
-    Object.defineProperty(navigator.userAgentData, "getHighEntropyValues", { value: impl, configurable: true, writable: true });
+    if(typeof NavigatorUAData === "undefined") return;
+    var impl = (${JSON.stringify(mode)} === "sync-throw")
+      ? function(){ throw new Error("injected"); }
+      : (${JSON.stringify(mode)} === "throw")
+        ? function(){ return Promise.reject(new Error("injected")); }
+        : function(){ return Promise.resolve(undefined); };
+    Object.defineProperty(NavigatorUAData.prototype, "getHighEntropyValues", { value: impl, configurable: true, writable: true });
+    window.__UACH_PATCHED = true;
   }catch(e){}
 })();`;
 
@@ -179,24 +190,9 @@ const METHOD_SURFACES = [
   ["timezone", "Intl.DateTimeFormat.prototype", "resolvedOptions"],
   ["rendered sound", "OfflineAudioContext.prototype", "createOscillator"],
 ];
-const METHOD_LABELS = [...new Set(METHOD_SURFACES.map((s) => s[0])), "installed fonts", "device details (client hints)"];
-function methodPreload(mode) {
-  const seen = new Set();
-  const parts = [];
-  for (const [, targetExpr, name] of METHOD_SURFACES) {
-    const key = targetExpr + "." + name;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    parts.push(METHOD_BREAK(targetExpr, name, mode));
-  }
-  // "installed fonts" (fontSet) is measured through span.offsetWidth, a getter,
-  // not a callable method - it uses OVERRIDE (getter form), not METHOD_BREAK.
-  parts.push(OVERRIDE("HTMLElement.prototype.offsetWidth", mode));
-  // getHighEntropyValues: safe async-rejection/undefined-resolution form, see
-  // header note. A synchronous throw is tested separately (hangs the audit).
-  parts.push(UACH_SAFE(mode));
-  return parts.join("\n");
-}
+// installed fonts is covered by its own offsetWidth test above, and device details by the
+// synchronous-throw test at the end of this file, so there is no all-at-once method preload:
+// breaking every DOM method simultaneously breaks the page rather than the probes.
 
 let sharedServer = null;
 async function getServer() {
@@ -243,6 +239,43 @@ test("inject-matrix: property surfaces (undefined) - never shown, score never dr
   assert.ok(score >= clean.score, `score dropped below clean under undefined: clean ${clean.score}, injected ${score}`);
   assert.equal(noEffect.length + stillShown.length, 0,
     `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || still classified shown after undefined: ${stillShown.join(" | ") || "none"}`);
+});
+
+// installed fonts (tier 3, the only tier-3 reading in its category) is measured through the
+// offsetWidth getter rather than a callable method, so the per-method matrix above never reaches
+// it, and the override that would have covered it sat in a helper nothing called. With the getter
+// returning undefined the detector finds nothing, and fnv("") is a normal-looking hash: the
+// heaviest font reading reported a broken probe as a font list handed over.
+test("inject: a broken font measurement is never scored as a font list handed over", async () => {
+  const srv = await getServer();
+  const clean = await getClean();
+  for (const mode of ["throw", "undefined"]) {
+    const { rows, score } = await scoreWith(srv.port, OVERRIDE("HTMLElement.prototype.offsetWidth", mode));
+    const row = rows.find((r) => r.label === "installed fonts");
+    const cleanRow = clean.rows.find((r) => r.label === "installed fonts");
+    assert.ok(row && cleanRow, "the installed fonts reading must be present in both runs");
+    assert.notEqual(row.value, cleanRow.value, `breaking offsetWidth (${mode}) had no observable effect on the font list`);
+    assert.notEqual(row.state, "shown", `a font list read through a broken getter (${mode}) cannot have been handed over`);
+    assert.ok(score >= clean.score, `score dropped below clean under ${mode}: clean ${clean.score}, injected ${score}`);
+  }
+});
+
+// device details (tier 2, the only tier-2 reading in its category) comes from an async call, so
+// the per-method matrix cannot reach it either. UACH_SAFE was written for it and never used.
+test("inject: client hints that reject or resolve empty are never scored as details handed over", async () => {
+  const srv = await getServer();
+  const clean = await getClean();
+  const cleanRow = clean.rows.find((r) => r.label === "device details (client hints)");
+  assert.ok(cleanRow, "the client-hints reading must exist in a clean run");
+  assert.equal(cleanRow.state, "shown", "a clean headless Chrome hands its client hints over, or this test proves nothing");
+  for (const mode of ["throw", "undefined"]) {
+    const { rows, score, patched } = await scoreWith(srv.port, UACH_BREAK(mode), "!!window.__UACH_PATCHED");
+    assert.equal(patched, true, "the injection did not take, so this run proves nothing");
+    const row = rows.find((r) => r.label === "device details (client hints)");
+    assert.ok(row, "the client-hints reading must survive the injection");
+    assert.notEqual(row.state, "shown", `client hints that ${mode === "throw" ? "reject" : "resolve empty"} cannot have been handed over`);
+    assert.ok(score >= clean.score, `score dropped below clean under ${mode}: clean ${clean.score}, injected ${score}`);
+  }
 });
 
 // Each method surface is injected ON ITS OWN, not all at once. Breaking every DOM method
@@ -336,25 +369,20 @@ test("inject-crash regression: a throw in deviceMemory, platform or languages st
   } finally { await page.close(); }
 });
 
-// This used to assert the opposite: that the audit never finished. getHighEntropyValues and the
-// header fetch are the only awaited probes, so a synchronous throw from either rejected the whole
-// run and no score was ever produced. Pinning that as expected behaviour made the suite defend a
-// bug. A browser that makes an API throw on call is the case this tool exists to measure, so the
-// reading must degrade to refused and the audit must still finish.
+// getHighEntropyValues and the header fetch are the only awaited probes, so a SYNCHRONOUS throw
+// from either rejects the promise the run awaits and the audit produces no score at all. A .catch
+// on the returned promise cannot help: nothing is returned to attach one to. Both are wrapped now.
+//
+// The earlier version of this test asserted the opposite, that the audit never finished, and it
+// passed for two wrong reasons: it patched the userAgentData instance, which Chrome hands out
+// fresh on every access, so nothing was injected; and it ran with a 6-second timeout against an
+// audit that takes about fifteen, so the rejection it caught was its own deadline.
 test("inject-hang: a synchronously-throwing getHighEntropyValues still produces a score", async () => {
   const srv = await getServer();
-  const preload = `
-(function(){
-  try{
-    if(!navigator.userAgentData) return;
-    Object.defineProperty(navigator.userAgentData, "getHighEntropyValues", {
-      value: function(){ throw new Error("injected"); }, configurable:true, writable:true
-    });
-  }catch(e){}
-})();`;
-  const page = await launch({ port: srv.port, preload });
+  const page = await launch({ port: srv.port, preload: UACH_BREAK("sync-throw") });
   try {
     const kit = await runAudit(page);
+    assert.equal(await page.ev("!!window.__UACH_PATCHED"), true, "the injection did not take, so this run proves nothing");
     assert.equal(await page.ev("!!window.__KIT_DONE"), true, "the audit must finish even when a probe throws on call");
     assert.ok(Number.isFinite(kit.findability.score), "a throwing probe must still leave a score");
     const uaCh = kit.findability.rows.find((r) => r.label === "device details (client hints)");
