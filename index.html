@@ -410,13 +410,13 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
     <div class="pa-card-links" id="paCardLinks">
       <a class="pa-linkbtn" href="METHODOLOGY.md" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8M8 9h1.5"></path></svg>Methodology</a>
       <a class="pa-linkbtn" href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.7.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"></path></svg>GitHub</a>
-      <span class="pa-mono pa-cardver">v1.0.0</span>
+      <span class="pa-mono pa-cardver pa-vernum"></span>
     </div>
   </div>
 </div>
 <header class="pa-top" id="paBar">
   <div class="pa-top-in" id="paBarRow"></div>
-  <div class="pa-bar-ver" id="paBarVer"><span class="pa-mono pa-ver">v1.0.0 &#183; <a href="METHODOLOGY.md" target="_blank" rel="noopener">method</a> &#183; <a href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener">source</a></span></div>
+  <div class="pa-bar-ver" id="paBarVer"><span class="pa-mono pa-ver"><span class="pa-vernum"></span> &#183; <a href="METHODOLOGY.md" target="_blank" rel="noopener">method</a> &#183; <a href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener">source</a></span></div>
 </header>
 <details class="pa-how">
   <summary class="pa-mono">How the score works</summary>
@@ -1349,14 +1349,13 @@ var PRIORS={
     "firefox-rfp":{label:"Firefox with resistFingerprinting (LibreWolf, or Firefox with the pref on)",
                    implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
                             devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
-                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
-                            audioRenderClass:["present"]},
+                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"]},
                    verified:"these resistFingerprinting values were checked against Firefox source and confirmed by"},
     "tor-build":  {label:"Tor Browser or Mullvad Browser", letterboxes:true,
                    implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
                             devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
                             languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
-                            audioRenderClass:["present"], svgMetrics:["498cb0ef"], webglExt:["6c491bc1"], webglParams:["a95247b0"]},
+                            svgMetrics:["498cb0ef"], webglExt:["6c491bc1"], webglParams:["a95247b0"]},
                    verified:"everything the resistFingerprinting family carries, plus three measured hashes that"},
     "other":      {label:"another engine", implies:{}}
   },
@@ -1424,7 +1423,24 @@ var PRIORS={
   ]
 };
 
+// PRIORS.version is the only version literal in this file. Every other place that shows or
+// exports a version reads it from here, so a bump cannot leave a stale number behind.
+try{[].forEach.call(document.querySelectorAll(".pa-vernum"),function(e){e.textContent="v"+PRIORS.version;});}catch(e){}
+
 /* FINDABILITY HELPERS - tiers, letterbox, canvas class ====================== */
+// Which PRIORS.browsers entry a run is scored against, and so which uniform values it may be
+// credited for. Order matters: a Tor or Mullvad build also answers to the Firefox checks below
+// it, and identify() can return nothing at all, in which case the user agent alone decides and
+// no family-specific credit is given. Named so it can be tested without a browser.
+function paFamilyKey(names,ua){
+  names=String(names||"");ua=String(ua||"");
+  return /Brave/.test(names)?"brave":
+         /Tor Browser|Mullvad/.test(names)?"tor-build":
+         /LibreWolf|resistFingerprinting/.test(names)?"firefox-rfp":
+         /WebKit engine|Safari/.test(names)?"webkit":
+         /Firefox\//.test(ua)?"firefox":
+         /Chrome\/|Chromium\/|Edg\//.test(ua)?"chromium":"other";
+}
 function paRow(catName,needle){
   try{var c=C[catName];if(!c)return "";
     for(var i=0;i<c.rows.length;i++){
@@ -1451,19 +1467,30 @@ function paLetterboxed(w,h){
 }
 function paTier(s){return s.tier||2;}
 function paIsLB(v){var m=/^(\d+)x(\d+)$/.exec(String(v));return !!m&&paLetterboxed(+m[1],+m[2]);}
+// "noise-per-read" is a claim about two reads, so this draws twice and compares. An earlier
+// version returned it from a single read whenever the pixels deviated from the fill colour,
+// which credited a stable per-site farble (Brave) as protection it does not provide inside one
+// visit, and would credit any colour-management shift the same way. A deviation that reproduces
+// is stable, so it is trackable, so it reads as "unique".
 function paCanvasClass(){
   try{
-    var c=document.createElement("canvas");c.width=64;c.height=32;
-    var x=c.getContext("2d",{willReadFrequently:true});if(!x)return "";
-    x.fillStyle="rgb(255,102,0)";x.fillRect(0,0,32,32);
-    var d=x.getImageData(0,0,64,32).data,dev=0,uni=true,f0=[d[0],d[1],d[2],d[3]];
+    var draw=function(){
+      var c=document.createElement("canvas");c.width=64;c.height=32;
+      var x=c.getContext("2d",{willReadFrequently:true});if(!x)return null;
+      x.fillStyle="rgb(255,102,0)";x.fillRect(0,0,32,32);
+      return x.getImageData(0,0,64,32).data;
+    };
+    var d=draw(),d2=draw();if(!d||!d2)return "";
+    var dev=0,uni=true,diff=false,f0=[d[0],d[1],d[2],d[3]];
     for(var y=0;y<32;y++)for(var xx=0;xx<32;xx++){
       var i=(y*64+xx)*4;
       if(d[i]!==255||d[i+1]!==102||d[i+2]!==0||d[i+3]!==255)dev++;
       if(d[i]!==f0[0]||d[i+1]!==f0[1]||d[i+2]!==f0[2]||d[i+3]!==f0[3])uni=false;
+      if(d[i]!==d2[i]||d[i+1]!==d2[i+1]||d[i+2]!==d2[i+2]||d[i+3]!==d2[i+3])diff=true;
     }
-    return dev===0?"unique":(uni?"uniform-masked":"noise-per-read");
-  }catch(e){return "";}
+    if(diff)return "noise-per-read";
+    return dev===0?"unique":(uni?"uniform-masked":"unique");
+  }catch(err){return "";}
 }
 
 /* FINDABILITY - observe readings, score them, cross-origin merge ============ */
@@ -1529,9 +1556,10 @@ function findability(observed,familyKey){
     }else{
       v=String(v);
       
-// blended is credited two ways and no others: a mask this code actively detects (the conditions
-// below), or a value PRIORS documents the browser family as reporting uniformly. Rarity is never
-// assumed. Each condition below names a specific observable, not a guess about the browser.
+// blended is credited three ways and no others: a mask this code actively detects (the six
+// conditions below), a value that differed between the two reads (noisy, below), or a value
+// PRIORS documents the browser family as reporting uniformly. Rarity is never assumed. Each
+// condition below names a specific observable, not a guess about the browser.
       var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
                  ((s.k==="webglRenderClass"||s.k==="audioRenderClass")&&v==="unavailable")||
                  ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
@@ -1551,7 +1579,9 @@ function findability(observed,familyKey){
     var _it=paTier(s);
     groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,_it);
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-    rows.push({label:s.label,value:String(v),group:s.group,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
+// weight is the reading's catalog tier and is always present. tier is what it costs you here,
+// so it is 0 unless the state is shown; reading tier as the weight understates every masked row.
+    rows.push({label:s.label,value:String(v),group:s.group,weight:_it,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
   var groups=Object.keys(groupShownTier);
   var high=groups.filter(function(g){return groupShownTier[g]>=3;});
@@ -1584,13 +1614,19 @@ function findabilityCross(obsA,obsB,familyKey){
 
   var merged={};for(var _k in obsA){if(Object.prototype.hasOwnProperty.call(obsA,_k))merged[_k]=obsA[_k];}
   var changed=[];
+// A reading that failed on the second origin is not a reading that differed. Without this, an
+// error or an unavailable marker on origin B counted as per-site variation and was credited as
+// protection, which is the same flattering failure the refused state has.
+  var dead=function(x){x=String(x==null?"":x);
+    return x===""||x==="undefined"||/^ERR(:|$)/i.test(x)||/^(n\/a|unavailable|blocked|absent)/i.test(x);};
   PRIORS.surfaces.forEach(function(s){
-    
+
     if(s.noCrossDiff)return;
     var a=obsA[s.k],diff=false;
-    if(s.hashKey){var ha=obsA[s.hashKey],hb=obsB&&obsB[s.hashKey];if(ha&&hb&&String(ha)!==String(hb))diff=true;}
+    if(s.hashKey){var ha=obsA[s.hashKey],hb=obsB&&obsB[s.hashKey];
+      if(!dead(ha)&&!dead(hb)&&String(ha)!==String(hb))diff=true;}
     var b=obsB?obsB[s.k]:undefined;
-    if(!diff&&b!==undefined&&b!==null&&b!==""&&String(a)!==String(b))diff=true;
+    if(!diff&&!dead(b)&&String(a)!==String(b))diff=true;
     if(diff&&shownSet[s.label]){merged[s.k]="";if(s.hashKey)merged[s.hashKey]="";changed.push(s.label);}
   });
   var F=findability(merged,familyKey);
@@ -2106,7 +2142,7 @@ function paRenderView(R){
     h+='<span style="font-size:16px;font-weight:650;color:var(--text);">Recognized in another browser?</span>';
     h+='<span style="margin-left:auto;padding:4px 11px;border-radius:999px;background:var(--hover);color:'+xbTone+';font-size:12px;font-weight:700;white-space:nowrap;">'+xbBadge+'</span></div>';
     h+='<div class="pa-mono" style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;"><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">this browser</span><span style="color:var(--text-3);">&#8596;</span><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">another browser, same machine</span></div>';
-    h+='<div style="margin-top:16px;display:flex;align-items:stretch;gap:10px;"><div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Hardware anchors exposed</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+xbTone+';letter-spacing:-.02em;">'+xb.exposed+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/'+xb.total+'</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+xbTone+';margin-top:2px;">'+(xb.exposed?"signature "+paEsc(xb.hash):"masked")+'</div></div></div>';
+    h+='<div style="margin-top:16px;display:flex;align-items:stretch;gap:10px;"><div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Hardware anchors exposed</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+xbTone+';letter-spacing:-.02em;">'+xb.exposed+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/'+xb.total+'</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+xbTone+';margin-top:2px;">'+(xb.exposed?(PAV.redact?"signature hidden":"signature "+paEsc(xb.hash)):"masked")+'</div></div></div>';
     h+='<div style="margin-top:14px;font-size:15px;line-height:1.5;color:var(--text);">'+(xbYes?"GPU, fonts, screen and other hardware readings are exposed, so this machine stays recognizable even in a different browser.":xb.exposed?"Some hardware readings still leak, so another browser on this machine is partly linkable.":"The hardware layer is masked, so switching browsers breaks the link.")+'</div>';
     h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2);"><b>Follows you across browsers:</b> '+(xb.anchors&&xb.anchors.length?xb.anchors.map(paEsc).join(", "):"nothing exposed")+'. Hardware and OS signals, separate from the per-site test on the left.</div>';
     h+='</div></div>';
@@ -2212,17 +2248,18 @@ function paExportBar(){
   b+='</div>';
   return b;
 }
-// Default-deny. Only values recognised as harmless survive (status words, plain numbers, the
-// report's own short hashes); everything else is replaced. An earlier allow-list version listed
-// patterns to hide and let the user agent, GPU model and timezone through into files users were
-// invited to post publicly. A list of things to hide can never be finished.
+// Default-deny. Only values recognised as harmless survive (status words and plain numbers);
+// everything else is replaced. Two earlier versions leaked here: an allow-list that named
+// patterns to hide let the user agent, GPU model and timezone through, and a carve-out for
+// 8-hex values let the canvas, WebGL and font hashes through under labels that do not contain
+// the word "hash" ("canvas 2D toDataURL"). A hash of a fingerprint IS the fingerprint, so no
+// hash survives now. A list of things to hide can never be finished.
 function paRedactVal(k,v){
   v=String(v==null?"":v);
   if(/\bip\b|address|candidate|hash|fingerprint/i.test(String(k)))return "[redacted]";
   if(v==="")return v;
   if(/^(true|false|yes|no|none|absent|present|n\/a|null|undefined|enabled|disabled|granted|denied|prompt|default|supported|unsupported|available|downloadable|unavailable|running|suspended|match|pass|fail|clean|ok|probably|maybe)$/i.test(v))return v;
-  if(/^-?\d+(\.\d+)?\s*(ms|hz|px|dppx|db|bit|bits)?$/i.test(v))return v;
-  if(/^[0-9a-f]{8}$/i.test(v))return v;
+  if(/^-?\d{1,7}(\.\d{1,3})?\s*(ms|hz|px|dppx|db|bit|bits)?$/i.test(v))return v;
   return "[redacted]";
 }
 function paRenderRaw(R,order){
@@ -2314,7 +2351,7 @@ function paSave(kind){
   var who=paIdentity(K);
   var verdict=rand?"Per-site randomizer":(F.grade==="A"||F.grade==="B")?"Hard to identify":F.grade==="C"?"Partly exposed":"Easy to identify";
   if(kind==="summary"){
-    paDownload("privacyassay-summary-"+(K.fingerprint||"report")+".json",{
+    paDownload("privacyassay-summary-"+(PAV.redact?("score"+F.score):(K.fingerprint||"report"))+".json",{
       schema:"privacyassay-summary/1.0",generated:new Date().toISOString(),
       browser:who,verdict:verdict,score:F.score,grade:F.grade,randomizer:rand,
       crossSite:Fc?{score:Fc.score,grade:Fc.grade,signalsChanged:cs.anon,signalsCompared:cs.total,recognizedOnSecondSite:cs.answer==="Yes"}:null,
@@ -2335,7 +2372,7 @@ function paSave(kind){
       value:red?"[redacted]":r.value};});
     return o;};
   var cats={};Object.keys(K.categories||{}).forEach(function(n){
-    cats[n]={hash:K.categories[n].hash,rows:(K.categories[n].rows||[]).map(function(r){
+    cats[n]={hash:red?"[redacted]":K.categories[n].hash,rows:(K.categories[n].rows||[]).map(function(r){
       var v=r[1];if(!red)return r;
       var k0=String(r[0]).replace(/ = [\s\S]*$/," = [redacted]");
       return [k0,Array.isArray(v)?[paRedactVal(r[0],v[0]),v[1]]:paRedactVal(r[0],v)];})};});
@@ -2343,12 +2380,14 @@ function paSave(kind){
       score:F.score,grade:F.grade,randomizer:rand,crossSiteScore:Fc?Fc.score:null,crossSiteGrade:Fc?Fc.grade:null,
       biggestLeak:F.strongest||null,strongLeaks:(F.exposedStrong||[]),redacted:red,
       note:"Provenance text for each reading is not repeated here; it is static per version and lives in METHODOLOGY.md."},
-    version:K.version,fingerprint:K.fingerprint,stableHash:K.stableHash,crossBrowser:K.crossBrowser,strategy:K.strategy,
+    version:K.version,
+    fingerprint:red?"[redacted]":K.fingerprint,stableHash:red?"[redacted]":K.stableHash,
+    crossBrowser:red?"[redacted]":K.crossBrowser,strategy:K.strategy,
     whoYouAre:K.whoYouAre,findability:trimF(F),findabilityCross:(function(){var x=trimF(Fc);if(x)delete x.rows;return x;})(),
-    coherence:K.coherence,leaks:red?"[redacted]":K.leaks,
+    coherence:red?"[redacted]":K.coherence,leaks:red?"[redacted]":K.leaks,
     realm:red?"[redacted]":K.realm,worker:red?"[redacted]":K.worker,sharedWorker:red?"[redacted]":K.sharedWorker,uaHigh:red?"[redacted]":K.uaHigh,
     partitioning:K.partitioning,categories:cats};
-  paDownload("privacyassay-full-"+(K.fingerprint||"report")+".json",out);
+  paDownload("privacyassay-full-"+(red?("score"+F.score):(K.fingerprint||"report"))+".json",out);
 }
 document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("[data-pa]"):null;if(!b)return;
@@ -2373,7 +2412,7 @@ async function runKit(){
   C={};
   document.getElementById("report").innerHTML="";
   document.getElementById("summary").innerHTML='<div class="status"><span class="spin"></span><span id="stat">'+(BEACON?"cross-site unlinkability probe…":"Collecting fingerprint vectors…")+'</span></div>';
-  var R={version:"1.0.0",categories:{},coherence:null,leaks:{},realm:{},worker:{},uaHigh:null,headers:null,fingerprint:"",stableHash:""};
+  var R={version:PRIORS.version,categories:{},coherence:null,leaks:{},realm:{},worker:{},uaHigh:null,headers:null,fingerprint:"",stableHash:""};
   [collectGPU,collectAudioSync,collectFonts,collectNavigator,collectUAData,collectScreen,collectTZ,collectCSS,collectEngine,collectPlugins,collectFeatures,collectTiming,collectStorageSync,collectDisplayCaps,collectWebRTCCaps,collectWeb3,collectSensors,collectSandbox,collectInstrumentation,collectBot,collectLeaks2026].forEach(function(f){try{f();}catch(e){}});
   await collectWebGPU();
   await collectAI();
@@ -2430,7 +2469,11 @@ async function runKit(){
     var _st=null;try{_st=await Promise.race([paStoreEach("r",_btm?_btm[1]:""),new Promise(function(r){setTimeout(function(){r(null);},6000);})]);}catch(e){}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=(function(){try{if(document.referrer)return new URL(document.referrer).origin;}catch(e){}try{if(PA_HOME&&/^https?:/i.test(PA_HOME))return new URL(PA_HOME).origin;}catch(e){}var o=otherOrigin();if(o)return location.protocol+"//"+o;return "";})();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
+// The beacon hands the full observation set back to the page that opened it, so the target
+// origin is only ever one this copy already trusts: PA_HOME, or its loopback sibling. It used
+// to prefer document.referrer, which let any site frame a deployed copy at #pabeacon and be
+// posted its visitor's canvas, font and WebGL hashes. Nothing is posted when neither is set.
+    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=(function(){try{if(PA_HOME&&/^https?:/i.test(PA_HOME))return new URL(PA_HOME).origin;}catch(e){}var o=otherOrigin();if(o)return location.protocol+"//"+o;return "";})();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
   R.uaHigh=await highEntropy();if(R.uaHigh)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
   R.headers=await headers();
@@ -2440,15 +2483,15 @@ async function runKit(){
   try{R.whoYouAre=identify();}catch(e){R.whoYouAre=[];}
   try{
     var _names=(R.whoYouAre||[]).map(function(f){return f.what;}).join(" | "),_ua=navigator.userAgent||"";
-    var _fam=/Brave/.test(_names)?"brave":
-             /Tor Browser|Mullvad/.test(_names)?"tor-build":
-             /LibreWolf|resistFingerprinting/.test(_names)?"firefox-rfp":
-             /WebKit engine|Safari/.test(_names)?"webkit":
-             /Firefox\//.test(_ua)?"firefox":
-             /Chrome\/|Chromium\/|Edg\//.test(_ua)?"chromium":"other";
+    var _fam=paFamilyKey(_names,_ua);
     var _obs=observeVectors();
-// observeVectors runs twice so a per-read randomizer is visible. Only surfaces read live can
-// differ; the paRow-derived ones come from already-computed rows and cannot false-positive.
+// observeVectors runs twice so a per-read randomizer is visible. This reaches only the 14
+// surfaces read live here; the other 12 are pulled by paRow out of rows the collectors already
+// computed, so a second call returns them byte-identical by construction and they can never be
+// classified noisy. Those 12 are hash surfaces (rects, textMetrics, webglExt and so on), which
+// is exactly where a per-read randomizer would show, so this path UNDER-credits rather than
+// over-credits. Canvas, the surface randomizers touch most, is covered instead by the two-draw
+// comparison inside paCanvasClass.
     _obs._noisy=(function(){try{var b=observeVectors(),n={};for(var k in _obs){if(!Object.prototype.hasOwnProperty.call(_obs,k)||k==="_noisy")continue;var x=_obs[k],y=b[k];if(x!=null&&y!=null&&String(x)!==""&&String(x)!==String(y))n[k]=1;}return n;}catch(e){return {};}})();
     _obs.webrtcIP=PAV.webrtcStun?((R.leaks.webrtc&&(R.leaks.webrtc.publicIPs||[]).length)?"exposed":""):null;
     _obs.extEnum=(function(){try{var es=R.leaks.ext||{};var nodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;var stk="";try{throw new Error("p");}catch(e){stk=e.stack||"";}return (es.detectable||nodes>0||/chrome-extension:\/\/|moz-extension:\/\//i.test(stk))?"exposed":undefined;}catch(e){return undefined;}})();
@@ -2732,7 +2775,7 @@ document.getElementById("runBtn").addEventListener("click",function(){
       try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){}
       
       setTimeout(function(){if(doneW||fbIfr||window.__KIT!==runK)return;fbIfr=document.createElement("iframe");fbIfr.setAttribute("aria-hidden","true");fbIfr.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(fbIfr);try{fbIfr.src=comp.url+"#pabeacon="+xTok;}catch(x){}},7000);
-      setTimeout(function(){if(!doneW&&window.__KIT===runK){doneW=true;_cleanW();runK.crossMeasuring=false;if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="This browser blocked the second-site probe. For a browser that reshuffles per site, that block is protection working - its real cross-site number can't be measured here.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}try{paRenderView(runK);}catch(_e){}}else if(!doneW){doneW=true;_cleanW();}},15000);
+      setTimeout(function(){if(!doneW&&window.__KIT===runK){doneW=true;_cleanW();runK.crossMeasuring=false;if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}try{paRenderView(runK);}catch(_e){}}else if(!doneW){doneW=true;_cleanW();}},15000);
       return;
     }
     if(oh&&ifr){
@@ -2742,7 +2785,7 @@ document.getElementById("runBtn").addEventListener("click",function(){
         if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
       window.addEventListener("message",onMsg);
       try{ifr.src=comp.url+"#pabeacon="+xTok;}catch(x){_clean();}
-      setTimeout(function(){if(!done&&window.__KIT===runK){done=true;_clean();runK.crossFailed=paIsRand(runK)?"This browser blocked the second-site probe. For a browser that reshuffles per site, that block is protection working - its real cross-site number can't be measured here.":"The second-site check did not respond. Press Re-run to try again.";try{paRenderView(runK);}catch(_e){}}else if(!done){done=true;_clean();}},15000);
+      setTimeout(function(){if(!done&&window.__KIT===runK){done=true;_clean();runK.crossFailed=paIsRand(runK)?"The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.":"The second-site check did not respond. Press Re-run to try again.";try{paRenderView(runK);}catch(_e){}}else if(!done){done=true;_clean();}},15000);
     }
   }).catch(function(e){
     try{if(pop)pop.close();}catch(x){}

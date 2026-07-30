@@ -121,6 +121,52 @@ test("redact: no real value is visible in the rendered report", async () => {
   } finally { srv.close(); }
 });
 
+// The harvest above collects values from the environment. It cannot see the tool's own derived
+// hashes, which are the more dangerous leak: two "redacted" reports carrying the same canvas
+// hash link to each other, and a hash of a fingerprint is the fingerprint. Every one of these
+// survived redaction at some point - the per-vector hashes through an 8-hex allow-list, the
+// per-category hashes and the fingerprint, stable hash and cross-browser signature by never
+// being gated at all.
+const OWN_HASHES = `
+JSON.stringify((function () {
+  var K = window.__KIT || {}, out = {}, add = function (k, v) {
+    v = String(v == null ? "" : v); if (/^[0-9a-f]{8}$/i.test(v)) out[k] = v;
+  };
+  add("fingerprint", K.fingerprint);
+  add("stableHash", K.stableHash);
+  add("crossBrowser", K.crossBrowser && K.crossBrowser.hash);
+  Object.keys(K.categories || {}).forEach(function (c) {
+    add("cat:" + c, K.categories[c].hash);
+    (K.categories[c].rows || []).forEach(function (r, i) {
+      var v = Array.isArray(r[1]) ? r[1][0] : r[1];
+      add("row:" + c + ":" + i, v);
+    });
+  });
+  return out;
+})())`;
+
+test("redact: none of the tool's own hashes survive into the export or the screen", async () => {
+  const srv = await startServer();
+  try {
+    const page = await launch({ port: srv.port, preload: PRELOAD });
+    try {
+      await page.ev(`(function(){var c=document.getElementById("redactOptin");c.checked=true;c.dispatchEvent(new Event("change"));return c.checked;})()`);
+      await runAudit(page);
+      const hashes = JSON.parse(await page.ev(OWN_HASHES));
+      assert.ok(Object.keys(hashes).length >= 5,
+        `expected the run to produce several hashes to test against, got ${Object.keys(hashes).length}`);
+      await page.ev(CLICK_EXPORTS);
+      await new Promise((r) => setTimeout(r, 900));
+      const exported = await page.ev(READ_BLOBS);
+      const dom = await page.ev("document.body.innerText");
+      const leaked = Object.entries(hashes)
+        .filter(([, v]) => exported.includes(v) || dom.includes(v))
+        .map(([k, v]) => `${k}=${v}`);
+      assert.deepEqual(leaked, [], "a hash in a report the UI calls safe to share links two reports together");
+    } finally { await page.close(); }
+  } finally { srv.close(); }
+});
+
 test("redact: the score is identical with redaction on and off", async () => {
   const srv = await startServer();
   try {

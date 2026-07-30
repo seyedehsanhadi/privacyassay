@@ -133,12 +133,29 @@ test("redaction: default-deny, an unforeseen value is masked rather than passed 
 });
 
 test("redaction: safe primitives survive so a redacted report is still readable", () => {
-  for (const v of ["true", "false", "none", "absent", "granted", "48000", "1.25", "0.8 ms", "a6c73a99"])
+  for (const v of ["true", "false", "none", "absent", "granted", "48000", "1.25", "0.8 ms"])
     assert.equal(paRedactVal("some capability", v), v, `${v} should survive`);
 });
 
 test("redaction: a hash-named key is masked even when its value looks like a safe primitive", () => {
   assert.equal(paRedactVal("font list hash", "55f644fd"), "[redacted]");
+});
+
+// A hash of a fingerprint IS the fingerprint. These labels carry an FNV hash and contain no
+// word the key-deny matches, so an allow-list for 8-hex values published them verbatim out of
+// a report the UI calls safe to share.
+test("redaction: an FNV hash is masked under a label that does not contain the word hash", () => {
+  for (const k of ["canvas 2D toDataURL", "SVG getComputedTextLength+BBox", "webgl params", "textmetrics extras"])
+    assert.equal(paRedactVal(k, "a6c73a99"), "[redacted]", `${k} must not publish its hash`);
+});
+
+// A full-precision float is a measurement, not a capability. Text metrics and audio readings
+// are exactly this shape, and the number allow-list used to pass any length of decimal.
+test("redaction: a full-precision measurement is masked, a short capability number is not", () => {
+  for (const v of ["2.0000000000000004", "1234.56789012", "0.9999999999999999"])
+    assert.equal(paRedactVal("textmetrics width", v), "[redacted]", `${v} is a measurement`);
+  for (const v of ["48000", "44100", "1.25", "0.8 ms", "24", "-1"])
+    assert.equal(paRedactVal("sample rate", v), v, `${v} should survive`);
 });
 
 // paIdentity composes the reported browser label from whoYouAre. An extension-class

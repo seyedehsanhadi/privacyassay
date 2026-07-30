@@ -157,7 +157,7 @@
     },
     "counts": {
       "type": "object",
-      "description": "In-page only: reading tallies. readingsHidden and readingsTotal are the CLI's shownCount and readingsTotal",
+      "description": "In-page only: reading tallies. readingsTotal is the CLI's readingsTotal. readingsHidden is the COMPLEMENT of the CLI's shownCount: readingsHidden = readingsTotal - shownCount. Reading one as the other inverts it.",
       "properties": {
         "readingsHidden": {
           "type": "integer"

@@ -12,7 +12,20 @@ const INDEX = path.join(ROOT, "index.html");
 
 const argv = process.argv.slice(2);
 const flag = (n) => argv.includes(n);
-const val = (n, d) => { const i = argv.indexOf(n); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
+// --min-score=40 and a bare trailing --min-score both used to fall through to the default,
+// which for the CI gate is null, so the build passed with no gate and no warning.
+const val = (n, d) => {
+  const eq = argv.find((a) => a.startsWith(n + "="));
+  if (eq) return eq.slice(n.length + 1);
+  const i = argv.indexOf(n);
+  if (i < 0) return d;
+  const next = argv[i + 1];
+  if (next === undefined || next.startsWith("--")) {
+    process.stderr.write(`${n} needs a value\n`);
+    process.exit(2);
+  }
+  return next;
+};
 
 if (flag("--help") || flag("-h")) {
   process.stdout.write(`privacyassay - run the fingerprint benchmark headless, print the score as JSON.

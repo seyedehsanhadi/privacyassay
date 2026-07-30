@@ -24,6 +24,7 @@ The two copies must stay byte-identical. Point both hosts at the same file. `.gi
 ## Notes
 
 - Most browsers use a hidden same-page frame. Brave and the supercookie opt-in open a brief window on the Run click, which pop-up blockers allow.
+- The supercookie cache probes call `/__res` and `/__ctr`, which only `serve.py` answers. On a static host they fail and those probes report as unsupported. They are opt-in and unscored, so the score is unaffected.
 - Serve over HTTPS. `file://` works for a quick look but the two-origin test is skipped there, so it reports single-site numbers only.
 - A `<meta>` CSP cannot set `X-Frame-Options` or `frame-ancestors`. Set those at the server or CDN if you care whether the report can be framed.
 - `schema.json` ships with no `$id` because the canonical domain is not owned yet. Once it is, add `"$id": "https://<domain>/schema/privacyassay-summary-1.0.json"`.
