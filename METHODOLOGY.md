@@ -1,16 +1,18 @@
-# Methodology
+# Methodology 0.9.0-beta
 
-The score is how much of what could identify you your browser hides. Anyone can recompute it by hand from the report.
+**Beta. The scoring model wants expert review before it is called 1.0.** What to attack is listed at the end. Everything here is recomputable by hand from the report the tool prints.
+
+The score is how much of what could identify you your browser hides.
 
 ## Three states
 
-Each reading is **shown** (your real value, what a tracker uses), **blended** (a value every user of that browser shares, or one that changes on every read), or **refused** (blank, blocked, or error). Only shown counts against you.
+Each reading is **shown** (your real value), **blended** (a value every user of that browser shares, or one that changes on every read), or **refused** (blank, blocked, or an error). Only shown counts against you.
 
 ## Weights
 
-Each reading is **strong (3)**, **medium (2)**, or **weak (1)** by how much it narrows you down — our judgment, not a measured rarity. Readings in a category share one cause, so only the heaviest counts and its weight becomes the category's.
+Each reading is **strong (3)**, **medium (2)** or **weak (1)** by how much it narrows you down. This is judgment, not measured rarity. Readings in a category share one cause, so only the heaviest counts and its weight becomes the category's.
 
-| Category | Readings (weight in parentheses) |
+| Category | Readings (weight) |
 |---|---|
 | GPU | canvas drawing (3), GPU name (2), 3D rendered image (2), GPU feature list (2), GPU limits (2) |
 | Window | window size (3) |
@@ -26,11 +28,9 @@ Each reading is **strong (3)**, **medium (2)**, or **weak (1)** by how much it n
 | Hardware | CPU cores (1), device memory (1) |
 | Locale | language (1), timezone (1) |
 
-The same catalog scores every browser against the same total: thirteen categories summing to 30. Three of them only count when they actually fire: WebRTC and the supercookie test are opt-in, and extension detection is positive-only, so nothing detected is left out rather than credited as protection (it is not proof no extension is present, only that none revealed itself). A browser with none of the three is scored on the remaining ten categories summing to 21. An unmeasured or unfired reading is left out of the total.
+Thirteen categories summing to 30. Three count only when they fire: WebRTC and the supercookie test are opt-in, and extension detection is positive-only, so nothing detected is left out rather than credited as protection. A browser with none of the three is scored on the remaining ten summing to 21.
 
 ## The formula
-
-Per category that produced a reading:
 
 ```
 category weight = weight of its heaviest reading
@@ -41,33 +41,41 @@ score = round( 100 * sum(hidden) / sum(category weight) )
 grade = A 90+ | B 75-89 | C 60-74 | D 40-59 | F below 40
 ```
 
-Hide more, the score rises; expose more, it falls. No cap. A strong reading still shown is named next to the grade, because one is enough to follow you.
+## How much to trust the number
+
+**The ordering is the result. The number is an indicator.**
+
+The weights are judgment, so the model was tested against its own choices. The table below was recomputed from the same readings under five alternative weightings: all readings equal, tiers inverted (weak 3, strong 1), tiers squared, and each with and without the category rule. **The ordering never changed, including under fully inverted tiers.** A jackknife dropping each of the thirteen categories in turn did not change it either.
+
+The absolute values do move. LibreWolf reads 43 as shipped, 50 equal-weighted, 63 inverted, 67 without the category rule: same data, 24-point range. Tor moves 71 to 81.
+
+So `Tor > LibreWolf > Brave > stock Chromium` is supported. `Tor scores exactly 71` is a statement about one weighting, one machine, one date. Treat a few points as noise and a tier as real.
 
 ## Cross-site
 
-Over `http://` the catalog runs on two origins and compares. A reading counts as cross-site protection only if it was shown on one site and differs on the other; a value already blended (per-read noise) that differs across origins is noise, not protection. Readings that stay identical still link the visits.
+Over `http://` the catalog runs on two origins and compares. A reading counts as cross-site protection only if it was shown on one origin and differs on the other; a value already blended cannot be credited twice. Window and screen size are never diffed, because the second origin runs in a differently sized frame.
 
-The supercookie surface scores only the persistent stores: cookies, localStorage, IndexedDB, CacheStorage, CookieStore, and OPFS. The HTTP-cache probes (script, stylesheet, image, prefetch, and the rest) are reported but left out of the score, because browsers now partition the cache per site and the load-timing read is too noisy to score reliably.
+Most browsers are read in a hidden same-page frame. Brave gets a first-party window opened on the Run click, because a third-party frame inherits the top page's farbling seed; a blocked pop-up falls back to a button.
 
-Most browsers are read in a hidden same-page frame. A per-domain farbler (Brave) gives that frame the top page's seed, so it is measured in a first-party window opened on the run instead; a blocked pop-up falls back to a button. Score over http, not `file://`, because the two-origin comparison needs a real origin and is skipped otherwise. The single-site score itself did not move between origins on the browser tested for it: LibreWolf reads 43 on both.
+A cross-site number that cannot be obtained is not a zero. LibreWolf blocks the second-site probe outright, which for a per-site reshuffler is protection working.
+
+The supercookie surface scores only the persistent stores: cookies, localStorage, IndexedDB, CacheStorage, CookieStore and OPFS. The HTTP-cache probes are reported but unscored, because browsers partition the cache per site and the load-timing read is too noisy.
 
 ## Cross-browser
 
-Most of what a site reads is browser-specific and resets when you switch browsers: the user agent, the JavaScript engine's quirks, the CSS feature set. A smaller set comes from the hardware and the operating system, and it stays the same in a different browser on the same machine. Seven readings carry that weight here: GPU name, installed fonts, screen size, CPU cores, timezone, colour depth, and platform. The report counts how many of those anchors your browser exposes and hashes them into a separate cross-browser signature, so you can see the part of your fingerprint that follows you even after you change browsers. A hardened browser that masks the GPU and normalizes cores and timezone shrinks that set; a stock browser hands over all of it.
+Seven readings come from the hardware or OS and survive switching browsers: GPU name, installed fonts, screen size, CPU cores, timezone, colour depth and platform. The report counts how many you expose and hashes them into a separate signature.
 
-Device memory is left out on purpose, even though the amount of RAM in a machine obviously does not change when you open a different browser. Only Chromium reports it. A Chrome reading and a Firefox reading could never be joined on a value one of them never provides, so including it would have handed the same machine two different signatures and understated exactly the linkage this section exists to show.
+Device memory is excluded on purpose. Only Chromium reports it, so including it would give the same machine two different signatures and understate the linkage this section exists to show.
 
-## Redacting a shared report
+## Redaction
 
-Redact is on by default. It sits with the other two switches on the start card, so you can turn it off before the first scan if you would rather see your own values from the beginning. With it on, the values shown on screen and the values written into a saved file are masked. What survives is the shape of the result: which readings were taken, whether each was shown, blended or refused, the weight each carries, the score, and the coherence checks. Someone else can recompute the arithmetic from that without learning anything about your machine.
+On by default. Values on screen and in any saved file are masked; what survives is the shape of the result, so someone else can recompute the arithmetic without learning anything about your machine. The score is identical either way.
 
-The masking is default-deny. Instead of listing values to strip, it keeps only what it recognises as harmless: status words such as true, false, absent and granted, plain numbers, and the short hashes the report already uses as its own currency. Everything else is replaced. An earlier version worked the other way round, listing patterns to hide, and it let the user agent, the GPU model and the timezone through into files people were invited to post publicly. A list of things to hide can never be finished; a list of things to keep can.
-
-Turning Redact off reveals your real values, on screen and in anything saved afterwards. The score is identical either way, because redaction touches only display and export, never the readings the score is computed from.
+The masking is default-deny: it keeps only what it recognises as harmless (status words, plain numbers, the report's own short hashes) and replaces everything else. An earlier version listed patterns to hide and leaked the user agent, GPU model and timezone into files people were invited to post. A list of things to hide can never be finished; a list of things to keep can.
 
 ## Reference measurements
 
-One machine running Windows 11, measured 2026-07-29. Every row went through the same path: a real top-level window, three runs, a single origin, both opt-ins off. Read the caveats under the table before quoting any number from it.
+One machine, Windows 11, 2026-07-29. Same path for every row: real top-level window, three runs, single origin, opt-ins off.
 
 | Browser | Version | Score | Grade | Runs | Cross-site |
 |---|---|---|---|---|---|
@@ -79,40 +87,38 @@ One machine running Windows 11, measured 2026-07-29. Every row went through the 
 | Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
 | Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
 
-**The ordering is the result. The number is an indicator.** This is the most important thing to know before quoting anything above, and it comes from testing the model against its own arbitrary choices rather than from modesty.
+**Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
 
-The weights are judgment, as this document says plainly. So the table was recomputed from the same captured readings under five alternative weightings: every reading equal, the tiers inverted so weak counts 3 and strong counts 1, the tiers squared, and both with and without the rule that only a category's heaviest reading counts. **The ordering did not change once, in any scheme, including with the tiers fully inverted.** A jackknife that dropped each of the thirteen categories in turn did not change it either. No single category is load-bearing.
+**Each Score column figure is one visit to one site.** Both opt-ins were off and the runs were single-origin, so nothing in that column describes cross-site linkability; the Cross-site column is the separate measurement.
 
-The absolute values are a different story. LibreWolf reads 43 as shipped, 50 with equal weights, 63 with inverted tiers and 67 without the category rule: the same data, a 24-point range. Tor moves between 71 and 81 across the same schemes.
+**Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it correctly reads as exposed. Its defence lives between visits, where it gained nine points. Only Brave gained anything: the uniformity browsers show no cross-origin difference because uniformity is the point.
 
-So `Tor scores higher than LibreWolf, which scores higher than Brave, which scores higher than stock Chromium` is a claim this method supports. `Tor scores exactly 71` is a claim about this weighting, on this machine, on this date. Treat a difference of a few points as noise and a difference of a tier as real.
+**Tor and Mullvad ran with the proxy forced to a direct connection**, so both are resistFingerprinting engine tests and say nothing about the Tor network. Tor also needed its bundled NoScript moved aside, which intermittently blocks all script loading on a plain http origin.
 
-**Your result will differ.** These are one machine's readings. The score depends on the fonts installed, the screen, the GPU and the window size, so the same browser on your hardware will not necessarily land on the same number. Run it yourself; that is what the tool is for.
+**Fingerprint findability only.** No tracker blocking, no state partitioning, no network layer. privacytests.org covers that ground across roughly 156 checks and ranks these browsers differently, Brave near the top.
 
-**This measures one visit to one site.** Both opt-ins were off and the runs were single-origin, so the WebRTC and supercookie categories are absent and nothing here describes cross-site linkability. The score is what a single site learns on a single visit.
-
-**Brave's 5 is not a verdict on Brave.** It re-seeds its farbling per session and keys it per site, so inside one page load its values are perfectly stable and it correctly reads as exposed. Its protection is real and lives between visits, which is what the two-origin comparison measures and this table does not. The same caution applies to any randomizing browser.
-
-**Tor and Mullvad were measured with the proxy forced to a direct connection.** Both numbers are therefore pure resistFingerprinting engine tests and say nothing about the Tor network, which is the larger part of what Tor Browser actually provides. Tor additionally needed its bundled NoScript moved aside for the capture, because NoScript intermittently blocks all script loading on a plain http origin and no script means no measurement. Neither change touches resistFingerprinting, but both differ from the browser as a user runs it.
-
-**This is fingerprint findability only.** Tracker blocking, state partitioning and network privacy are not scored, and a browser can be excellent at those while scoring poorly here. privacytests.org covers that ground across roughly 156 checks and ranks these browsers differently, with Brave near the top. Neither ordering is wrong; they answer different questions.
-
-**Numbers drift as browsers ship.** The date above is part of the result. A row without its date and version is not a measurement.
+**Numbers drift as browsers ship.** The date and versions are part of the result.
 
 ## Limits
 
-The score is not a proof of anonymity. Your IP and the TLS handshake are sent before any script and cannot be read here. Blended is credited only for values a browser is documented to report for every user, checked against engine source, not a live crowd; a value masked to a per-machine constant could be over-credited, so the blended set is kept narrow.
+Your IP and the TLS handshake are sent before any script and cannot be read here.
 
-**A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** That is a property of the design rather than a bug, and it fails in the flattering direction, so it is worth stating outright. It has happened: an extension scan that found nothing was once scored as protection, and every published number was three points too high until the arithmetic was re-derived by hand. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as a value handed over, plus a check that every reading the scorer looks up actually resolves to a live row. Those run on every change. They are the only thing standing between a future refactor and a quietly inflated score.
+Blended is credited only for values a browser is documented to report for every user, checked against engine source rather than a live crowd. Every blended credit in the table above maps to a named target in Firefox's `RFPTargets.inc`; every shown reading maps to none.
 
-A browser that randomizes (Brave, Tor, Mullvad, Firefox private) changes its raw fingerprint between runs while its score stays put. Measured over three runs each on one machine, Brave scored 5, 5, 5 and Tor and Mullvad each scored 71, 71, 71, with their canvas and audio hashes differing on every run. That is the intended behaviour: a value that will not repeat cannot follow you between visits, so it is credited as blended and the score does not move when the noise does.
+**A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** It fails in the flattering direction. It has happened: an extension scan that found nothing was scored as protection and every published number was three points too high until the arithmetic was re-derived. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as shown, plus a check that every reading the scorer looks up resolves to a live row. Both run on every change.
 
-For a per-session farbler it is the **cross-site** number that needs the median, not the single-site one. That is the opposite of the obvious guess and it was measured: Brave's single-site score was 5 on every run without exception, while its cross-site score read 10, 14 and 14 across three separate launches. Farbling re-seeds per session, so several runs inside one browser launch all share a seed and agree with each other for the wrong reason. The CLI's `--runs N` launches a fresh browser per run, which is what makes its median meaningful.
+For a per-session farbler the **cross-site** number needs the median, not the single-site one. Brave read 5 on every single-site run but 10, 14 and 14 across three fresh launches. Runs sharing one browser launch share a farbling seed and agree for the wrong reason. The CLI launches a fresh browser per run, which is what makes its median meaningful.
 
-What single-site stability does not tell you is how much a randomizer protects you across sites, because a browser that re-seeds per site or per session looks fully exposed within a single visit. Brave scores 5 here for exactly that reason: inside one page load its values are constant, and its defence only appears between origins, where it gained nine points. For any randomizing browser, read the cross-site number alongside the single-site one.
+## What this beta needs reviewed
 
-A cross-site number that cannot be obtained is not a zero. LibreWolf blocked the second-site probe outright, which for a browser that reshuffles per site is protection working; its cross-site figure is unmeasurable here rather than nil. The table above says blocked for that reason.
+Ranked by how much a wrong answer would cost.
+
+1. **Are the five readings Tor exposes actually identifying?** They are `measureText` width, TextMetrics, `getBoundingClientRect`, MathML geometry and `MediaSource.isTypeSupported`. resistFingerprinting has no target for any of them, so a site can read them. Whether they *vary between machines* is unmeasured. If every Tor user on a platform produces the same values, they should be blended and Tor should score near 100. **This needs the tool run on other hardware. It is the single highest-value contribution anyone can make.**
+2. **Is the category rule right?** Only a category's heaviest reading counts, on the theory that readings in a category share one cause. If GPU name and canvas are more independent than that assumes, the model under-counts. Dropping the rule moves Tor to 80 and LibreWolf to 59 without changing the order.
+3. **Are the tier assignments defensible?** They are judgment. The ordering survives inverting them, so the ranking does not depend on them, but the absolute values do.
+4. **What should a per-session randomizer score?** Brave is 5 single-site and 14 cross-site on a loopback origin pair too permissive to provoke its canvas farbling. A companion on a real registered domain would settle it. `DEPLOY.md` documents the setup.
+5. **Is crediting `refused` defensible at all?** The alternative is scoring only what is positively observed, which would penalise a browser for successfully blocking something.
 
 ## Checking
 
-`__KIT.findability` in the console holds every scored reading, its weight, and its state; the catalog is `PRIORS` and the scoring is `findability` beside it in source. Everything else the tool reads sits in the raw view and never touches the score.
+`__KIT.findability` holds every scored reading, its weight and its state. The catalog is `PRIORS` and the scoring is `findability` beside it in source. Everything else the tool reads sits in the raw view and never touches the score.

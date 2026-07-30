@@ -46,8 +46,9 @@ test("methodology: the tier vocabulary in the document matches TIERWORD in sourc
 });
 
 test("methodology: the cross-browser anchor count matches the surfaces marked as anchors", () => {
-  const claimed = /Seven readings carry that weight/.test(DOC);
-  assert.ok(claimed, "document should state how many cross-browser anchors there are");
+  // Assert the FACT (seven anchors, each a real scored reading), not the sentence wording,
+  // so a rewrite cannot fail this while an actual removal still does.
+  assert.match(DOC, /[Ss]even readings/, "the document must say how many cross-browser anchors there are");
   const anchors = ["GPU name", "installed fonts", "screen size", "CPU cores", "timezone", "colour depth", "platform"];
   const labels = new Set(PRIORS.surfaces.map((s) => s.label));
   const missing = anchors.filter((a) => !labels.has(a));
@@ -116,12 +117,13 @@ test("reference table: the caveats that make the numbers honest are all present"
 // up to 24 points. Losing it turns a defensible ranking back into an overclaimed number.
 test("methodology: the calibration statement survives, with the evidence that earns it", () => {
   const required = [
-    ["ordering is the result", /ordering is the result/i],
-    ["number is an indicator", /number is an indicator/i],
-    ["reweighting was actually run", /inverted/i],
+    ["ordering named as the result", /ordering is the result/i],
+    ["number named as an indicator", /number is an indicator/i],
+    ["reweighting was actually run", /inverted tiers|tiers inverted/i],
     ["jackknife over the categories", /jackknife/i],
-    ["the 24-point spread is quantified", /24-point range|43 as shipped/i],
-    ["what the method does and does not support", /is a claim this method supports/i],
+    ["the spread is quantified", /24-point range/i],
+    ["the supported claim is spelled out", /is supported|this method supports/i],
+    ["the unsupported claim is spelled out", /one weighting, one machine, one date/i],
   ];
   const missing = required.filter(([, re]) => !re.test(DOC)).map(([n]) => n);
   assert.deepEqual(missing, [], "the ordering-versus-number distinction must stay, or the table overclaims");
@@ -140,6 +142,10 @@ test("methodology: a blocked cross-site probe is never presented as a zero", () 
 });
 
 test("methodology: the cross-site median advice points at the cross-site number", () => {
-  assert.match(DOC, /cross-site\*{0,2} number that needs the median/i, "a per-session farbler needs the median on the cross-site figure, not the single-site one");
+  // Fact, not phrasing: the doc must point the median at the CROSS-SITE figure and must carry the
+  // measurement that justifies it (single-site stable at 5, cross-site swinging 10/14/14).
+  assert.match(DOC, /cross-site\*{0,2} number needs the median|cross-site\*{0,2} number that needs the median/i,
+    "a per-session farbler needs the median on the cross-site figure, not the single-site one");
+  assert.match(DOC, /10, 14 and 14/, "the claim must carry the launch-to-launch spread that proves it");
   assert.match(DOC, /launches a fresh browser per run/i, "the reason the CLI's median is meaningful must be stated");
 });

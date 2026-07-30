@@ -44,8 +44,9 @@ test("priors: every browser family that implies a value cites a source", () => {
   assert.deepEqual(bad, [], "an implies entry is a claim about every user of a browser and must cite where it came from");
 });
 
-test("priors: version is a semver string", () => {
-  assert.match(String(PRIORS.version), /^\d+\.\d+\.\d+$/);
+test("priors: version is a semver string, prerelease tag allowed", () => {
+  // A beta has to be expressible as a version, so a prerelease suffix is legal.
+  assert.match(String(PRIORS.version), /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
 });
 
 test("priors: group weights sum to the documented totals", () => {
