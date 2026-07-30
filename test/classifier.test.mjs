@@ -192,6 +192,24 @@ test("cross: a probe that failed on the second origin is not a value that differ
   }
 });
 
+// WebGPU names the GPU independently of WebGL, so it shares the GPU category: the category rule
+// then lets it move a score only for a browser that hides canvas and WebGL and still answers
+// WebGPU. Putting it in its own category would count one piece of hardware twice.
+test("webgpu: both readings are scored, sit in the GPU category, and refuse when nothing was read", () => {
+  for (const k of ["webgpuAdapter", "webgpuLimits"]) {
+    const s = PRIORS.surfaces.find((x) => x.k === k);
+    assert.ok(s, `${k} is not a scored reading`);
+    assert.equal(s.group, "gpu", `${k} must share the GPU category, or one GPU is counted twice`);
+    assert.equal(s.tier, 2);
+    assert.equal(stateOf({ [k]: "ERR" }, "other", k), "refused");
+    assert.equal(stateOf({ [k]: "" }, "other", k), "refused");
+    assert.equal(stateOf({ [k]: "a6c73a99" }, "other", k), "shown");
+  }
+  const gpu = PRIORS.surfaces.filter((s) => s.group === "gpu");
+  assert.equal(Math.max(...gpu.map((s) => s.tier)), 3,
+    "canvas still caps the GPU category, so adding WebGPU did not change the denominator");
+});
+
 // ---- the ceiling the catalog imposes ----
 // A reading with no uniform value in any family can only be credited by being refused, so the
 // readings that have none set a hard cap on the score. METHODOLOGY states that cap; if a credit
@@ -210,18 +228,22 @@ test("ceiling: the readings with no uniform value in any family cap the score wh
     assert.ok(!credited.has(s.k), `${label} now has a uniform value somewhere, so the documented ceiling is stale`);
   }
 
-  const groupTotal = {}, groupFloor = {};
+  // Run the real scorer rather than re-deriving the formula here: a test that recomputes the
+  // arithmetic its own way keeps passing when the scorer changes underneath it.
+  const observed = {};
   for (const s of PRIORS.surfaces) {
     if (s.optional) continue;
-    groupTotal[s.group] = Math.max(groupTotal[s.group] || 0, s.tier);
-    if (NAMED.includes(s.label)) groupFloor[s.group] = Math.max(groupFloor[s.group] || 0, s.tier);
+    observed[s.k] = NAMED.includes(s.label) ? "a_real_value" : undefined; // undefined reads as refused
   }
-  const total = Object.values(groupTotal).reduce((a, b) => a + b, 0);
-  const floor = Object.values(groupFloor).reduce((a, b) => a + b, 0);
+  const F = findability(observed, "other");
+  const shown = F.rows.filter((r) => r.state === "shown").map((r) => r.label).sort();
+  assert.deepEqual(shown, [...NAMED].sort(), "only the seven uncreditable readings should be shown here");
+  assert.equal(F.score, 70, "the documented ceiling for a browser that answers all seven and hides everything else");
 
+  const total = Object.values(PRIORS.surfaces.filter((s) => !s.optional)
+    .reduce((a, s) => (a[s.group] = Math.max(a[s.group] || 0, s.tier), a), {}))
+    .reduce((a, b) => a + b, 0);
   assert.equal(total, 21, "the non-optional denominator the document states");
-  assert.equal(floor, 10, "the seven readings must account for the documented 10 points");
-  assert.equal(Math.round(100 * (total - floor) / total), 52, "the documented ceiling for a browser that shows all seven");
 });
 
 // ---- the row shape the methodology promises ----

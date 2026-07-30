@@ -27,7 +27,7 @@ node bin/privacyassay.mjs                 # print the result as JSON
 node bin/privacyassay.mjs --min-score 40  # and fail below a threshold
 ```
 
-Headless, fresh browser per run so a farbling browser cannot re-use one seed. Needs Node 22+ and a Chromium-family browser. Set the threshold against the browser CI runs: a stock Chromium scores near zero.
+Headless, fresh browser per run so a farbling browser cannot re-use one seed. It serves `127.0.0.1` and `localhost` from one handler, so it reports the two-origin cross-site figure as well; `--no-cross` skips it. Needs Node 22+ and a Chromium-family browser. Set the threshold against the browser CI runs: a stock Chromium scores near zero.
 
 ## Reviewing this
 
@@ -41,7 +41,7 @@ The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. 
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # 75 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm test              # 76 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
 npm run test:browser  # 28 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```

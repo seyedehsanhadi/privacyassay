@@ -84,7 +84,7 @@
         "object",
         "null"
       ],
-      "description": "Two-origin cross-site result. The CLI serves a single origin and emits null here; the in-page two-origin test populates it.",
+      "description": "Two-origin cross-site result, or null when it was not obtained. Both producers populate it: the in-page two-origin test, and the CLI, which serves 127.0.0.1 and localhost from one handler and waits for the page to finish the comparison. A null here is never a zero - it means not measurable, and crossSiteNote says why.",
       "properties": {
         "score": {
           "type": "integer"
@@ -102,6 +102,13 @@
           "type": "boolean"
         }
       }
+    },
+    "crossSiteNote": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "CLI only, and only when crossSite is null: why the two-origin figure is absent (the page's own failure text, \"not measurable\", or \"skipped (--no-cross)\")."
     },
     "runs": {
       "type": "integer",

@@ -151,16 +151,22 @@ test("methodology: an unobtainable cross-site figure is never presented as a zer
   assert.match(DOC, /cannot be obtained is not a zero/i, "the rule must be stated");
   assert.match(DOC, /not measurable|not measurable rather than as (a )?zero/i,
     "the document must name what is reported instead of a number");
-  assert.match(DOC, /one run of three|of three runs|timed out/i,
-    "a partly measured row must say so rather than present its figure as three clean runs");
+  assert.match(DOC, /intermittent|one of three|timed out|did not complete/i,
+    "the document must disclose that a run can fail to produce a cross-site figure at all");
 });
 
-test("methodology: the document does not imply the CLI produces a cross-site number", () => {
+test("methodology: what the CLI does with the cross-site figure is stated accurately", () => {
   assert.match(DOC, /runs sharing a browser launch share a farbling seed/i,
     "the reason every published run is a fresh launch must be stated, not just asserted");
   assert.match(DOC, /launches a fresh browser per run/i, "what the CLI actually does must be stated");
-  assert.match(DOC, /crossSite: null/i,
-    "the CLI reports no cross-site number, and the document must say so where it discusses one");
+  const cli = fs.readFileSync(path.join(HERE, "..", "bin", "privacyassay.mjs"), "utf8");
+  const emitsNull = /crossSite:\s*null\b/.test(cli);
+  assert.equal(emitsNull, /crossSite: null/i.test(DOC),
+    emitsNull
+      ? "the CLI hardcodes crossSite: null and the document no longer says so"
+      : "the CLI produces a cross-site figure, so the document must not still say it emits null");
+  if (!emitsNull) assert.match(DOC, /serves `?127\.0\.0\.1`? and `?localhost`?/i,
+    "the document must say how the CLI gets a second origin");
 });
 
 // The single-site number and the cross-site number answer different questions, and a per-site

@@ -39,6 +39,8 @@ Usage: privacyassay [options]
   --browser PATH  Chrome/Chromium/Brave/Edge binary (or set PRIVACYASSAY_BROWSER)
   --runs N        run N times and report the median score (default 1; farbling browsers like Brave vary run to run)
   --timeout MS    max run time per run (default 90000)
+  --no-cross      skip the two-origin cross-site comparison
+  --cross-timeout MS  how long to wait for the second origin (default 25000)
   --quiet         suppress progress on stderr
 
 By default the tool runs entirely on your machine and makes no external request.
@@ -66,6 +68,8 @@ const HEADFUL = flag("--headful");
 const WEBRTC = flag("--webrtc");
 const QUIET = flag("--quiet");
 const TIMEOUT = num("--timeout", "90000", { min: 1 });
+const NOCROSS = flag("--no-cross");
+const CROSS_TIMEOUT = num("--cross-timeout", "25000", { min: 1 });
 const RUNS = num("--runs", "1", { min: 1, integer: true });
 const log = (m) => { if (!QUIET) process.stderr.write(m + "\n"); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -137,10 +141,31 @@ async function runOnce(browser, port) {
       while (Date.now() < deadline) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
       await sleep(600);
 
-      const data = await ev(`(function(){var K=window.__KIT||{},F=K.findability||{};
+      // The page starts the two-origin comparison itself once the audit finishes, and gives up
+      // after fifteen seconds. Wait for either the result or the page's own failure message; a
+      // wait that ends with neither is reported as not measurable, never as a zero.
+      if (!NOCROSS) {
+        const crossDeadline = Date.now() + CROSS_TIMEOUT;
+        while (Date.now() < crossDeadline) {
+          if (await ev("!!(window.__KIT&&(window.__KIT.findabilityCross||window.__KIT.crossFailed&&window.__KIT.crossFailed!=='measuring'))")) break;
+          await sleep(500);
+        }
+      }
+
+      const data = await ev(`(function(){var K=window.__KIT||{},F=K.findability||{},Fc=K.findabilityCross||null;
         return JSON.stringify({version:K.version||null,userAgent:navigator.userAgent,
           score:F.score,grade:F.grade,verdict:F.verdict||null,strongest:F.strongest||null,
           exposedStrong:F.exposedStrong||[],shownCount:F.shownCount,readingsTotal:(F.checks&&F.checks.total)||null,
+          crossSite:(function(){try{
+            if(!Fc)return null;
+            // Same arithmetic as the in-page paCrossData, computed here rather than called, so the
+            // two producers cannot drift and the CLI does not depend on a render helper being global.
+            var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
+            var anon=(Fc.changedAcrossOrigins||[]).length;
+            return {score:Fc.score,grade:Fc.grade,signalsChanged:anon,signalsCompared:total,
+              recognizedOnSecondSite:anon<Math.max(3,Math.round(total*0.2))};
+          }catch(e){return null;}})(),
+          crossSiteNote:(K.crossFailed&&K.crossFailed!=="measuring")?String(K.crossFailed):null,
           randomizer:(function(){try{return typeof paIsRand==="function"?!!paIsRand(K):false;}catch(e){return false;}})(),
           full:${FULL ? "true" : "false"}?{findability:F,fingerprint:K.fingerprint,stableHash:K.stableHash,crossBrowser:K.crossBrowser,coherence:K.coherence,categories:K.categories}:null});})()`);
       const parsed = JSON.parse(data || "{}");
@@ -157,14 +182,26 @@ async function main() {
   if (!fs.existsSync(INDEX)) throw new Error("index.html not found next to bin/ (expected " + INDEX + ")");
   const browser = findBrowser();
 
-  const server = http.createServer((req, res) => {
+  const handler = (req, res) => {
     const u = req.url.split("?")[0];
     if (u === "/" || u === "/index.html") { res.writeHead(200, { "Content-Type": "text/html" }); fs.createReadStream(INDEX).pipe(res); return; }
     if (u === "/__headers") { const d = { ...req.headers, __order: Object.keys(req.headers) }; res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify(d)); return; }
     res.writeHead(200); res.end("");
-  });
+  };
+  const server = http.createServer(handler);
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const port = server.address().port;
+
+  // The two-origin test compares 127.0.0.1 against localhost. Which address "localhost" resolves
+  // to is the resolver's choice, and on a machine that answers ::1 first a server bound only to
+  // 127.0.0.1 refuses the companion and the result reads as not measurable. Binding the same
+  // handler on ::1 as well covers both answers. Failure here is not fatal: a host without IPv6
+  // resolves localhost to 127.0.0.1, which is already served.
+  let server6 = null;
+  if (!NOCROSS) {
+    server6 = http.createServer(handler);
+    await new Promise((r) => { server6.once("error", () => { server6 = null; r(); }); server6.listen(port, "::1", r); });
+  }
 
   log("launching " + path.basename(browser) + (HEADFUL ? " (headful)" : " (headless)") + (RUNS > 1 ? ` x${RUNS}` : ""));
   const results = [];
@@ -173,7 +210,7 @@ async function main() {
       log("running audit..." + (WEBRTC ? " (WebRTC test on)" : "") + (RUNS > 1 ? ` [${i + 1}/${RUNS}]` : ""));
       results.push(await runOnce(browser, port));
     }
-  } finally { server.close(); }
+  } finally { server.close(); if (server6) try { server6.close(); } catch {} }
 
   // Median score: sort and take the middle run (odd N -> exact median; even N -> lower-middle). Reporting a whole run keeps every field internally consistent.
   results.sort((a, b) => a.score - b.score);
@@ -185,7 +222,8 @@ async function main() {
     userAgent: med.userAgent, score: med.score, grade: med.grade, verdict: med.verdict,
     strongest: med.strongest, exposedStrong: med.exposedStrong,
     shownCount: med.shownCount, readingsTotal: med.readingsTotal,
-    randomizer: !!med.randomizer, crossSite: null,
+    randomizer: !!med.randomizer, crossSite: med.crossSite || null,
+    ...(med.crossSite ? {} : { crossSiteNote: med.crossSiteNote || (NOCROSS ? "skipped (--no-cross)" : "not measurable") }),
     ...(RUNS > 1 ? { runs: RUNS, runScores: scores } : {}),
     note: (RUNS > 1 ? `Median of ${RUNS} runs (scores ${scores.join(", ")}). ` : "") + "Run entirely on-device. Method: METHODOLOGY.md.",
   };

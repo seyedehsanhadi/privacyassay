@@ -166,6 +166,11 @@ const PROP_SURFACES = [
   ["window size", "window.innerHeight"],
   ["taskbar size", "screen.width"],
   ["sound sample rate", "AudioContext.prototype.sampleRate"],
+  // Both WebGPU readings come from navigator.gpu, and the collector writes "(empty)" for an
+  // adapter field the browser withheld. Hashing three of those would produce a normal-looking
+  // fingerprint for a browser that answered nothing, so this pair guards that normalisation.
+  ["WebGPU adapter", "navigator.gpu"],
+  ["WebGPU limits", "navigator.gpu"],
 ];
 const PROP_LABELS = [...new Set(PROP_SURFACES.map((s) => s[0]))];
 function propPreload(mode) {

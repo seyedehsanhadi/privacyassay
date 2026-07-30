@@ -924,10 +924,15 @@ function collectBot(){
 }
 
 /* ASYNC COLLECTORS - WebGPU, built-in AI, devices, codecs =================== */
+// The body runs inside a Promise executor, so anything it throws REJECTS rather than returning a
+// value, and this collector is awaited: a getter that throws on `navigator.gpu` used to take the
+// whole audit down with it. Reading a property that throws is the case this tool exists to
+// measure, so it resolves with an error row instead.
 function collectWebGPU(){
   return new Promise(function(res){
     var rows=[];
-    if(!navigator.gpu){rows.push(["WebGPU (navigator.gpu)",["unavailable / disabled","ok"]]);res(cat("WebGPU",rows,"Compute-shader output and adapter limits, unaffected by canvas randomization."));return;}
+    var gpu=null;try{gpu=navigator.gpu;}catch(e){rows.push(["WebGPU (navigator.gpu)",["ERR","ok"]]);res(cat("WebGPU",rows,"Compute-shader output and adapter limits, unaffected by canvas randomization."));return;}
+    if(!gpu){rows.push(["WebGPU (navigator.gpu)",["unavailable / disabled","ok"]]);res(cat("WebGPU",rows,"Compute-shader output and adapter limits, unaffected by canvas randomization."));return;}
     var done=false;function fin(){if(done)return;done=true;res(cat("WebGPU",rows,"GPU vendor, architecture and adapter limits, plus compute-shader timing."));}
     setTimeout(fin,3000);
     try{rows.push(["preferredCanvasFormat (OS-correlated)",navigator.gpu.getPreferredCanvasFormat?navigator.gpu.getPreferredCanvasFormat():"n/a"]);}catch(e){}
@@ -1393,6 +1398,13 @@ var PRIORS={
      verified:"which codecs the system provides reflects the OS build and how the browser was packaged"},
     {k:"webglParams", group:"gpu", tier:2, label:"GPU limits", hashKey:"webglParams",
      verified:"driver capability limits, read straight from the GPU stack"},
+// WebGPU sits in the gpu category because it has the same cause as the WebGL readings: the
+// installed GPU and its driver. Under the category rule it therefore only moves a score for a
+// browser that hides canvas and WebGL and still answers WebGPU, which is the case worth catching.
+    {k:"webgpuAdapter", group:"gpu", tier:2, label:"WebGPU adapter",
+     verified:"vendor, architecture and device reported by the WebGPU adapter, which name the GPU independently of WebGL"},
+    {k:"webgpuLimits", group:"gpu", tier:2, label:"WebGPU limits",
+     verified:"the adapter limit set, which Firefox normalizes under RFPTarget WebGPULimits"},
     {k:"devicePixelRatio", group:"display", tier:2, label:"display scaling",
      verified:"resistFingerprinting reports exactly 2 at normal zoom, and the value tracks page zoom"},
     {k:"svgMetrics", group:"layout", tier:2, label:"SVG text metrics", hashKey:"svgMetrics",
@@ -1504,6 +1516,12 @@ function paCanvasClass(){
 function observeVectors(){
   
   var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return d;}};
+// The WebGPU collector writes "(empty)" for an adapter field the browser withheld and "absent"
+// for one it does not implement. Both are refusals, not values, and fnvParts only recognises an
+// empty string as dead - hashing "(empty)|(empty)|(empty)" would produce a normal-looking
+// fingerprint for a browser that told us nothing.
+  var W=function(needle){var v=paRow("WebGPU",needle);
+    return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
   return {
     cores:P(function(){return navigator.hardwareConcurrency;},""),
     deviceMemory:P(function(){return String(navigator.deviceMemory);},""),
@@ -1545,13 +1563,15 @@ function observeVectors(){
     webglExt:paRow("Active Rendering & GPU","webgl extensions"),
     webglParams:paRow("Active Rendering & GPU","webgl params"),
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
-    codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported")
+    codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
+    webgpuAdapter:fnvParts([W("adapter vendor"),W("adapter architecture"),W("adapter device")]),
+    webgpuLimits:W("gpuadapter.limits")
   };
 }
 var TIERWORD={3:"strong",2:"medium",1:"weak"};
 function findability(observed,familyKey){
   var br=PRIORS.browsers[familyKey]||PRIORS.browsers.other;
-  var rows=[],groupShownTier={},groupTotalTier={};
+  var rows=[],groupShownTier={},groupTotalTier={},groupSum={},groupHid={};
   PRIORS.surfaces.forEach(function(s){
     var v=observed[s.k],state,tier=0,why;
     if(s.optional&&(v===undefined||v===null))return;
@@ -1584,6 +1604,8 @@ function findability(observed,familyKey){
     }
     var _it=paTier(s);
     groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,_it);
+    groupSum[s.group]=(groupSum[s.group]||0)+_it;
+    if(state!=="shown")groupHid[s.group]=(groupHid[s.group]||0)+_it;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
 // weight is the reading's catalog tier and is always present. tier is what it costs you here,
 // so it is 0 unless the state is shown; reading tier as the weight understates every masked row.
@@ -1594,8 +1616,16 @@ function findability(observed,familyKey){
   var med=groups.filter(function(g){return groupShownTier[g]===2;});
   var low=groups.filter(function(g){return groupShownTier[g]===1;});
   
+// A category is worth its heaviest reading, and it pays out the SHARE of itself you hide. The
+// earlier rule paid only for the heaviest reading, so hiding anything lighter than what you
+// still showed earned nothing: seven of the readings could not move any score at all, and a
+// browser hiding four of five GPU readings scored the same as one hiding none. Weighting the
+// category by its heaviest reading still stops a category we probe seven times outweighing one
+// we probe once, which is the thing the old rule got right.
   var totW=0,hidW=0;
-  Object.keys(groupTotalTier).forEach(function(g){totW+=groupTotalTier[g];hidW+=(groupTotalTier[g]-(groupShownTier[g]||0));});
+  Object.keys(groupTotalTier).forEach(function(g){
+    totW+=groupTotalTier[g];
+    hidW+=groupTotalTier[g]*((groupHid[g]||0)/(groupSum[g]||1));});
   var score=totW>0?Math.round(100*hidW/totW):100;
   var grade=score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F";
   var exposedStrong=[];rows.forEach(function(r){if(r.state==="shown"&&r.tier>=3)exposedStrong.push(r.label);});
@@ -2428,22 +2458,28 @@ async function runKit(){
   document.getElementById("summary").innerHTML='<div class="status"><span class="spin"></span><span id="stat">'+(BEACON?"cross-site unlinkability probe…":"Collecting fingerprint vectors…")+'</span></div>';
   var R={version:PRIORS.version,categories:{},coherence:null,leaks:{},realm:{},worker:{},uaHigh:null,headers:null,fingerprint:"",stableHash:""};
   [collectGPU,collectAudioSync,collectFonts,collectNavigator,collectUAData,collectScreen,collectTZ,collectCSS,collectEngine,collectPlugins,collectFeatures,collectTiming,collectStorageSync,collectDisplayCaps,collectWebRTCCaps,collectWeb3,collectSensors,collectSandbox,collectInstrumentation,collectBot,collectLeaks2026].forEach(function(f){try{f();}catch(e){}});
-  await collectWebGPU();
-  await collectAI();
-  await collectDeviceAccess();
-  await collectCodecs();
-  await collectCapabilities();
-  await collectMediaCaps();
-  var bat=await batteryInfo();if(bat&&C["Sensors & Battery"]){
+// Every awaited collector goes through this. Each one is a Promise executor, so anything its body
+// throws REJECTS instead of returning, and a bare `await collectX()` then takes the whole audit
+// down: no score at all, for one property that threw. Three separate probes hit this before it was
+// centralised here. A collector that fails leaves its category missing, which the classifier reads
+// as refused - not as a value handed over.
+  var _pTry=function(f){return Promise.resolve().then(f).catch(function(){return null;});};
+  await _pTry(collectWebGPU);
+  await _pTry(collectAI);
+  await _pTry(collectDeviceAccess);
+  await _pTry(collectCodecs);
+  await _pTry(collectCapabilities);
+  await _pTry(collectMediaCaps);
+  var bat=await _pTry(batteryInfo);if(bat&&C["Sensors & Battery"]){
     var batId=!(bat.level===1&&bat.charging===true&&bat.chargingTime===0&&bat.dischargingTime===Infinity);
     C["Sensors & Battery"].rows.push(["battery level/charging",[Math.round(bat.level*100)+"% "+(bat.charging?"charging":"discharging")+(batId?" - identifying (fractional level / discharge time = rotating cross-site ID)":" - full + plugged, non-identifying"),batId?"no":"ok"]]);
     var sbr=C["Sensors & Battery"].rows;for(var bi=0;bi<sbr.length;bi++){if(sbr[bi][0]==="navigator.getBattery"){sbr[bi][1]=["present"+(batId?"":" (neutral - reports a non-identifying value)"),batId?"mid":"ok"];break;}}
     C["Sensors & Battery"].hash=catHash(C["Sensors & Battery"].rows);}
-  var hz=await refreshRate();if(hz&&C["Timing & Performance"]){C["Timing & Performance"].rows.push(["display refresh rate (rAF)",hz+" Hz"]);C["Timing & Performance"].hash=catHash(C["Timing & Performance"].rows);}
+  var hz=await _pTry(refreshRate);if(hz&&C["Timing & Performance"]){C["Timing & Performance"].rows.push(["display refresh rate (rAF)",hz+" Hz"]);C["Timing & Performance"].hash=catHash(C["Timing & Performance"].rows);}
   try{if(navigator.storage&&navigator.storage.estimate){var est=await navigator.storage.estimate();if(C["Storage & State"])C["Storage & State"].rows.push(["storage quota / usage (device class, live - not hashed)",Math.round((est.quota||0)/1048576)+"MB / "+Math.round((est.usage||0)/1048576)+"MB"]);}}catch(e){}
   try{if(indexedDB.databases){var dbs=await indexedDB.databases();if(C["Storage & State"]){var dbn=(dbs||[]).map(function(x){return x.name;}).filter(function(n){return n&&n!=="pa_part"&&n.indexOf("pa_")!==0;});C["Storage & State"].rows.push(["IndexedDB databases (persisted re-id, survives localStorage clear)",[dbn.length?dbn.join(","):"none",dbn.length?"no":"ok"]]);}}}catch(e){}
   try{var isGecko=false;try{isGecko=("mozInnerScreenX" in window);}catch(e){}if(isGecko&&indexedDB.databases&&indexedDB.open){var pn=["pa_z9","pa_a1","pa_m5","pa_b2","pa_q7","pa_c3"];await Promise.all(pn.map(function(n){return new Promise(function(r){try{var q=indexedDB.open(n);q.onsuccess=function(){try{q.result.close();}catch(e){}r();};q.onerror=function(){r();};q.onblocked=function(){r();};}catch(e){r();}});}));var mine=(await indexedDB.databases()).map(function(x){return x.name;}).filter(function(n){return pn.indexOf(n)>-1;});var srt=mine.slice().sort();var vuln=mine.length>=2&&JSON.stringify(mine)!==JSON.stringify(srt);var tgt=C["Cross-Origin Leaks"]||C["Storage & State"];if(tgt)tgt.rows.push(["IndexedDB databases() ordering",[mine.length<2?"inconclusive":vuln?"non-canonical order (older engines)":"canonical sorted order",vuln?"no":"ok"]]);pn.forEach(function(n){try{indexedDB.deleteDatabase(n);}catch(e){}});}}catch(e){}
-  var audio=await collectAudioAsync();
+  var audio=(await _pTry(collectAudioAsync))||{hash:"ERR"};
   if(C["Audio & Media Codecs"]){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
     C["Audio & Media Codecs"].rows.push(["DynamicsCompressor.reduction (dB)",typeof audio.reduction==="number"?audio.reduction.toFixed(8):"n/a"]);

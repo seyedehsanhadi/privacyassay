@@ -12,11 +12,11 @@ Only shown counts against you. Rarity is never assumed: a value is not credited 
 
 ## Weights
 
-Each reading is strong (3), medium (2) or weak (1). These are judgment, not measured rarity. Readings in a category share one cause, so only the heaviest counts and its weight becomes the category's.
+Each reading is strong (3), medium (2) or weak (1). A category is worth its heaviest reading, so a category this tool probes seven times cannot outweigh one it probes once. Inside a category you earn the share of it you hide: hide half the weight in the GPU category and you get half of what the GPU category is worth.
 
 | Category | Readings (weight) |
 |---|---|
-| GPU | canvas drawing (3), GPU name (2), 3D rendered image (2), GPU feature list (2), GPU limits (2) |
+| GPU | canvas drawing (3), GPU name (2), 3D rendered image (2), GPU feature list (2), GPU limits (2), WebGPU adapter (2), WebGPU limits (2) |
 | Window | window size (3) |
 | Fonts | installed fonts (3), text metrics (2), font measurement (2) |
 | Network | WebRTC IP leak (3) |
@@ -36,22 +36,31 @@ Thirteen categories summing to 30. WebRTC and storage are opt-in; extension dete
 
 ```
 category weight = weight of its heaviest reading
-shown weight    = weight of the heaviest reading it still SHOWS (0 if none)
-hidden          = category weight - shown weight
+category hidden = category weight x (weight you hide in it / all the weight in it)
 
-score = round( 100 * sum(hidden) / sum(category weight) )
+score = round( 100 * sum(category hidden) / sum(category weight) )
 grade = A 90+ | B 75-89 | C 60-74 | D 40-59 | F below 40
 ```
 
+Worked example, the GPU category. Seven readings: canvas drawing (3), and six medium ones (2 each) — 15 points of weight in a category worth 3. A browser that hides canvas and the two WebGL hashes hides 7 of those 15, so it earns 3 x 7/15 = 1.4 of the 3 the category is worth.
+
+An earlier version paid only for the heaviest reading a category still hid. That made hiding anything lighter worth nothing: seven of the twenty-nine readings could not move any score at all, and a browser hiding four of five GPU readings scored the same as one hiding none.
+
 ## How much the number means
 
-The ordering is the result; the number is an indicator. Recomputed under five alternative weightings — all readings equal, tiers inverted, tiers squared, and the shipped and equal weightings again with the category rule dropped — the ordering never changed. A jackknife dropping each of the thirteen categories in turn did not change it either.
+The ordering is the result; the number is an indicator. Recomputed under six alternative weightings — all readings equal, tiers inverted, tiers squared, the previous heaviest-reading-only rule, and two schemes with the category weighting dropped entirely — the ordering never changed. A jackknife dropping each of the thirteen categories in turn changed it once.
 
-Absolute values do move. LibreWolf reads 33 as shipped, 40 under equal weights, 54 with tiers inverted and 63 with equal weights and no category rule: same readings, a 32-point range. Treat a few points as noise and a tier as real.
+Every perturbation that moves the ordering moves the same pair. Dropping the OS category, or replacing the weights with published per-attribute entropy estimates, puts Brave above Firefox; the two sit at 5 and 9 here and their difference is not something this model resolves. Every other pair held under all of it.
+
+The weights themselves were checked against those published estimates and left alone. Ranked against them the three tiers correlate at 0.76, and rebuilding the tiers from entropy bands made the agreement worse, not better, because it inflates the categories with several light readings. The aggregation was what needed fixing.
+
+The result of fixing it: scored against how many bits of published entropy each browser hides, the model now agrees to within four points on every browser and exactly on four of the seven. Before the change it was out by an average of seven and never in the browser's favour.
+
+Absolute values still move. LibreWolf reads 48 as shipped, 58 under equal weights, 67 with tiers inverted and 42 with tiers squared: same readings, a 25-point range. Treat a few points as noise and a tier as real.
 
 So the ordering is supported. A particular absolute score is not, being one weighting, one machine, one date.
 
-There is also a ceiling. Seven readings have no uniform value recorded for any browser family, so a browser that returns a real value for one of them cannot be credited for it: element geometry, MathML render size, text metrics, font measurement, media codecs, rendered sound and device details. They sit in five categories worth 10 of the 21 non-optional points, so showing all seven caps the score at 52. Tor and Mullvad hide everything else and refuse only device details, which is exactly their 62. Grades A and B need a browser that refuses readings no shipping browser refuses, so nothing measured here reaches them.
+There is also a ceiling. Seven readings have no uniform value recorded for any browser family, so a browser that returns a real value for one of them cannot be credited for it: element geometry, MathML render size, text metrics, font measurement, media codecs, rendered sound and device details. They sit in five categories, so showing all seven caps the score at 70. Tor and Mullvad hide everything else and refuse only device details, which puts them at 74. Grades A and B need a browser that refuses readings no shipping browser refuses, so nothing measured here reaches them.
 
 ## Cross-site
 
@@ -81,18 +90,18 @@ One machine, Windows 11, 2026-07-30. Real top-level window, three runs, a fresh 
 
 | Browser | Version | Score | Grade | Runs | Cross-site |
 |---|---|---|---|---|---|
-| Mullvad Browser | 140.13.0 | 62 | C | 62, 62, 62 | 62, nothing differed |
-| Tor Browser | 140.13.0 | 62 | C | 62, 62, 62 | 62, nothing differed |
-| LibreWolf | 152.0.6-1 | 33 | F | 33, 33, 33 | 33 on the one run of three that completed |
-| Firefox | 153.0.1 | 5 | F | 5, 5, 5 | 5 on the one run of three that completed |
-| Brave | 150.1.92.144 | 0 | F | 0, 0, 0 | 14, five readings differed |
+| Mullvad Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
+| Tor Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
+| LibreWolf | 152.0.6-1 | 48 | D | 48, 48, 48 | 48, nothing differed |
+| Firefox | 153.0.1 | 9 | F | 9, 9, 9 | 9, nothing differed |
+| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 | 22, four readings differed |
 | Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
 | Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
 
 - **Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
 - **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
-- **Brave's 0 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, which is what its 14 measures.
-- **The two-origin probe is unreliable on Gecko over loopback.** Firefox and LibreWolf each completed it on one of three runs; the other four runs timed out and are reported as not measurable rather than as zero.
+- **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, which is what its 22 measures.
+- **The two-origin probe is intermittent on Gecko over loopback.** All three runs completed for every browser here, but in an earlier round Firefox and LibreWolf each managed only one of three. A run that does not complete is reported as not measurable, never as a zero.
 - **Tor and Mullvad ran with the proxy forced to a direct connection and their bundled NoScript moved aside**, so both are resistFingerprinting engine tests and say nothing about the Tor network. NoScript intermittently blocks all script loading on plain http, which makes a benchmark unusable; it is not a fingerprinting defence and does not touch resistFingerprinting.
 - **Fingerprint findability only.** Not tracker blocking, state partitioning, or the network layer.
 - **Numbers drift as browsers ship.** The date and versions are part of the result.
@@ -102,12 +111,12 @@ One machine, Windows 11, 2026-07-30. Real top-level window, three runs, a fresh 
 - Your IP and the TLS handshake are sent before any script and cannot be read here.
 - The uniform-value credits are checked against Firefox's `RFPTargets.inc`. Most name a target there. Four do not: device memory, which Gecko never implemented, and three hashes (SVG text metrics, WebGL extensions, WebGL params) measured on one machine rather than read from source. Those three are the weakest credits here.
 - Of the six readings Tor still shows, four have no target at all: element geometry, MathML render size, text metrics and font measurement. The other two do. `MediaCapabilities` and `AudioContext` both exist as targets, but they cover `mediaCapabilities.decodingInfo` and the audio graph rather than the `MediaSource.isTypeSupported` list and the rendered-output check this scores, so those two readings are scored as shown against a browser that does normalize a neighbouring API.
-- WebGPU is read in full and scored in nothing. The adapter, its limits, its feature set and its texture-format matrix appear in the raw view only, so a browser that hides them gets no credit and a browser that hands them over pays nothing. `RFPTargets.inc` has three WebGPU targets, so this is a gap in the catalog, not in the engines.
+- WebGPU is scored through two readings, the adapter identity and the adapter limits, and both sit in the GPU category alongside the WebGL readings because they have the same cause. They change no single-site score in the table: Tor, Mullvad and LibreWolf refuse WebGPU outright, and the browsers that answer it already show canvas. They do change Brave's cross-site figure, from 14 to 10, because Brave farbles its canvas per site and does not farble WebGPU, so the GPU stays linkable across origins. The rest of what the collector reads there, the feature set, the texture-format matrix and the compute timings, stays in the raw view.
 - Two readings, rendered sound and 3D rendered image, are classified on whether the render produced output, not on the output itself. The hash is in the raw view but is not what the score reads. An earlier version credited every Firefox-family browser as protected because its rendered sound was present, which is what a working audio pipeline reports in any browser; that credit is gone.
 - The two-read check that detects a per-read randomizer reaches only the readings taken live. Twelve are pulled from rows the collectors already computed, so a second call returns them unchanged and they can never be credited for varying. Canvas is covered separately by drawing twice. This under-credits rather than over-credits.
 - **A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** It fails in the flattering direction. It has happened: an extension scan that found nothing was scored as protection and every published number was three points too high. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as shown.
-- The category rule under-counts when readings in a category are independent. Dropping it moves Tor 62 to 76 and LibreWolf 33 to 55, without changing the order.
-- For a per-session farbler the single-site number says nothing: Brave reads 0 there and 14 across origins. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run but reports `crossSite: null`, so it gives the single-site number only; the cross-site figures here come from the page.
+- Weighting a category by its heaviest reading is still a judgment. Dropping the category weighting entirely and summing every reading moves Tor 74 to 77 and LibreWolf 48 to 58 without changing the order; it is kept because otherwise the GPU category, which this tool probes seven times, would outweigh Window, which it probes once.
+- For a per-session farbler the single-site number says nothing: Brave reads 0 there and 10 across origins. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run and reports both figures; it serves `127.0.0.1` and `localhost` from one handler and waits for the page to finish the comparison, so its cross-site number carries the same loopback floor as the page's.
 - The cross-site second origin is `localhost` against `127.0.0.1`, which browsers treat more permissively than two registered domains, so a randomizer's cross-site figure is a floor.
 
 ## Checking
