@@ -447,6 +447,10 @@ try{if(PA_COMPANION){var _cu=new URL(PA_COMPANION);if(location.host===_cu.host&&
 /* HELPERS - hashing, guarded probes, category registry ====================== */
 function fnv(s){var h=2166136261>>>0;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function fnvDead(v){v=String(v);return /ERR:/.test(v)||/(^|[:|])undefined$/.test(v)||v==="";}
+// Returns "ERR" when every part is an error, undefined or empty, so the classifier reads it as
+// refused. Hashing dead inputs would produce a value indistinguishable from a real fingerprint:
+// fnv("") is a normal-looking hash. A partial failure still hashes, because the surviving
+// values are genuinely readable.
 function fnvParts(a,sep){if(!a||!a.length)return "ERR";sep=sep===undefined?"|":sep;for(var i=0;i<a.length;i++)if(!fnvDead(a[i]))return fnv(a.join(sep));return "ERR";}
 function fnvBytes(a){var h=2166136261>>>0;for(var i=0;i<a.length;i++){h^=a[i];h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function probe(fn){try{var v=fn();return v===undefined?"undefined":v;}catch(e){return "ERR:"+(e&&e.name||e);}}
@@ -1434,6 +1438,10 @@ function paHashClass(h){
   if(!h||h==="ERR"||/^(n\/a|unavailable|blocked|absent)/i.test(h))return "unavailable";
   return "present";
 }
+// Detects the rounded viewport resistFingerprinting snaps to. It cannot tell a browser that
+// rounds from one whose window happens to land on a round number, so it is only consulted for
+// families whose build actually letterboxes (see PRIORS.browsers[].letterboxes). 1200x800 is a
+// common window size and would otherwise be credited as protection.
 function paLetterboxed(w,h){
   
   if(!(w>50&&h>50))return false;
@@ -1521,12 +1529,18 @@ function findability(observed,familyKey){
     }else{
       v=String(v);
       
+// blended is credited two ways and no others: a mask this code actively detects (the conditions
+// below), or a value PRIORS documents the browser family as reporting uniformly. Rarity is never
+// assumed. Each condition below names a specific observable, not a guess about the browser.
       var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
                  ((s.k==="webglRenderClass"||s.k==="audioRenderClass")&&v==="unavailable")||
                  ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
                  (s.k==="availFrame"&&v==="masked")||
                  (s.k==="speechVoices"&&/^0[\s(]/.test(v))||
                  (s.k==="fontSet"&&/blocked|protected/i.test(String(observed.fontLocalBlocked||"")));
+// A value that differs between two reads in the same page cannot follow anyone between visits,
+// so it is blended. noCrossDiff surfaces (window, screen) are excluded because they can shift
+// while a window settles, which would be credited as protection it did not provide.
       var noisy=!!(observed._noisy&&observed._noisy[s.k]&&!s.noCrossDiff);
       if(noisy){state="blended";why="this value changes on every read, so it cannot be used to follow you between visits";}
       else if(masked){state="blended";why="your browser masks this so it cannot be used to follow you between visits";}
@@ -1562,6 +1576,9 @@ function findability(observed,familyKey){
     rows:rows, browser:familyKey, verdict:verdict, version:PRIORS.version};
 }
 function findabilityCross(obsA,obsB,familyKey){
+// shownSet is the gate: a reading counts as cross-site protection only if it was SHOWN
+// single-site AND differs between origins. Without it, per-read noise already credited as
+// blended would be credited a second time for changing across origins.
   var single=findability(obsA,familyKey),shownSet={};
   (single.rows||[]).forEach(function(r){if(r.state==="shown")shownSet[r.label]=1;});
 
@@ -2195,6 +2212,10 @@ function paExportBar(){
   b+='</div>';
   return b;
 }
+// Default-deny. Only values recognised as harmless survive (status words, plain numbers, the
+// report's own short hashes); everything else is replaced. An earlier allow-list version listed
+// patterns to hide and let the user agent, GPU model and timezone through into files users were
+// invited to post publicly. A list of things to hide can never be finished.
 function paRedactVal(k,v){
   v=String(v==null?"":v);
   if(/\bip\b|address|candidate|hash|fingerprint/i.test(String(k)))return "[redacted]";
@@ -2426,6 +2447,8 @@ async function runKit(){
              /Firefox\//.test(_ua)?"firefox":
              /Chrome\/|Chromium\/|Edg\//.test(_ua)?"chromium":"other";
     var _obs=observeVectors();
+// observeVectors runs twice so a per-read randomizer is visible. Only surfaces read live can
+// differ; the paRow-derived ones come from already-computed rows and cannot false-positive.
     _obs._noisy=(function(){try{var b=observeVectors(),n={};for(var k in _obs){if(!Object.prototype.hasOwnProperty.call(_obs,k)||k==="_noisy")continue;var x=_obs[k],y=b[k];if(x!=null&&y!=null&&String(x)!==""&&String(x)!==String(y))n[k]=1;}return n;}catch(e){return {};}})();
     _obs.webrtcIP=PAV.webrtcStun?((R.leaks.webrtc&&(R.leaks.webrtc.publicIPs||[]).length)?"exposed":""):null;
     _obs.extEnum=(function(){try{var es=R.leaks.ext||{};var nodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;var stk="";try{throw new Error("p");}catch(e){stk=e.stack||"";}return (es.detectable||nodes>0||/chrome-extension:\/\/|moz-extension:\/\//i.test(stk))?"exposed":undefined;}catch(e){return undefined;}})();

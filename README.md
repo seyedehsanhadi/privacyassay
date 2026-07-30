@@ -2,7 +2,7 @@
 
 One HTML file that shows what a website can read about your browser and how much of it singles you out. Everything runs on your machine; the fingerprint is never uploaded.
 
-**Beta, and the scoring model is what needs review.** The arithmetic is tested; the judgment behind the weights is not settled. [What to attack is listed in METHODOLOGY.md](METHODOLOGY.md#what-this-beta-needs-reviewed), highest-value first.
+Beta: the scoring model may still change. [METHODOLOGY.md](METHODOLOGY.md) states the formula, cites what every browser claim was checked against, and names the two places the model is knowingly imprecise.
 
 Each reading is your real value (**shown**), a value every user of that browser shares or one that changes on every read (**blended**), or nothing (**refused**). The score is the share of what could identify you that your browser hides, weighted by how much each reading gives away.
 

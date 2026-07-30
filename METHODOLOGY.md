@@ -1,6 +1,6 @@
 # Methodology 0.9.0-beta
 
-**Beta. The scoring model wants expert review before it is called 1.0.** What to attack is listed at the end. Everything here is recomputable by hand from the report the tool prints.
+Beta: the scoring model may still change. Every number here is recomputable by hand from the report the tool prints, and every claim about a browser cites what it was checked against.
 
 The score is how much of what could identify you your browser hides.
 
@@ -109,15 +109,32 @@ Blended is credited only for values a browser is documented to report for every 
 
 For a per-session farbler the **cross-site** number needs the median, not the single-site one. Brave read 5 on every single-site run but 10, 14 and 14 across three fresh launches. Runs sharing one browser launch share a farbling seed and agree for the wrong reason. The CLI launches a fresh browser per run, which is what makes its median meaningful.
 
-## What this beta needs reviewed
+## Why the exposed readings are scored as exposed
 
-Ranked by how much a wrong answer would cost.
+Tor and Mullvad hide everything above except five readings: font measurement, text metrics, element geometry, MathML render size and media codecs. Two questions decide whether scoring them is fair, and both have answers.
 
-1. **Are the five readings Tor exposes actually identifying?** They are `measureText` width, TextMetrics, `getBoundingClientRect`, MathML geometry and `MediaSource.isTypeSupported`. resistFingerprinting has no target for any of them, so a site can read them. Whether they *vary between machines* is unmeasured. If every Tor user on a platform produces the same values, they should be blended and Tor should score near 100. **This needs the tool run on other hardware. It is the single highest-value contribution anyone can make.**
-2. **Is the category rule right?** Only a category's heaviest reading counts, on the theory that readings in a category share one cause. If GPU name and canvas are more independent than that assumes, the model under-counts. Dropping the rule moves Tor to 80 and LibreWolf to 59 without changing the order.
-3. **Are the tier assignments defensible?** They are judgment. The ordering survives inverting them, so the ranking does not depend on them, but the absolute values do.
-4. **What should a per-session randomizer score?** Brave is 5 single-site and 14 cross-site on a loopback origin pair too permissive to provoke its canvas farbling. A companion on a real registered domain would settle it. `DEPLOY.md` documents the setup.
-5. **Is crediting `refused` defensible at all?** The alternative is scoring only what is positively observed, which would penalise a browser for successfully blocking something.
+**Does resistFingerprinting normalize them?** No. Firefox enumerates what it normalizes in `toolkit/components/resistfingerprinting/RFPTargets.inc`, 81 targets. Every reading credited as blended above has one: `CanvasRandomization`, `WebGLVendorConstant`, `ScreenRect`, `NavigatorHWConcurrency`, `JSDateTimeUTC`, `AudioSampleRate`, `FontVisibilityBaseSystem` and so on. None of the five has one. Font **visibility** has three targets; font **metrics** have none, so the engine restricts which fonts a site may see and does not normalize the dimensions of the ones that remain. That split is why Fonts scores 1 of 3 rather than 0 or 3.
+
+**Are they actually identifying?** Yes, and measurably. Fifield and Egelman surveyed over 1,000 browsers and found font metrics alone produced 444 distinct fingerprints, 7.599 bits of entropy, uniquely identifying 34% of participants with a further 8% in pairs; 43 code points accounted for all the variation they saw. Element geometry has been measured separately at about 3.5 bits. Both exceed timezone or screen resolution, which this catalog also scores.
+
+One correction to that, in our own disfavour: the published 7.599 bits covers an exhaustive sweep of 43 code points across many fonts. This tool samples a fraction of it, one string in one font plus the TextMetrics extras, so it detects the surface without extracting the full entropy. Weighting font measurement medium rather than strong is deliberate for that reason, not an oversight.
+
+Tor Project does not claim otherwise. Its documentation says it is "practically impossible to make all Tor Browser users identical", that the goal is reducing distinguishable buckets, and names fonts specifically as able to infer hardware and operating system. A score of 100 here would contradict the vendor.
+
+## Where the model is knowingly imprecise
+
+**The category rule under-counts when readings are independent.** Only a category's heaviest reading counts, on the theory that readings in a category share one cause. Fonts is the clearest counter-example: the Fifield and Egelman technique works precisely because metrics reveal what a font list does not, so the two are less correlated than the rule assumes. Dropping the rule moves Tor to 80 and LibreWolf to 59 without changing the order. The rule is kept because it stops a category with many probes dominating one with few, and because the ordering does not depend on it.
+
+**Crediting `refused` is a deliberate asymmetry.** A blank reading counts as protection, so a browser that successfully blocks something is rewarded and a browser that never implemented it is rewarded identically. Scoring only what is positively observed would avoid that, at the cost of penalising a browser for blocking successfully, which is the wrong incentive for a privacy tool. The asymmetry is kept; the failure mode it creates is stated under Limits.
+
+**The cross-site figure for a randomizer is a floor, not an estimate.** The second origin is `localhost` against `127.0.0.1`. Brave's canvas did not change across that pair once, despite Brave re-seeding canvas farbling per site, so the pair is too permissive to provoke the defence. A companion on a separate registered domain would raise Brave's 14; `DEPLOY.md` documents the setup.
+
+## Sources
+
+- Fifield, D. and Egelman, S. *Fingerprinting Web Users Through Font Metrics.* Financial Cryptography and Data Security 2015, pp. 107-124.
+- Firefox `RFPTargets.inc`, the authoritative list of what resistFingerprinting normalizes.
+- Tor Project, *Fingerprinting protections*, support.torproject.org.
+- Mozilla bug 1507879, investigating `getClientRects` for fingerprinting.
 
 ## Checking
 
