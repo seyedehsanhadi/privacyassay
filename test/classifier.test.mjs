@@ -210,6 +210,34 @@ test("webgpu: both readings are scored, sit in the GPU category, and refuse when
     "canvas still caps the GPU category, so adding WebGPU did not change the denominator");
 });
 
+// The page shows its own working under "How this number was reached". It renders F.categories
+// rather than recomputing, so these three have to stay true or the panel would contradict the
+// score printed above it.
+test("working: the per-category breakdown adds up to the score it is shown beside", () => {
+  const cases = [
+    ["all shown", Object.fromEntries(PRIORS.surfaces.filter((s) => !s.optional).map((s) => [s.k, "real_" + s.k]))],
+    ["all refused", {}],
+    ["mixed", { timezone: "Europe/Berlin", canvasClass: "unique", cores: "8", platform: "Win32" }],
+  ];
+  for (const [name, observed] of cases) {
+    const F = findability(observed, "other");
+    const summed = F.categories.reduce((a, c) => a + c.earned, 0);
+    assert.ok(Math.abs(summed - F.earnedWeight) < 1e-9, `${name}: rows sum to ${summed}, header says ${F.earnedWeight}`);
+    assert.equal(Math.round((100 * F.earnedWeight) / F.totalWeight), F.score, `${name}: the panel's arithmetic must reproduce the score`);
+    for (const c of F.categories) {
+      assert.ok(c.hiddenInside <= c.weightInside, `${name}/${c.id}: cannot hide more than the category holds`);
+      assert.ok(c.earned >= 0 && c.earned <= c.weight + 1e-9, `${name}/${c.id}: earned ${c.earned} outside 0..${c.weight}`);
+    }
+  }
+});
+
+test("working: every category in the breakdown has a display name", () => {
+  const src = grabVar("PAGRP");
+  const F = findability({}, "other");
+  for (const c of F.categories)
+    assert.match(src, new RegExp("\\b" + c.id + "\\s*:"), `${c.id} has no label in PAGRP, so the panel would print a raw key`);
+});
+
 // ---- the ceiling the catalog imposes ----
 // A reading with no uniform value in any family can only be credited by being refused, so the
 // readings that have none set a hard cap on the score. METHODOLOGY states that cap; if a credit

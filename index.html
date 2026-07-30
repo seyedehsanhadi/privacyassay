@@ -296,6 +296,29 @@
 .pa-gdi{border-left:2px solid var(--line-strong);padding:1px 0 1px 12px}
 .pa-gdk{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px}
 .pa-gdt{display:block;font-size:13.5px;line-height:1.55;color:var(--text-2)}
+.pa-calc{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden}
+.pa-calc>button{width:100%;text-align:left;background:transparent;border:0;cursor:pointer;color:var(--text-2);
+  display:flex;align-items:center;gap:11px;padding:13px 16px;font-size:13.5px;font-family:inherit}
+.pa-calc>button .cv{flex:0 0 auto;color:var(--text-3);transition:transform .18s ease}
+.pa-calc.on>button .cv{transform:rotate(90deg)}
+.pa-calc.on>button{border-bottom:1px solid var(--line-soft)}
+.pa-calc-eq{margin-left:auto;font-size:12.5px;color:var(--text-3);white-space:nowrap}
+.pa-calc-eq b{color:var(--text);font-weight:600}
+.pa-calc-in{padding:14px 16px 15px}
+.pa-calc-rule{margin:0 0 13px;font-size:13px;line-height:1.5;color:var(--text-2)}
+.pa-calc-rule b{color:var(--text);font-weight:600}
+.pa-calc-eg{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-radius:10px;
+  background:var(--inset);border:1px solid var(--line-soft)}
+.pa-calc-eg .eg-k{flex:0 0 auto;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);padding-top:2px}
+.pa-calc-eg .eg-t{font-size:13px;line-height:1.55;color:var(--text-2);min-width:0}
+.pa-calc-eg .eg-t b{color:var(--text);font-weight:600}
+.pa-calc-tot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--line-soft);font-size:13px;color:var(--text-2)}
+.pa-calc-tot b{color:var(--text);font-weight:600}
+.pa-calc-tot .fin{margin-left:auto;color:var(--green);font-weight:700;white-space:nowrap}
+.pa-calc-key{margin-top:11px;font-size:11.5px;color:var(--text-3);line-height:1.5}
+.pa-calc-key a{color:var(--text-3)}
+@media (max-width:560px){.pa-calc-eq{flex-basis:100%;margin:4px 0 0 22px;text-align:left}.pa-calc>button{flex-wrap:wrap}}
 .pa-rows{margin-top:16px;display:flex;flex-direction:column;gap:8px}
 .pa-row{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden;transition:border-color .15s}
 .pa-row:hover{border-color:var(--line-strong)}
@@ -379,7 +402,15 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 .pa-linkbtn svg{width:15px;height:15px;flex:0 0 auto}
 .pa-cardver{font-size:11.5px;color:var(--text-3);margin-left:2px}
 .pa-runbtn:focus-visible,.pa-ibtn:focus-visible,.pa-linkbtn:focus-visible,.pa-optin input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (max-width:760px){#paBar #paTag{display:none}#paBar .pa-top-in{flex-wrap:wrap;row-gap:9px}#paBar #paChecks{flex:1 1 100%;order:5}}
+/* The bar wraps at every width, not only under 760px. Its four blocks were all flex:0 0 auto,
+   so between roughly 760 and 1100 they could not shrink and could not move to a second row, and
+   the brand ended up drawn over the opt-in chips. */
+#paBar .pa-top-in{flex-wrap:wrap;row-gap:9px}
+#paBar #paBrand{flex:0 1 auto;min-width:0}
+#paBar #paChecks{flex:1 1 auto;flex-wrap:wrap;min-width:0}
+#paBar #paCtrls{margin-left:auto}
+@media (max-width:980px){#paBar #paTag{display:none}}
+@media (max-width:760px){#paBar #paChecks{flex:1 1 100%;order:5}}
 @media (prefers-reduced-motion:reduce){#paBar.entering #paTag,#paBar.entering #paChecks,#paBar.entering #paCtrls,#paBar.entering .pa-bar-ver,body.pa-reveal main,body.pa-pre .pa-cardwrap,.pa-card.exit,.pa-card.exit #paTag,.pa-card.exit #paCtrls,.pa-card.exit #paChecks,.pa-card.exit .pa-card-links{animation:none!important;transition:none!important}}
 .pa-tile{transition:border-color .15s ease,transform .08s ease,box-shadow .15s ease}
 .pa-tile:hover:not(:disabled){border-color:var(--text-3)!important;transform:translateY(-1px);box-shadow:var(--shadow-lg)}
@@ -1635,10 +1666,18 @@ function findability(observed,familyKey){
   if(!nShown)verdict="Nothing we check singles you out here.";
   else verdict="You hide "+score+"% of what this tool checks for"+(topShown?". Biggest leak: "+topShown:"")+
     (exposedStrong.length?". Still exposed: "+exposedStrong.slice(0,3).join(", ")+(exposedStrong.length>3?" and "+(exposedStrong.length-3)+" more":""):"")+".";
+// The per-category working, exported rather than recomputed by the renderer, so what the page
+// shows under "How this number was reached" is the same arithmetic the score came from and the
+// two cannot drift apart.
+  var categories=Object.keys(groupTotalTier).map(function(g){
+    var w=groupTotalTier[g],sum=groupSum[g]||0,hid=groupHid[g]||0;
+    return {id:g,weight:w,weightInside:sum,hiddenInside:hid,earned:w*(sum?hid/sum:0)};
+  }).sort(function(a,b){return (b.weight-a.weight)||(b.earned-a.earned);});
   return {score:score, grade:grade, hiddenPct:score,
     checks:{total:rows.length, held:rows.length-nShown, exposed:nShown},
     strongest:topShown, exposedStrong:exposedStrong,
     exposedGroups:{high:high,medium:med,low:low}, shownCount:nShown,
+    categories:categories, totalWeight:totW, earnedWeight:hidW,
     rows:rows, browser:familyKey, verdict:verdict, version:PRIORS.version};
 }
 function findabilityCross(obsA,obsB,familyKey){
@@ -2016,6 +2055,38 @@ var PASM={
   blended:{color:"var(--amber)",bg:"var(--amber-bg)",word:"masked",icon:"~"},
   refused:{color:"var(--green)",bg:"var(--green-bg)",word:"not readable",icon:"✓"}
 };
+// The score's own working, collapsed by default. Bar WIDTH is what the category is worth and
+// green FILL is the share of it hidden, so the green area is the earned total: the formula is
+// the layout rather than a line of symbols. Everything comes from F.categories, which findability
+// exports, so this cannot disagree with the number above it.
+function paCalcPanel(F){
+  var cats=F.categories||[];if(!cats.length||!F.totalWeight)return "";
+  var open=!!PAV.calcOpen,earned=(F.earnedWeight||0).toFixed(2);
+  var eq='100 &#215; <b>'+earned+'</b> &#247; <b>'+F.totalWeight+'</b> = <b>'+F.score+'</b>';
+  var h='<div class="pa-calc'+(open?" on":"")+'">';
+  h+='<button class="pa-hov" data-pa="calc" aria-expanded="'+(open?"true":"false")+'">';
+  h+='<svg class="cv" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>';
+  h+='<span>How this number was reached</span>';
+  h+='<span class="pa-calc-eq pa-mono">'+eq+'</span></button>';
+  if(open){
+// One worked example, not a second copy of the category list below. Prefer a category the
+// browser only partly hides, because that is where the fraction does visible work; fall back to
+// the heaviest one when nothing is partial.
+    var ex=null;
+    cats.forEach(function(c){if(c.hiddenInside>0&&c.hiddenInside<c.weightInside&&(!ex||c.weight>ex.weight))ex=c;});
+    if(!ex)cats.forEach(function(c){if(!ex||c.weight>ex.weight)ex=c;});
+    h+='<div class="pa-calc-in">';
+    h+='<p class="pa-calc-rule">Every reading is worth 3, 2 or 1 by how much it gives away. A category is worth its heaviest reading, so one read seven times cannot outweigh one read once. You earn <b>the share of a category you hide</b>.</p>';
+    if(ex){
+      h+='<div class="pa-calc-eg"><span class="eg-k pa-mono">for example</span>';
+      h+='<span class="eg-t">'+paEsc(PAGRP[ex.id]||ex.id)+' is worth <b>'+ex.weight+'</b> and holds <b>'+ex.weightInside+'</b> points of weight. You hide <b>'+ex.hiddenInside+'</b> of them, so it pays <span class="pa-mono">'+ex.weight+' &#215; '+ex.hiddenInside+'/'+ex.weightInside+' = '+ex.earned.toFixed(2)+'</span>.</span></div>';
+    }
+    h+='<div class="pa-calc-tot pa-mono">'+cats.length+' categories, <b>'+F.totalWeight+'</b> points. Yours pay <b>'+earned+'</b>.<span class="fin">100 &#215; '+earned+' &#247; '+F.totalWeight+' = '+F.score+'</span></div>';
+    h+='<div class="pa-calc-key">Which readings each category holds is in the list below. Every weight and state is in <span class="pa-mono">__KIT.findability</span>; the method is in <a href="METHODOLOGY.md" target="_blank" rel="noopener">METHODOLOGY.md</a>.</div>';
+    h+='</div>';
+  }
+  return h+'</div>';
+}
 var PAGRP={gpu:"Canvas & GPU",window:"Window size",fonts:"Installed fonts",network:"WebRTC IP",
   extensions:"Browser extensions",storage:"Cross-site storage",layout:"Layout & text metrics",
   display:"Screen & display",media:"Media & voices",audio:"Audio fingerprint",
@@ -2192,6 +2263,7 @@ function paRenderView(R){
     h+='</div></div>';
   }
   h+='</div>';
+  h+=paCalcPanel(F);
   h+=paExportBar();
   h+='<section style="padding:22px 0 26px;"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;"><h2 style="margin:0;font-size:20px;font-weight:650;color:var(--text);">What each surface gave away</h2><span class="pa-mono" style="font-size:11.5px;color:var(--text-3);">worst first &#183; weight = how much a surface narrows you down</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">';
@@ -2440,9 +2512,14 @@ document.addEventListener("click",function(e){
   else if(k==="tile"){var f=b.getAttribute("data-filter");PAV.tileFilter=(PAV.tileFilter===f)?null:f;if(K)paRenderView(K);}
   else if(k==="measureRand"){paRunCrossWindow();}
   else if(k==="acc"){var ai=b.getAttribute("data-id");PAV.acc[ai]=!PAV.acc[ai];if(K)paRenderRaw(K,null);}
+  else if(k==="calc"){PAV.calcOpen=!PAV.calcOpen;if(K)paRenderView(K);}
   else if(k==="masked"){PAV.maskedOpen=!PAV.maskedOpen;if(K)paRenderView(K);}
   else if(k==="redact"){PAV.redact=!PAV.redact;var _ro=document.getElementById("redactOptin");if(_ro)_ro.checked=PAV.redact;if(K){paRenderView(K);paRenderRaw(K,null);}}
-  else if(k==="print"){var cl=[];document.querySelectorAll("details:not([open])").forEach(function(d){d.setAttribute("open","");cl.push(d);});window.print();setTimeout(function(){cl.forEach(function(d){d.removeAttribute("open");});},300);}
+// A printed report shows everything, including the score's working, which is a button rather
+// than a <details> and so is not covered by the sweep below.
+  else if(k==="print"){var wasCalc=!!PAV.calcOpen;if(!wasCalc&&K){PAV.calcOpen=true;paRenderView(K);}
+    var cl=[];document.querySelectorAll("details:not([open])").forEach(function(d){d.setAttribute("open","");cl.push(d);});window.print();
+    setTimeout(function(){cl.forEach(function(d){d.removeAttribute("open");});if(!wasCalc){PAV.calcOpen=false;if(K)paRenderView(K);}},300);}
   else if(k==="savesum"){paSave("summary");}
   else if(k==="savefull"){paSave("full");}
   else if(k==="rescan"){var rb=document.getElementById("runBtn");if(rb)rb.click();}
@@ -2904,7 +2981,12 @@ else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
       requestAnimationFrame(function(){requestAnimationFrame(function(){
         brand.style.transition="transform .62s cubic-bezier(.16,1,.3,1)";brand.style.transform="";
       });});
-      brand.addEventListener("transitionend",function(){brand.style.transition="";brand.style.transformOrigin="";brand.style.transform="";},{once:true});
+// transitionend does not fire when the measured offset is zero, or when the element is not
+// visible at the moment the transform is set, and the brand was then left translated on top of
+// the opt-in chips. Clearing on a timer as well makes the leftover transform impossible.
+      var _clearBrand=function(){brand.style.transition="";brand.style.transformOrigin="";brand.style.transform="";};
+      brand.addEventListener("transitionend",_clearBrand,{once:true});
+      setTimeout(_clearBrand,900);
       setTimeout(function(){bar.classList.remove("entering");body.classList.remove("pa-reveal");},900);
     },230);
   });
