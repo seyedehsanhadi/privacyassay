@@ -352,7 +352,7 @@
 .pa-how-body b{color:var(--text);font-weight:600}
 @media (max-width:640px){.pa-top-in{padding:9px 14px;gap:8px}.pa-scan{display:none}.pa-intro{padding:14px 14px 0}.pa-how{padding:0 14px}}
 
-/* launch: start-card that converges into the toolbar on first run =========== */
+/* LAUNCH - start card that converges into the toolbar on first run ======= */
 .pa-optin{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.5;color:var(--text-3);cursor:pointer}
 .pa-optin input{cursor:pointer;flex:0 0 auto;margin-top:2px}
 .pa-sm{display:none}
@@ -402,9 +402,6 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 .pa-linkbtn svg{width:15px;height:15px;flex:0 0 auto}
 .pa-cardver{font-size:11.5px;color:var(--text-3);margin-left:2px}
 .pa-runbtn:focus-visible,.pa-ibtn:focus-visible,.pa-linkbtn:focus-visible,.pa-optin input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-/* The bar wraps at every width, not only under 760px. Its four blocks were all flex:0 0 auto,
-   so between roughly 760 and 1100 they could not shrink and could not move to a second row, and
-   the brand ended up drawn over the opt-in chips. */
 #paBar .pa-top-in{flex-wrap:wrap;row-gap:9px}
 #paBar #paBrand{flex:0 1 auto;min-width:0}
 #paBar #paChecks{flex:1 1 auto;flex-wrap:wrap;min-width:0}
@@ -470,18 +467,14 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 (function(){
 "use strict";
 
-/* DEPLOY CONFIG - automatic two-origin test (per-site randomizers) ========== */
+/* DEPLOY CONFIG - automatic two-origin test (per-site randomizers) ======= */
 var PA_COMPANION="";
 var PA_HOME="";
 try{if(PA_COMPANION){var _cu=new URL(PA_COMPANION);if(location.host===_cu.host&&PA_HOME&&!/pabeacon/.test(location.hash+location.search)){location.replace(PA_HOME);return;}}}catch(e){}
 
-/* HELPERS - hashing, guarded probes, category registry ====================== */
+/* HELPERS - hashing, guarded probes, category registry =================== */
 function fnv(s){var h=2166136261>>>0;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function fnvDead(v){v=String(v);return /ERR:/.test(v)||/(^|[:|])undefined$/.test(v)||v==="";}
-// Returns "ERR" when every part is an error, undefined or empty, so the classifier reads it as
-// refused. Hashing dead inputs would produce a value indistinguishable from a real fingerprint:
-// fnv("") is a normal-looking hash. A partial failure still hashes, because the surviving
-// values are genuinely readable.
 function fnvParts(a,sep){if(!a||!a.length)return "ERR";sep=sep===undefined?"|":sep;for(var i=0;i<a.length;i++)if(!fnvDead(a[i]))return fnv(a.join(sep));return "ERR";}
 function fnvBytes(a){var h=2166136261>>>0;for(var i=0;i<a.length;i++){h^=a[i];h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function probe(fn){try{var v=fn();return v===undefined?"undefined":v;}catch(e){return "ERR:"+(e&&e.name||e);}}
@@ -495,7 +488,7 @@ function catHash(rows){return fnv(rows.filter(function(r){return !VOLROW.test(St
 function cat(name,rows,note){C[name]={rows:rows,hash:catHash(rows),note:note||""};return C[name];}
 function glDone(g){try{var e=g&&g.getExtension&&g.getExtension("WEBGL_lose_context");if(e)e.loseContext();}catch(x){}}
 
-/* COLLECTORS - canvas, WebGL, GPU =========================================== */
+/* COLLECTORS - canvas, WebGL, GPU ======================================== */
 function canvas2dHash(){var c=document.createElement("canvas");c.width=300;c.height=64;var x=c.getContext("2d");if(!x)return null;x.textBaseline="top";x.font="16px 'Arial'";x.fillStyle="#f60";x.fillRect(8,1,180,42);x.fillStyle="#069";x.fillText("Privacyassay\u{1F47E}\u{1F600}",2,15);x.fillStyle="rgba(80,200,120,.65)";x.fillText("Privacyassay\u{1F47E}\u{1F600}",4,17);x.beginPath();x.arc(48,32,22,0,7);x.closePath();x.fill();return c;}
 function collectGPU(){
   var rows=[];
@@ -554,7 +547,7 @@ function collectGPU(){
   return cat("Active Rendering & GPU",rows,"Canvas and WebGL rendering values. Identical values across two origins can be linked; per-origin values cannot.");
 }
 
-/* COLLECTORS - audio, media codecs ========================================== */
+/* COLLECTORS - audio, media codecs ======================================= */
 function collectAudioSync(){
   var rows=[];
   var AC=window.AudioContext||window.webkitAudioContext;
@@ -595,7 +588,7 @@ function collectAudioAsync(){
   });
 }
 
-/* COLLECTORS - fonts, text metrics ========================================== */
+/* COLLECTORS - fonts, text metrics ======================================= */
 function fontFaceLocalProbe(){
   return new Promise(function(res){
     var N=9,out={real:[],fake:[],realStatus:"?",fakeStatus:"?"};
@@ -633,10 +626,6 @@ function collectFonts(){
   var rows=[];
   var list=["Arial","Arial Black","Calibri","Cambria","Candara","Comic Sans MS","Consolas","Constantia","Corbel","Courier New","Ebrima","Franklin Gothic","Gabriola","Georgia","Impact","Lucida Console","Lucida Sans","Marlett","Microsoft Sans Serif","Palatino Linotype","Segoe Print","Segoe Script","Segoe UI","Sylfaen","Tahoma","Times New Roman","Trebuchet MS","Verdana","Webdings","Wingdings","Helvetica","Menlo","Monaco","San Francisco","Ubuntu","Roboto","Noto Sans","DejaVu Sans","Liberation Sans","Cantarell"];
   var base=["monospace","sans-serif","serif"];var span=document.createElement("span");span.style.cssText="position:absolute;left:-9999px;top:-9999px;font-size:72px";span.textContent="mmMwWLl0O\u{1F600}il1";document.body.appendChild(span);
-// A broken measurement and a browser that hides every font both end with an empty list, and
-// fnv("") is a normal-looking hash that scores as a font list handed over. The baseline widths
-// decide which happened: if they are not usable numbers nothing was measured, so the reading is
-// an error rather than a fingerprint.
   var def={},measurable=true;
   base.forEach(function(b){span.style.fontFamily=b;var w=span.offsetWidth,h=span.offsetHeight;
     if(typeof w!=="number"||typeof h!=="number"||!isFinite(w)||!isFinite(h)||(w===0&&h===0))measurable=false;
@@ -682,7 +671,7 @@ function collectFonts(){
   return cat("Font Enumeration",rows,"The set of installed fonts and text-metric widths. Emoji rendering reflects the OS emoji-font version.");
 }
 
-/* COLLECTORS - navigator, client hints, screen, timezone ==================== */
+/* COLLECTORS - navigator, client hints, screen, timezone ================= */
 function collectNavigator(){
   var n=navigator,rows=[];
   ["userAgent","appVersion","platform","vendor","vendorSub","product","productSub","appName","appCodeName","language","oscpu","buildID"].forEach(function(k){rows.push([k,probe(function(){return n[k];})]);});
@@ -751,7 +740,7 @@ function collectTZ(){
   return cat("Timezone & Locale",rows,"Timezone and locale, which narrow the region.");
 }
 
-/* COLLECTORS - CSS metrics, JS engine, math ================================= */
+/* COLLECTORS - CSS metrics, JS engine, math ============================== */
 function collectCSS(){
   var rows=[],mm=function(q){try{var m=matchMedia(q);return m?m.matches:false;}catch(e){return false;}};
   ["prefers-color-scheme: dark","prefers-reduced-motion: reduce","prefers-contrast: more","prefers-reduced-transparency: reduce","forced-colors: active","inverted-colors: inverted","dynamic-range: high","color-gamut: p3","color-gamut: rec2020","pointer: fine","pointer: coarse","hover: hover","any-pointer: coarse"].forEach(function(q){rows.push(["@media "+q,mm("("+q+")")]);});
@@ -822,7 +811,7 @@ function collectEngine(){
   return cat("JS Engine & Math",rows,"Math rounding and engine error signatures, which identify the JavaScript engine and survive UA changes.");
 }
 
-/* COLLECTORS - plugins, features, timing, storage, display ================== */
+/* COLLECTORS - plugins, features, timing, storage, display =============== */
 function collectPlugins(){
   var rows=[],p=navigator.plugins||[],m=navigator.mimeTypes||[];
   rows.push(["plugins.length",p.length]);
@@ -902,7 +891,7 @@ function collectDisplayCaps(){
   return cat("Display Capabilities",rows,"Media features describing the display and input hardware.");
 }
 
-/* COLLECTORS - WebRTC, Web3, automation tells =============================== */
+/* COLLECTORS - WebRTC, Web3, automation tells ============================ */
 function collectWebRTCCaps(){
   var rows=[];
   if(window.RTCRtpSender&&RTCRtpSender.getCapabilities){
@@ -954,11 +943,7 @@ function collectBot(){
   return cat("Bot / Headless / Automation",rows,"webdriver, automation renderers and automation globals that indicate a controlled browser.");
 }
 
-/* ASYNC COLLECTORS - WebGPU, built-in AI, devices, codecs =================== */
-// The body runs inside a Promise executor, so anything it throws REJECTS rather than returning a
-// value, and this collector is awaited: a getter that throws on `navigator.gpu` used to take the
-// whole audit down with it. Reading a property that throws is the case this tool exists to
-// measure, so it resolves with an error row instead.
+/* ASYNC COLLECTORS - WebGPU, built-in AI, devices, codecs ================ */
 function collectWebGPU(){
   return new Promise(function(res){
     var rows=[];
@@ -1066,7 +1051,7 @@ function collectCodecs(){
   });
 }
 
-/* COLLECTORS - privacy sandbox, sensors, capabilities ======================= */
+/* COLLECTORS - privacy sandbox, sensors, capabilities ==================== */
 function collectSandbox(){
   var rows=[];
   [["Topics API (document.browsingTopics)",typeof document.browsingTopics==="function"],
@@ -1125,7 +1110,7 @@ function collectCapabilities(){
   });
 }
 
-/* COLLECTORS - instrumentation, DRM, refresh rate, leak posture ============= */
+/* COLLECTORS - instrumentation, DRM, refresh rate, leak posture ========== */
 function collectInstrumentation(){
   var rows=[];
   var st="";try{throw new Error("probe");}catch(e){st=e.stack||"";}
@@ -1185,12 +1170,12 @@ function collectLeaks2026(){
 }
 window.__collectors={collectGPU:collectGPU,collectLeaks2026:collectLeaks2026,collectAudioSync:collectAudioSync,collectAudioAsync:collectAudioAsync,collectFonts:collectFonts,collectNavigator:collectNavigator,collectUAData:collectUAData,collectScreen:collectScreen,collectTZ:collectTZ,collectCSS:collectCSS,collectEngine:collectEngine,collectPlugins:collectPlugins,collectFeatures:collectFeatures,collectTiming:collectTiming,collectStorageSync:collectStorageSync,collectDisplayCaps:collectDisplayCaps,collectWebRTCCaps:collectWebRTCCaps,collectWeb3:collectWeb3,collectBot:collectBot,collectWebGPU:collectWebGPU,collectAI:collectAI,collectDeviceAccess:collectDeviceAccess,collectCodecs:collectCodecs,collectSandbox:collectSandbox,collectSensors:collectSensors,collectCapabilities:collectCapabilities,collectInstrumentation:collectInstrumentation,collectMediaCaps:collectMediaCaps,cat:function(){return C;},fnv:fnv,fnvBytes:fnvBytes,present:present,probe:probe};
 
-/* NATIVE-FUNCTION TAMPER DETECTION ========================================== */
+/* TAMPER DETECTION - has anything patched the APIs we read? ============== */
 var NATIVE_RE=/^function\s*(?:get |set )?[\w$]*\s*\(\)\s*\{\s*\[native code\]\s*\}$/;
 function tsOf(fn){try{return Function.prototype.toString.call(fn);}catch(e){return "THREW";}}
 function checkNative(fn){var ts=tsOf(fn);if(!NATIVE_RE.test(ts))return "toString";if(("prototype" in fn))return "prototype";var keys=Object.getOwnPropertyNames(fn).sort().join(",");if(keys!=="length,name")return "keys:"+keys;try{var rk=Reflect.ownKeys(fn).filter(function(k){return typeof k==="string";}).sort().join(",");if(rk!=="length,name")return "reflectKeys:"+rk;}catch(e){}return "";}
 
-/* STORAGE-PARTITION PROBES - cross-site carry, 13 mechanisms ================ */
+/* STORAGE-PARTITION PROBES - cross-site carry, 13 mechanisms ============= */
 var PA_SK="pa_partition";
 var __paWallets=[];
 try{addEventListener("eip6963:announceProvider",function(e){try{var n=e&&e.detail&&e.detail.info&&e.detail.info.name;if(n&&__paWallets.indexOf(n)<0)__paWallets.push(n);}catch(x){}});dispatchEvent(new Event("eip6963:requestProvider"));}catch(e){}
@@ -1204,6 +1189,8 @@ function paOpfs(mode,tok){return navigator.storage.getDirectory().then(function(
   .then(function(h){return mode==="w"?h.createWritable().then(function(w){return w.write(tok).then(function(){return w.close();}).then(function(){return 1;});}):h.getFile().then(function(f){return f.text();});});}
 function paCacheApi(mode,tok){var u="/__pa_cache_probe";return caches.open(PA_SK).then(function(c){
   return mode==="w"?c.put(new Request(u),new Response(tok)).then(function(){return 1;}):c.match(u).then(function(m){return m?m.text():"";});});}
+
+/* - write, read back, clear across all mechanisms -------- */
 function paStoreEach(mode,tok){
   var got={},refused=[],unsup=[],jobs=[];
   function J(k,ok,fn){
@@ -1263,6 +1250,8 @@ function paStoreClear(){
   try{if(navigator.storage&&navigator.storage.getDirectory)jobs.push(navigator.storage.getDirectory().then(function(d){return d.removeEntry(PA_SK+".txt");}).catch(function(){}));}catch(e){}
   return Promise.all(jobs);
 }
+
+/* - the write half of the supercookie test --------------- */
 function paPartitionWrite(tok){
   
   var oh=otherOrigin();if(!oh)return Promise.resolve(null);
@@ -1284,7 +1273,7 @@ function paPartitionWrite(tok){
   });
 }
 
-/* LIE-DETECTION TARGET TABLE + DEEP NATIVE BATTERY ========================== */
+/* LIE-DETECTION TARGETS - the APIs checked for tampering ================= */
 var LT=[["HTMLCanvasElement.prototype","toDataURL","m"],["HTMLCanvasElement.prototype","toBlob","m"],
   ["CanvasRenderingContext2D.prototype","getImageData","m"],["CanvasRenderingContext2D.prototype","measureText","m"],
   ["CanvasRenderingContext2D.prototype","isPointInPath","m"],
@@ -1368,7 +1357,7 @@ function lieBattery(){
   return {targets:targets,dirty:dirty,hits:hits,extensions:Object.keys(extIds)};
 }
 
-/* FINDABILITY CATALOG - the scored readings and their weights =============== */
+/* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
   version:"0.9.0-beta", dated:"2026-07-31",
   scale:{
@@ -1378,6 +1367,8 @@ var PRIORS={
     tiers:"we rate each reading strong, medium or weak by how much it narrows you down. Strong readings are near-unique on their own, such as canvas, installed fonts and window size; weak ones are a small hint, such as CPU cores or colour depth. These ratings are our judgment, not a measurement.",
     states:"each reading is SHOWN (your real value, helps a tracker), REFUSED (blank or error, helps nobody), or BLENDED (the value every user of this browser shares, so it does not single you out)."
   },
+
+/* - browser families and the values each reports uni ----- */
   browsers:{
     "chromium":   {label:"Chromium family (Chrome, Edge, Opera and relatives)", implies:{}},
     "webkit":     {label:"Safari or another WebKit engine",
@@ -1402,6 +1393,8 @@ var PRIORS={
                    verified:"everything the resistFingerprinting family carries, plus three measured hashes that"},
     "other":      {label:"another engine", implies:{}}
   },
+
+/* - the 30 scored readings: key, category, weight, l ----- */
   surfaces:[
     {k:"canvasClass", group:"gpu", tier:3, label:"canvas drawing", hashKey:"canvasHash",
      verified:"one of the most identifying readings there is"},
@@ -1429,9 +1422,6 @@ var PRIORS={
      verified:"which codecs the system provides reflects the OS build and how the browser was packaged"},
     {k:"webglParams", group:"gpu", tier:2, label:"GPU limits", hashKey:"webglParams",
      verified:"driver capability limits, read straight from the GPU stack"},
-// WebGPU sits in the gpu category because it has the same cause as the WebGL readings: the
-// installed GPU and its driver. Under the category rule it therefore only moves a score for a
-// browser that hides canvas and WebGL and still answers WebGPU, which is the case worth catching.
     {k:"webgpuAdapter", group:"gpu", tier:2, label:"WebGPU adapter",
      verified:"vendor, architecture and device reported by the WebGPU adapter, which name the GPU independently of WebGL"},
     {k:"webgpuLimits", group:"gpu", tier:2, label:"WebGPU limits",
@@ -1473,15 +1463,9 @@ var PRIORS={
   ]
 };
 
-// PRIORS.version is the only version literal in this file. Every other place that shows or
-// exports a version reads it from here, so a bump cannot leave a stale number behind.
 try{[].forEach.call(document.querySelectorAll(".pa-vernum"),function(e){e.textContent="v"+PRIORS.version;});}catch(e){}
 
-/* FINDABILITY HELPERS - tiers, letterbox, canvas class ====================== */
-// Which PRIORS.browsers entry a run is scored against, and so which uniform values it may be
-// credited for. Order matters: a Tor or Mullvad build also answers to the Firefox checks below
-// it, and identify() can return nothing at all, in which case the user agent alone decides and
-// no family-specific credit is given. Named so it can be tested without a browser.
+/* FINDABILITY HELPERS - tiers, letterbox, canvas class =================== */
 function paFamilyKey(names,ua){
   names=String(names||"");ua=String(ua||"");
   return /Brave/.test(names)?"brave":
@@ -1504,10 +1488,6 @@ function paHashClass(h){
   if(!h||h==="ERR"||/^(n\/a|unavailable|blocked|absent)/i.test(h))return "unavailable";
   return "present";
 }
-// Detects the rounded viewport resistFingerprinting snaps to. It cannot tell a browser that
-// rounds from one whose window happens to land on a round number, so it is only consulted for
-// families whose build actually letterboxes (see PRIORS.browsers[].letterboxes). 1200x800 is a
-// common window size and would otherwise be credited as protection.
 function paLetterboxed(w,h){
   
   if(!(w>50&&h>50))return false;
@@ -1517,11 +1497,6 @@ function paLetterboxed(w,h){
 }
 function paTier(s){return s.tier||2;}
 function paIsLB(v){var m=/^(\d+)x(\d+)$/.exec(String(v));return !!m&&paLetterboxed(+m[1],+m[2]);}
-// "noise-per-read" is a claim about two reads, so this draws twice and compares. An earlier
-// version returned it from a single read whenever the pixels deviated from the fill colour,
-// which credited a stable per-site farble (Brave) as protection it does not provide inside one
-// visit, and would credit any colour-management shift the same way. A deviation that reproduces
-// is stable, so it is trackable, so it reads as "unique".
 function paCanvasClass(){
   try{
     var draw=function(){
@@ -1543,14 +1518,12 @@ function paCanvasClass(){
   }catch(err){return "";}
 }
 
-/* FINDABILITY - observe readings, score them, cross-origin merge ============ */
+/* FINDABILITY - observe readings, score them, cross-origin merge ========= */
+
+/* - read every scored surface into one flat object ------- */
 function observeVectors(){
   
   var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return d;}};
-// The WebGPU collector writes "(empty)" for an adapter field the browser withheld and "absent"
-// for one it does not implement. Both are refusals, not values, and fnvParts only recognises an
-// empty string as dead - hashing "(empty)|(empty)|(empty)" would produce a normal-looking
-// fingerprint for a browser that told us nothing.
   var W=function(needle){var v=paRow("WebGPU",needle);
     return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
   return {
@@ -1599,6 +1572,8 @@ function observeVectors(){
     webgpuLimits:W("gpuadapter.limits")
   };
 }
+
+/* - classify each reading, then score by category sh ----- */
 var TIERWORD={3:"strong",2:"medium",1:"weak"};
 function findability(observed,familyKey){
   var br=PRIORS.browsers[familyKey]||PRIORS.browsers.other;
@@ -1613,19 +1588,12 @@ function findability(observed,familyKey){
     }else{
       v=String(v);
       
-// blended is credited three ways and no others: a mask this code actively detects (the six
-// conditions below), a value that differed between the two reads (noisy, below), or a value
-// PRIORS documents the browser family as reporting uniformly. Rarity is never assumed. Each
-// condition below names a specific observable, not a guess about the browser.
       var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
                  ((s.k==="webglRenderClass"||s.k==="audioRenderClass")&&v==="unavailable")||
                  ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
                  (s.k==="availFrame"&&v==="masked")||
                  (s.k==="speechVoices"&&/^0[\s(]/.test(v))||
                  (s.k==="fontSet"&&/blocked|protected/i.test(String(observed.fontLocalBlocked||"")));
-// A value that differs between two reads in the same page cannot follow anyone between visits,
-// so it is blended. noCrossDiff surfaces (window, screen) are excluded because they can shift
-// while a window settles, which would be credited as protection it did not provide.
       var noisy=!!(observed._noisy&&observed._noisy[s.k]&&!s.noCrossDiff);
       if(noisy){state="blended";why="this value changes on every read, so it cannot be used to follow you between visits";}
       else if(masked){state="blended";why="your browser masks this so it cannot be used to follow you between visits";}
@@ -1638,8 +1606,6 @@ function findability(observed,familyKey){
     groupSum[s.group]=(groupSum[s.group]||0)+_it;
     if(state!=="shown")groupHid[s.group]=(groupHid[s.group]||0)+_it;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-// weight is the reading's catalog tier and is always present. tier is what it costs you here,
-// so it is 0 unless the state is shown; reading tier as the weight understates every masked row.
     rows.push({label:s.label,value:String(v),group:s.group,weight:_it,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
   var groups=Object.keys(groupShownTier);
@@ -1647,12 +1613,6 @@ function findability(observed,familyKey){
   var med=groups.filter(function(g){return groupShownTier[g]===2;});
   var low=groups.filter(function(g){return groupShownTier[g]===1;});
   
-// A category is worth its heaviest reading, and it pays out the SHARE of itself you hide. The
-// earlier rule paid only for the heaviest reading, so hiding anything lighter than what you
-// still showed earned nothing: seven of the readings could not move any score at all, and a
-// browser hiding four of five GPU readings scored the same as one hiding none. Weighting the
-// category by its heaviest reading still stops a category we probe seven times outweighing one
-// we probe once, which is the thing the old rule got right.
   var totW=0,hidW=0;
   Object.keys(groupTotalTier).forEach(function(g){
     totW+=groupTotalTier[g];
@@ -1666,9 +1626,6 @@ function findability(observed,familyKey){
   if(!nShown)verdict="Nothing we check singles you out here.";
   else verdict="You hide "+score+"% of what this tool checks for"+(topShown?". Biggest leak: "+topShown:"")+
     (exposedStrong.length?". Still exposed: "+exposedStrong.slice(0,3).join(", ")+(exposedStrong.length>3?" and "+(exposedStrong.length-3)+" more":""):"")+".";
-// The per-category working, exported rather than recomputed by the renderer, so what the page
-// shows under "How this number was reached" is the same arithmetic the score came from and the
-// two cannot drift apart.
   var categories=Object.keys(groupTotalTier).map(function(g){
     var w=groupTotalTier[g],sum=groupSum[g]||0,hid=groupHid[g]||0;
     return {id:g,weight:w,weightInside:sum,hiddenInside:hid,earned:w*(sum?hid/sum:0)};
@@ -1680,18 +1637,14 @@ function findability(observed,familyKey){
     categories:categories, totalWeight:totW, earnedWeight:hidW,
     rows:rows, browser:familyKey, verdict:verdict, version:PRIORS.version};
 }
+
+/* - same catalog on a second origin, merged -------------- */
 function findabilityCross(obsA,obsB,familyKey){
-// shownSet is the gate: a reading counts as cross-site protection only if it was SHOWN
-// single-site AND differs between origins. Without it, per-read noise already credited as
-// blended would be credited a second time for changing across origins.
   var single=findability(obsA,familyKey),shownSet={};
   (single.rows||[]).forEach(function(r){if(r.state==="shown")shownSet[r.label]=1;});
 
   var merged={};for(var _k in obsA){if(Object.prototype.hasOwnProperty.call(obsA,_k))merged[_k]=obsA[_k];}
   var changed=[];
-// A reading that failed on the second origin is not a reading that differed. Without this, an
-// error or an unavailable marker on origin B counted as per-site variation and was credited as
-// protection, which is the same flattering failure the refused state has.
   var dead=function(x){x=String(x==null?"":x);
     return x===""||x==="undefined"||/^ERR(:|$)/i.test(x)||/^(n\/a|unavailable|blocked|absent)/i.test(x);};
   PRIORS.surfaces.forEach(function(s){
@@ -1709,7 +1662,7 @@ function findabilityCross(obsA,obsB,familyKey){
   return F;
 }
 
-/* BROWSER IDENTIFICATION - name the browser from its defenses =============== */
+/* BROWSER IDENTIFICATION - name the browser from its defenses ============ */
 function identify(){
   var out=[],T=function(f,d){try{return f();}catch(e){return d;}};
   function hit(what,conf,ev,kind){out.push({what:what,confidence:conf,evidence:ev,kind:kind||"browser"});}
@@ -1788,7 +1741,7 @@ function identify(){
   return out;
 }
 
-/* COHERENCE / LIE DETECTION - do the readings agree with each other ========= */
+/* COHERENCE / LIE DETECTION - do the readings agree with each other ====== */
 function coherence(H){
   var checks={},detail={};
   var wrapped=[["ctx.getImageData",CanvasRenderingContext2D.prototype.getImageData],["canvas.toDataURL",HTMLCanvasElement.prototype.toDataURL],["canvas.toBlob",HTMLCanvasElement.prototype.toBlob],["Function.toString",Function.prototype.toString],["Math.tan",Math.tan],["Date.getTimezoneOffset",Date.prototype.getTimezoneOffset]];
@@ -1969,7 +1922,7 @@ function coherence(H){
   return {checks:checks,detail:detail};
 }
 
-/* LEAK PROBES - WebRTC, extension enumeration, realms, workers ============== */
+/* LEAK PROBES - WebRTC, extension enumeration, realms, workers =========== */
 function webrtc(){
   return new Promise(function(res){
     var ips=[];try{var pc=new RTCPeerConnection(PAV.webrtcStun?{iceServers:[{urls:"stun:stun.l.google.com:19302"}]}:{iceServers:[]});pc.createDataChannel("x");
@@ -1979,6 +1932,8 @@ function webrtc(){
     var d=false;function fin(){if(d)return;d=true;try{pc.onicecandidate=null;pc.close();}catch(e){}var ips2=ips.slice();var mdns=ips2.filter(function(i){return /\.local$/i.test(i);});var real=ips2.filter(function(i){return !/\.local$/i.test(i);});var priv=real.filter(function(i){return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|127\.|fe80:|f[cd])/i.test(i);});var pub=real.filter(function(i){return priv.indexOf(i)<0;});res({ips:ips2,privateIPs:priv,mdns:mdns,publicIPs:pub});}
   });
 }
+
+/* - extension enumeration -------------------------------- */
 function extScan(){
   return new Promise(function(res){
 
@@ -2027,11 +1982,8 @@ function sharedWorkerCheck(){
     }catch(e){res({err:""+e});}
   });
 }
-// These two are the only awaited probes, so a SYNCHRONOUS throw from either one rejects the
-// whole run and the audit never produces a score. A .catch on the returned promise does not
-// help: if the call throws before returning a promise there is nothing to attach to. Every
-// other probe is wrapped, and a browser or extension that makes an API throw on call is
-// exactly the case this tool exists to measure, so it must degrade to a refused reading.
+
+/* - client hints, awaited -------------------------------- */
 function highEntropy(){
   return new Promise(function(res){
     if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues){res(null);return;}
@@ -2045,20 +1997,20 @@ function headers(){
     catch(e){res(null);}});
 }
 
-/* RENDER HELPERS ============================================================ */
+/* RENDER HELPERS - escaping, carets, band colours, group rollup ========== */
 function esc(s){return (""+s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 
-/* RESULTS VIEW - verdict ring, findings receipt, cross-site proof, ========== */
+/* RESULTS VIEW - verdict ring, score working, findings, cross-site ======= */
+
+/* - view state, persisted across re-renders -------------- */
 var PAV={open:{},acc:{},full:{},maskedOpen:false,redact:true,webrtcStun:false,storageTest:false,disp:0,raf:null,lastScore:null};
 var PASM={
   shown:{color:"var(--red)",bg:"var(--red-bg)",word:"handed over",icon:"✕"},
   blended:{color:"var(--amber)",bg:"var(--amber-bg)",word:"masked",icon:"~"},
   refused:{color:"var(--green)",bg:"var(--green-bg)",word:"not readable",icon:"✓"}
 };
-// The score's own working, collapsed by default. Bar WIDTH is what the category is worth and
-// green FILL is the share of it hidden, so the green area is the earned total: the formula is
-// the layout rather than a line of symbols. Everything comes from F.categories, which findability
-// exports, so this cannot disagree with the number above it.
+
+/* - the score's own working, collapsed by default -------- */
 function paCalcPanel(F){
   var cats=F.categories||[];if(!cats.length||!F.totalWeight)return "";
   var open=!!PAV.calcOpen,earned=(F.earnedWeight||0).toFixed(2);
@@ -2069,9 +2021,6 @@ function paCalcPanel(F){
   h+='<span>How this number was reached</span>';
   h+='<span class="pa-calc-eq pa-mono">'+eq+'</span></button>';
   if(open){
-// One worked example, not a second copy of the category list below. Prefer a category the
-// browser only partly hides, because that is where the fraction does visible work; fall back to
-// the heaviest one when nothing is partial.
     var ex=null;
     cats.forEach(function(c){if(c.hiddenInside>0&&c.hiddenInside<c.weightInside&&(!ex||c.weight>ex.weight))ex=c;});
     if(!ex)cats.forEach(function(c){if(!ex||c.weight>ex.weight)ex=c;});
@@ -2087,6 +2036,8 @@ function paCalcPanel(F){
   }
   return h+'</div>';
 }
+
+/* - lookup tables: category names, digits, bands --------- */
 var PAGRP={gpu:"Canvas & GPU",window:"Window size",fonts:"Installed fonts",network:"WebRTC IP",
   extensions:"Browser extensions",storage:"Cross-site storage",layout:"Layout & text metrics",
   display:"Screen & display",media:"Media & voices",audio:"Audio fingerprint",
@@ -2107,6 +2058,8 @@ function paBandFor(g){
 }
 
 function paTileMatch(g,f){return f==="shown"?g.state==="shown":f==="strong"?(g.state==="shown"&&g.weight>=3):f==="blended"?g.state==="blended":f==="refused"?g.state==="refused":true;}
+
+/* - roll readings up into categories for display --------- */
 function paGroupsFrom(F){
   
   var T=paTierMap(),by={};
@@ -2140,6 +2093,8 @@ function paRing(score,color){
 function paIsRand(R){
   return R.strategy==="randomization"||R.strategy==="mixed"||/Brave/i.test((R.whoYouAre||[]).map(function(f){return f.what;}).join(" "));
 }
+
+/* - shape the cross-site result for the card ------------- */
 function paCrossData(R){
   var Fc=R.findabilityCross;
   var a=(location.host||"this page"),b="",comp=null;
@@ -2170,6 +2125,8 @@ function paEsc(s){return esc(String(s==null?"":s));}
 function paCaret(open){
   return '<span style="display:inline-flex;color:var(--text-3);flex:0 0 auto;"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="transform:rotate('+(open?180:0)+'deg);transition:transform .18s ease;"><path d="M1.5 3.5 L5 7 L8.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>';
 }
+
+/* - the report: verdict, working, findings, cross-si ----- */
 function paRenderView(R){
   var host=document.getElementById("summary");if(!host)return;
   var F=R.findability;
@@ -2249,9 +2206,6 @@ function paRenderView(R){
     h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:15px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
     if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' storage mechanisms stayed partitioned'+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):'; no persistent supercookie carried')+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); browsers partition it per site on real cross-origin domains, so it is shown but not scored':'')+'.</div>';
   }
-// The supercookie test is opted into separately from the cross-site test, so its outcome has to
-// render whether or not the cross-site comparison succeeded. Nested inside the success branch it
-// stayed invisible in exactly the case it exists for: a browser that blocked the pop-up.
   if(cs.partitionBlocked)h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--amber);line-height:1.5;"><b>Supercookie test did not run.</b> '+paEsc(cs.partitionBlocked)+'</div>';
   h+='</div></div>';
   var xb=R.crossBrowser;
@@ -2358,6 +2312,8 @@ function paAnimateRing(target){
     if(t<1)PAV.raf=requestAnimationFrame(step);
   })(t0);
 }
+
+/* - export toolbar --------------------------------------- */
 function paExportBar(){
   var b='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-shadow);padding:12px 14px;margin-top:16px;">';
   b+='<button class="pa-solid-hov" data-pa="savesum" style="background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:9px;padding:9px 15px;font-size:13.5px;font-weight:600;white-space:nowrap;">Save summary</button>';
@@ -2369,12 +2325,8 @@ function paExportBar(){
   b+='</div>';
   return b;
 }
-// Default-deny. Only values recognised as harmless survive (status words and plain numbers);
-// everything else is replaced. Two earlier versions leaked here: an allow-list that named
-// patterns to hide let the user agent, GPU model and timezone through, and a carve-out for
-// 8-hex values let the canvas, WebGL and font hashes through under labels that do not contain
-// the word "hash" ("canvas 2D toDataURL"). A hash of a fingerprint IS the fingerprint, so no
-// hash survives now. A list of things to hide can never be finished.
+
+/* - redaction: default-deny on everything shared --------- */
 function paRedactVal(k,v){
   v=String(v==null?"":v);
   if(/\bip\b|address|candidate|hash|fingerprint/i.test(String(k)))return "[redacted]";
@@ -2383,6 +2335,8 @@ function paRedactVal(k,v){
   if(/^-?\d{1,7}(\.\d{1,3})?\s*(ms|hz|px|dppx|db|bit|bits)?$/i.test(v))return v;
   return "[redacted]";
 }
+
+/* - raw view: every reading, unscored -------------------- */
 function paRenderRaw(R,order){
   var rep=document.getElementById("report");if(!rep)return;
   if(order)PAV.order=order;else order=PAV.order||[];
@@ -2447,7 +2401,7 @@ function paRenderRaw(R,order){
   rep.innerHTML=h;
 }
 
-/* EXPORT - redactable summary + full JSON download ========================== */
+/* EXPORT - redactable summary + full JSON download ======================= */
 function paDownload(name,obj){
   try{
     var blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
@@ -2479,9 +2433,6 @@ function paSave(kind){
       cappedBy:F.strongest||null,topLeaks:(F.exposedStrong||[]),
       handedOver:groups.filter(function(g){return g.state==="shown";}).sort(function(a,b){return b.weight-a.weight;})
         .map(function(g){return {surface:g.reading,weight:g.weight,exposed:g.exposedLabel};}),
-// Every field here counts READINGS. masked and notReadable used to count CATEGORIES while their
-// neighbours counted readings, so Mullvad exported masked:6 with 20 readings blended and the
-// four numbers did not add up to readingsTotal. They now satisfy hidden = masked + notReadable.
       counts:{readingsHidden:F.checks.held,readingsTotal:F.checks.total,strongLeaks:(F.exposedStrong||[]).length,
         masked:(F.rows||[]).filter(function(r){return r.state==="blended";}).length,
         notReadable:(F.rows||[]).filter(function(r){return r.state==="refused";}).length},
@@ -2523,8 +2474,6 @@ document.addEventListener("click",function(e){
   else if(k==="calc"){PAV.calcOpen=!PAV.calcOpen;if(K)paRenderView(K);}
   else if(k==="masked"){PAV.maskedOpen=!PAV.maskedOpen;if(K)paRenderView(K);}
   else if(k==="redact"){PAV.redact=!PAV.redact;var _ro=document.getElementById("redactOptin");if(_ro)_ro.checked=PAV.redact;if(K){paRenderView(K);paRenderRaw(K,null);}}
-// A printed report shows everything, including the score's working, which is a button rather
-// than a <details> and so is not covered by the sweep below.
   else if(k==="print"){var wasCalc=!!PAV.calcOpen;if(!wasCalc&&K){PAV.calcOpen=true;paRenderView(K);}
     var cl=[];document.querySelectorAll("details:not([open])").forEach(function(d){d.setAttribute("open","");cl.push(d);});window.print();
     setTimeout(function(){cl.forEach(function(d){d.removeAttribute("open");});if(!wasCalc){PAV.calcOpen=false;if(K)paRenderView(K);}},300);}
@@ -2533,7 +2482,7 @@ document.addEventListener("click",function(e){
   else if(k==="rescan"){var rb=document.getElementById("runBtn");if(rb)rb.click();}
 });
 
-/* RUN PIPELINE - collect, analyse, assemble the report object =============== */
+/* RUN PIPELINE - collect, analyse, assemble the report object ============ */
 async function runKit(){
   window.__KIT_DONE=false;
   PAV.lastScore=null;PAV.disp=0;
@@ -2542,12 +2491,11 @@ async function runKit(){
   document.getElementById("report").innerHTML="";
   document.getElementById("summary").innerHTML='<div class="status"><span class="spin"></span><span id="stat">'+(BEACON?"cross-site unlinkability probe…":"Collecting fingerprint vectors…")+'</span></div>';
   var R={version:PRIORS.version,categories:{},coherence:null,leaks:{},realm:{},worker:{},uaHigh:null,headers:null,fingerprint:"",stableHash:""};
+
+/* - phase 1: synchronous collectors ---------------------- */
   [collectGPU,collectAudioSync,collectFonts,collectNavigator,collectUAData,collectScreen,collectTZ,collectCSS,collectEngine,collectPlugins,collectFeatures,collectTiming,collectStorageSync,collectDisplayCaps,collectWebRTCCaps,collectWeb3,collectSensors,collectSandbox,collectInstrumentation,collectBot,collectLeaks2026].forEach(function(f){try{f();}catch(e){}});
-// Every awaited collector goes through this. Each one is a Promise executor, so anything its body
-// throws REJECTS instead of returning, and a bare `await collectX()` then takes the whole audit
-// down: no score at all, for one property that threw. Three separate probes hit this before it was
-// centralised here. A collector that fails leaves its category missing, which the classifier reads
-// as refused - not as a value handed over.
+
+/* - phase 2: awaited collectors, each isolated from ------ */
   var _pTry=function(f){return Promise.resolve().then(f).catch(function(){return null;});};
   await _pTry(collectWebGPU);
   await _pTry(collectAI);
@@ -2604,12 +2552,10 @@ async function runKit(){
     var _st=null;try{_st=await Promise.race([paStoreEach("r",_btm?_btm[1]:""),new Promise(function(r){setTimeout(function(){r(null);},6000);})]);}catch(e){}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-// The beacon hands the full observation set back to the page that opened it, so the target
-// origin is only ever one this copy already trusts: PA_HOME, or its loopback sibling. It used
-// to prefer document.referrer, which let any site frame a deployed copy at #pabeacon and be
-// posted its visitor's canvas, font and WebGL hashes. Nothing is posted when neither is set.
     try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=(function(){try{if(PA_HOME&&/^https?:/i.test(PA_HOME))return new URL(PA_HOME).origin;}catch(e){}var o=otherOrigin();if(o)return location.protocol+"//"+o;return "";})();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
+
+/* - phase 3: headers, leaks, identity, coherence --------- */
   R.uaHigh=await highEntropy();if(R.uaHigh)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
   R.headers=await headers();
   R.leaks.webrtc=await webrtc();
@@ -2620,13 +2566,6 @@ async function runKit(){
     var _names=(R.whoYouAre||[]).map(function(f){return f.what;}).join(" | "),_ua=navigator.userAgent||"";
     var _fam=paFamilyKey(_names,_ua);
     var _obs=observeVectors();
-// observeVectors runs twice so a per-read randomizer is visible. This reaches only the 14
-// surfaces read live here; the other 12 are pulled by paRow out of rows the collectors already
-// computed, so a second call returns them byte-identical by construction and they can never be
-// classified noisy. Those 12 are hash surfaces (rects, textMetrics, webglExt and so on), which
-// is exactly where a per-read randomizer would show, so this path UNDER-credits rather than
-// over-credits. Canvas, the surface randomizers touch most, is covered instead by the two-draw
-// comparison inside paCanvasClass.
     _obs._noisy=(function(){try{var b=observeVectors(),n={};for(var k in _obs){if(!Object.prototype.hasOwnProperty.call(_obs,k)||k==="_noisy")continue;var x=_obs[k],y=b[k];if(x!=null&&y!=null&&String(x)!==""&&String(x)!==String(y))n[k]=1;}return n;}catch(e){return {};}})();
     _obs.webrtcIP=PAV.webrtcStun?((R.leaks.webrtc&&(R.leaks.webrtc.publicIPs||[]).length)?"exposed":""):null;
     _obs.extEnum=(function(){try{var es=R.leaks.ext||{};var nodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;var stk="";try{throw new Error("p");}catch(e){stk=e.stack||"";}return (es.detectable||nodes>0||/chrome-extension:\/\/|moz-extension:\/\//i.test(stk))?"exposed":undefined;}catch(e){return undefined;}})();
@@ -2659,6 +2598,7 @@ async function runKit(){
   }
   R.realm=await realmCheck();R.worker=await workerCheck();R.sharedWorker=await sharedWorkerCheck();
 
+/* - phase 4: the fingerprint hashes ---------------------- */
   var stableCats=["Active Rendering & GPU","Audio & Media Codecs","Font Enumeration","Navigator Properties","Screen & Display","Timezone & Locale","CSS & Rendering","JS Engine & Math","Plugins & MIME Types"];
   var sHash=function(k){var c=C[k];if(!c)return "";return catHash(c.rows);};
   var combo=stableCats.map(sHash).join("");
@@ -2688,6 +2628,7 @@ async function runKit(){
 
   R.categories=Object.keys(C).reduce(function(a,k){a[k]={hash:C[k].hash,rows:C[k].rows};return a;},{});
 
+/* - phase 5: coherence rows for the raw view ------------- */
   var cohRows=[];var cohPass=0,cohTot=0;Object.keys(R.coherence.checks).forEach(function(k){cohTot++;var v=R.coherence.checks[k];if(v)cohPass++;cohRows.push([k,[v?"pass":(R.coherence.detail[k]||"fail"), v?"ok":"no"]]);});
   var topTz=""+new Date().getTimezoneOffset();
   var topRend=(function(){try{var g=document.createElement("canvas").getContext("webgl")||document.createElement("canvas").getContext("webgl2");var dd=g&&g.getExtension("WEBGL_debug_renderer_info");var v=dd?""+g.getParameter(dd.UNMASKED_RENDERER_WEBGL):"";glDone(g);return v;}catch(e){return "";}})();
@@ -2723,6 +2664,7 @@ async function runKit(){
   }
   C["Coherence / Lie Detection"]={rows:cohRows,hash:fnv(j(R.coherence.checks)),note:"A defense is only good if the spoof is undetectable to an adversarial lie-detector. Native toString + no leaked .prototype + Reflect.ownKeys==[length,name], props on the prototype, screen≥window, audio getChannelData==copyFromChannel (no one-path farble), and BOTH the dedicated-Worker and SharedWorker scopes' hardwareConcurrency/deviceMemory/userAgent/timezone/WebGL-renderer matching the top frame must hold. A page-only hook that misses either worker scope leaks real hardware there = the classic extension catch."};
 
+/* - phase 6: network and extension rows ------------------ */
   var lk=R.leaks.webrtc||{};var lkRows=[["WebRTC candidate IPs",(lk.ips||[]).join(", ")||"none"],["private/local IP leaked",[((lk.privateIPs||[]).length?("YES: "+lk.privateIPs.join(",")):"none"),(lk.privateIPs||[]).length?"no":"ok"]],["mDNS candidates",(lk.mdns||[]).length]];
 
   lkRows.push(["public IP exposed to JS via WebRTC (STUN srflx)",[((lk.publicIPs||[]).length?("YES: "+lk.publicIPs.join(",")+" - any script reads it, no server needed; a WebRTC guard closes this"):"none - WebRTC leaks no public IP to JS"),(lk.publicIPs||[]).length?"no":"ok"]]);
@@ -2753,6 +2695,7 @@ async function runKit(){
   R.leakSummary={privateIP:(lk.privateIPs||[]).length,mdns:(lk.mdns||[]).length,extDetectable:!!(R.leaks.ext&&R.leaks.ext.detectable)};
   window.__KIT=R;window.__KIT_DONE=true;
 
+/* - phase 7: strategy read (uniformity vs farbling) ------ */
   var lied=cohTot-cohPass;
   var priv=(lk.privateIPs||[]).length,ext=(R.leaks.ext&&R.leaks.ext.detectable);
   function cval(cn,lab){var c=C[cn];if(!c)return null;var ll=lab.toLowerCase();
@@ -2819,11 +2762,8 @@ async function runKit(){
   R.score={total:score,coveragePct:Math.round(100*coverFrac),coherencePct:Math.round(100*cohFrac),model:"diagnostic only: which vectors are masked and coherent. This is NOT the published score. The score is in R.findability.",unlinkabilityNote:"per-site unlinkability is measured cross-site by the two-origin check",trace:_trace,surfaceCoverage:_surf,objectives:OBJ.map(function(o){return {k:o.k,l:o.l,w:o.w,v:o.v,grp:o.grp,pend:!!o.pend,na:!!o.na,contribution:o.contribution};})};
   window.__KIT=R;
   paRenderView(R);
-// findability runs as soon as the synchronous readings are in, but the supercookie probe finishes
-// later, so the storage reading does not exist yet when the headline score is first computed.
-// Without this the score silently ignored a supercookie the cross-site score was already counting:
-// a run where cookies demonstrably carried across origins scored 3 single-site and 2 cross-site,
-// from one set of readings. Re-attach observed and familyKey, which findability does not return.
+
+/* - phase 8: rescore on late arrivals, then render ------- */
   var _rescore=function(){
     var o=R.findability&&R.findability.observed,f=R.findability&&R.findability.familyKey;
     if(!o)return;
@@ -2864,7 +2804,7 @@ async function runKit(){
   document.getElementById("foot").innerHTML="<b>Method.</b> Each reading is your real value (shown), the value everyone on your browser shares (blended), or nothing (refused). Each is rated strong, medium or weak by how much it gives you away; readings from the same hardware count once, and the score is the share of that weight your browser hides. A strong surface still shown is named beside the grade, because a tracker can follow you by one alone. Served locally, a second score keeps only what survives across two sites, and storage that carries across sites joins it. Full result in the console as __KIT.findability.";
 }
 
-/* CROSS-ORIGIN TEST + TOOLBAR - popup handshake, save, print ================ */
+/* CROSS-ORIGIN TEST + TOOLBAR - popup handshake, save, print ============= */
 function otherOrigin(){if(!/^https?:$/.test(location.protocol))return null;var hn=location.hostname,pt=location.port?":"+location.port:"";if(hn==="localhost")return "127.0.0.1"+pt;if(hn==="127.0.0.1")return "localhost"+pt;return null;}
 function paCompanion(){try{if(PA_COMPANION&&/^https?:\/\//i.test(PA_COMPANION)){var u=new URL(PA_COMPANION);if(u.origin!==location.origin)return {host:u.host,origin:u.origin,url:PA_COMPANION.replace(/#.*$/,"")};}}catch(e){}var oh=otherOrigin();return oh?{host:oh,origin:location.protocol+"//"+oh,url:location.protocol+"//"+oh+location.pathname}:null;}
 function paRunCrossWindow(){
@@ -2888,7 +2828,7 @@ function paRunCrossWindow(){
 }
 (function(){var wo=document.getElementById("webrtcOptin");if(wo)wo.addEventListener("change",function(e){PAV.webrtcStun=!!e.target.checked;});var so=document.getElementById("storageOptin");if(so)so.addEventListener("change",function(e){PAV.storageTest=!!e.target.checked;});var ro=document.getElementById("redactOptin");if(ro){PAV.redact=!!ro.checked;ro.addEventListener("change",function(e){PAV.redact=!!e.target.checked;var K=window.__KIT;if(K&&K.findability){paRenderView(K);paRenderRaw(K,null);}});}})();
 
-/* RUN BUTTON - second-site channel choice, gesture, staleness guard ========= */
+/* RUN BUTTON - second-site channel choice, gesture, staleness guard ====== */
 document.getElementById("runBtn").addEventListener("click",function(){
   var btn=document.getElementById("runBtn"),lbl=document.getElementById("runLbl");
   var comp=paCompanion();var oh=comp?comp.host:null;
@@ -2902,10 +2842,6 @@ document.getElementById("runBtn").addEventListener("click",function(){
   if(pop){try{pop.document.write('<!doctype html><meta charset="utf-8"><title>Privacyassay - second site</title><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;font:14px system-ui,sans-serif;background:#0f1420;color:#dbe4f0"><div style="max-width:300px;padding:24px">Measuring this browser on a second site, then closing on its own.</div></body>');pop.document.close();}catch(e){}}
   var ifr=(oh&&(!useWindow||!pop))?(function(){var f=document.createElement("iframe");f.setAttribute("aria-hidden","true");f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(f);return f;})():null;
   btn.disabled=true;
-// The supercookie test needs a real second-origin window to read the state back, so a blocked
-// pop-up means it cannot run at all. Tor and Mullvad block it, and because the cross-site test
-// quietly falls back to an iframe nothing looked wrong: the reading simply never appeared and
-// the user who ticked the box was told nothing. Record it so the report can say so.
   var storeWrite=Promise.resolve(null);
   window.__paStoreBlocked="";
   if(wantStore){
@@ -2951,7 +2887,7 @@ document.getElementById("runBtn").addEventListener("click",function(){
   });
 });
 
-/* BEACON RECEIVERS - this page loaded AS the second site ==================== */
+/* SECOND-ORIGIN MODE - opened as the companion, posts readings back ====== */
 if(/pabeacon/.test(location.hash)||/pabeacon/.test(location.search)){try{runKit();}catch(e){}}
 else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
   if(_sm){var _tk=_sm[1];
@@ -2964,7 +2900,7 @@ else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
 </script>
 <script>
 
-/* THEME TOGGLE - persisted light/dark switch ================================ */
+/* THEME TOGGLE - persisted light/dark switch ============================= */
 (function(){
   var SUN='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>';
   var MOON='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>';
@@ -2981,7 +2917,7 @@ else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
 </script>
 <script>
 
-/* BEACON RECEIVERS - this page loaded as the second origin ================== */
+/* SECOND-ORIGIN MODE - storage read-back for the supercookie test ======== */
 (function(){
   var body=document.body;
   if(/pabeacon|pastore=/.test(location.hash+location.search)){body.classList.remove("pa-pre");body.classList.add("pa-beacon");return;}
@@ -3009,9 +2945,6 @@ else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
       requestAnimationFrame(function(){requestAnimationFrame(function(){
         brand.style.transition="transform .62s cubic-bezier(.16,1,.3,1)";brand.style.transform="";
       });});
-// transitionend does not fire when the measured offset is zero, or when the element is not
-// visible at the moment the transform is set, and the brand was then left translated on top of
-// the opt-in chips. Clearing on a timer as well makes the leftover transform impossible.
       var _clearBrand=function(){brand.style.transition="";brand.style.transformOrigin="";brand.style.transform="";};
       brand.addEventListener("transitionend",_clearBrand,{once:true});
       setTimeout(_clearBrand,900);
