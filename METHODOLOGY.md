@@ -68,7 +68,7 @@ Over `http://` the catalog runs on two origins and compares. A reading counts as
 
 Brave gets a first-party window on the Run click, because a third-party frame inherits the top page's farbling seed. A blocked pop-up falls back to a button.
 
-A cross-site number that cannot be obtained is not a zero. When the second site does not answer within fifteen seconds the result is reported as not measurable, and nothing is credited: a timeout does not distinguish a browser blocking the probe from the probe failing.
+A cross-site number that cannot be obtained is not a zero. When the second site does not answer within forty-five seconds the result is reported as not measurable, and nothing is credited: a timeout does not distinguish a browser blocking the probe from the probe failing.
 
 Storage scores only the persistent stores: cookies, localStorage, IndexedDB, CacheStorage, CookieStore, OPFS. HTTP-cache probes are reported but unscored.
 
@@ -127,11 +127,9 @@ Three separate things move a score, and they should not be blurred together.
 
 **The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 17 to 30 across three rounds of measurement. Every one is correct for the session it was taken in, and none of them is the number.
 
-**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. This used to be the largest source of spread here: LibreWolf's storage column read 55 in one round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made every cell in the table above reproduce. Tor and Mullvad still cannot run the supercookie test at all, because they block the pop-up it needs to read state back; the report says so rather than scoring it either way.
+**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. This used to be the largest source of spread here: LibreWolf's storage column read 55 in one round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made every cell in the table above reproduce. Tor and Mullvad never answer the supercookie read-back, so the category is left out of both the score and the total and their Supercookies column matches their default one. The pop-up it needs is not being blocked; why the answer never arrives is unresolved.
 
 **The run.** Within a single launch and setting, every browser measured here returned an identical score on all three runs. Run-to-run variation is not a source of spread in this data.
-
-Two things the opt-ins cannot always measure. The supercookie test needs a pop-up to read state back from a second origin; Tor and Mullvad block it, so their Supercookies column is the same as their default column and the report says the test did not run rather than scoring it either way. A cross-site figure that times out is reported as not measurable, never as a zero.
 
 ## Limits
 

@@ -2887,19 +2887,20 @@ document.getElementById("runBtn").addEventListener("click",function(){
     var runK=window.__KIT;
     if(useWindow&&!pop&&isBrave){if(runK){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="This browser reshuffles its fingerprint per site, so a single page cannot show its real protection. The measuring window was blocked - allow pop-ups for this page, then use the button below to run it.";try{paRenderView(runK);}catch(_e){}}return;}
     if(pop){
-      var doneW=false,fbIfr=null;
+      var doneW=false,crossDoneW=false,storeDoneW=!wantStore,fbIfr=null;
       if(runK){if(isBrave)runK.crossSkippedRandomizer=true;runK.crossMeasuring=true;runK.crossFailed="measuring";try{paRenderView(runK);}catch(_e){}}
       function _cleanW(){window.removeEventListener("message",onMsgW);try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
-      function onMsgW(e){if(doneW||!e.data||!e.data.paLink)return;if(!comp||!e.origin||e.origin!==comp.origin)return;if(window.__KIT!==runK)return;doneW=true;_cleanW();
-        runK.crossMeasuring=false;runK.crossFailed=null;runK.crossSkippedRandomizer=false;runK.crossCanMeasure=false;
-        if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);
-        
-        if(wantStore&&e.source===pop){var _sr=e.data.paStoreRead;storeWrite.then(function(w){if(window.__KIT!==runK)return;if(window.__paApplyPartition)window.__paApplyPartition(w,_sr,oh);if(w&&w.clear)w.clear();});}}
+      function onMsgW(e){if(doneW||!e.data||!e.data.paLink)return;if(!comp||!e.origin||e.origin!==comp.origin)return;if(window.__KIT!==runK)return;
+        if(!crossDoneW){crossDoneW=true;
+          runK.crossMeasuring=false;runK.crossFailed=null;runK.crossSkippedRandomizer=false;runK.crossCanMeasure=false;
+          if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
+        if(!storeDoneW&&e.source===pop){storeDoneW=true;var _sr=e.data.paStoreRead;storeWrite.then(function(w){if(window.__KIT!==runK)return;if(window.__paApplyPartition)window.__paApplyPartition(w,_sr,oh);if(w&&w.clear)w.clear();});}
+        if(crossDoneW&&storeDoneW){doneW=true;_cleanW();}}
       window.addEventListener("message",onMsgW);
       try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){}
       
-      setTimeout(function(){if(doneW||fbIfr||window.__KIT!==runK)return;fbIfr=document.createElement("iframe");fbIfr.setAttribute("aria-hidden","true");fbIfr.setAttribute("data-pa-x","1");fbIfr.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(fbIfr);try{fbIfr.src=comp.url+"#pabeacon="+xTok;}catch(x){}},PA_CROSS_FALLBACK_MS);
-      setTimeout(function(){if(!doneW&&window.__KIT===runK){doneW=true;_cleanW();runK.crossMeasuring=false;if(wantStore&&!runK.partitioning)window.__paStoreBlocked="The supercookie test did not finish: the second site never answered, so your storage was not read back. The score below does not include it.";if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}try{paRenderView(runK);}catch(_e){}}else if(!doneW){doneW=true;_cleanW();}},PA_CROSS_MS);
+      setTimeout(function(){if(crossDoneW||fbIfr||window.__KIT!==runK)return;fbIfr=document.createElement("iframe");fbIfr.setAttribute("aria-hidden","true");fbIfr.setAttribute("data-pa-x","1");fbIfr.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(fbIfr);try{fbIfr.src=comp.url+"#pabeacon="+xTok;}catch(x){}},PA_CROSS_FALLBACK_MS);
+      setTimeout(function(){if(doneW)return;doneW=true;_cleanW();if(window.__KIT!==runK)return;runK.crossMeasuring=false;if(wantStore&&!storeDoneW&&!runK.partitioning)window.__paStoreBlocked="The supercookie test needs the second site to answer as a page of its own, and it never did. Your storage was not read back, so this is left out of the score rather than guessed at.";if(!crossDoneW){if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}}try{paRenderView(runK);}catch(_e){}},PA_CROSS_MS);
       return;
     }
     if(oh&&ifr){

@@ -197,9 +197,15 @@ test("methodology: the opt-in range and the reason for it are published", () => 
     "run-to-run stability must be stated so the three causes stay separate");
 });
 
-// Tor and Mullvad block the pop-up the supercookie test needs, so their opt-in column is not a
-// measurement. Publishing it as one would be the flattering-direction error again.
+// Tor and Mullvad never answer the supercookie read-back, so their opt-in column is not a
+// measurement. Publishing it as one would be the flattering-direction error again. The cause was
+// written up for a while as a blocked pop-up, but the blocked-pop-up path sets a notice of its own
+// and never fired on either browser, so the document now states the outcome and leaves the cause
+// open. An unmeasured category must be excluded from the total, never scored as a zero.
 test("methodology: an opt-in test that could not run is disclosed rather than scored", () => {
-  assert.match(DOC, /needs a pop-up|blocked it/i, "the reason the supercookie test can fail must be stated");
-  assert.match(DOC, /did not run/i, "the report's behaviour when it cannot run must be documented");
+  assert.match(DOC, /left out of both the score and the total/i,
+    "an unanswered opt-in must be documented as excluded from the total, not scored");
+  assert.match(DOC, /unresolved/i,
+    "the cause must be left open while it is unestablished, rather than asserted");
+  assert.doesNotMatch(DOC, /they block the pop-up/i, "the disproven cause must not return");
 });

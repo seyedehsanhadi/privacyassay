@@ -12,7 +12,7 @@ A `<meta>` Content-Security-Policy (`default-src 'none'`, `connect-src 'self'`) 
 
 Open `index.html` and press Run.
 
-Two checks (request-header echo, two-origin cross-site) need a real origin:
+Three checks (request-header echo, two-origin cross-site, supercookies) need a real origin:
 
 ```bash
 python serve.py
@@ -42,7 +42,7 @@ The whole tool is `index.html`, one file. Sections are marked `/* TITLE ==== */`
 
 ```bash
 npm test              # 83 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
-npm run test:browser  # 34 checks in a real browser, including deliberate probe sabotage
+npm run test:browser  # 35 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```
 
