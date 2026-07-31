@@ -75,6 +75,20 @@ test("cross-site: the companion is given long enough for a hardened build to ans
   assert.ok(fallback < budget, `the iframe fallback (${fallback}ms) must fire well before the budget expires`);
   assert.equal((src.match(/},\s*15000\)/g) || []).length, 0,
     "a hardcoded 15s timeout is back; every cross-site deadline must use the named constant");
+
+  // The document said fifteen seconds in one section and forty-five in two others, because
+  // nothing tied the prose to the constant. Whatever the budget becomes, the doc has to say it
+  // and must not leave an older figure behind in another paragraph.
+  const doc = fs.readFileSync(path.join(HERE, "..", "METHODOLOGY.md"), "utf8");
+  const WORDS = { 15: "fifteen", 30: "thirty", 45: "forty-five", 60: "sixty" };
+  const secs = budget / 1000;
+  const said = WORDS[secs] || String(secs);
+  const stated = [...doc.matchAll(/answer within ([a-z-]+|\d+) seconds/g)].map((m) => m[1]);
+  assert.ok(stated.length > 0, "METHODOLOGY must state the deadline the second site is given");
+  for (const v of stated) {
+    assert.ok(v === said || v === String(secs),
+      `METHODOLOGY says the second site gets "${v} seconds" but the budget is ${secs}s`);
+  }
 });
 
 // Every unit test here extracts one function out of index.html and runs it in isolation, so a
