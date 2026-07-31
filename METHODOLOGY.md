@@ -90,10 +90,10 @@ One machine, Windows 11, 2026-07-31. Real top-level window, three runs, a fresh 
 
 | Browser | Version | Score | Grade | Runs | Cross-site |
 |---|---|---|---|---|---|
-| Mullvad Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
-| Tor Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
-| LibreWolf | 152.0.6-1 | 48 | D | 48, 48, 48 | 48, nothing differed |
-| Firefox | 153.0.1 | 9 | F | 9, 9, 9 | 9, nothing differed |
+| Mullvad Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74 when it completes, 6 runs of 12 |
+| Tor Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74 when it completes, 5 runs of 12 |
+| LibreWolf | 152.0.6-1 | 48 | D | 48, 48, 48 | 42 on the 1 run of 12 that completed |
+| Firefox | 153.0.1 | 9 | F | 9, 9, 9 | 9, nothing differed, 12 of 12 |
 | Brave | 150.1.92.144 | 5 | F | 5, 5, 5 | 17 to 30, four to six readings differed |
 | Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
 | Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
@@ -102,7 +102,7 @@ One machine, Windows 11, 2026-07-31. Real top-level window, three runs, a fresh 
 - **A score is only comparable to another score taken the same way.** See the range below.
 - **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
 - **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, and that figure is a range rather than a number: 17 to 30 across the sessions measured here.
-- **The two-origin probe is intermittent on Gecko over loopback.** All three runs completed for every browser here, but in an earlier round Firefox and LibreWolf each managed only one of three. A run that does not complete is reported as not measurable, never as a zero.
+- **The two-origin probe is unreliable on the hardened Gecko builds, and its cross-site column is the weakest thing in this table.** Across 12 runs each it completed 12 of 12 on Chrome, Edge, Brave and stock Firefox, but only 6 of 12 on Mullvad, 5 of 12 on Tor and 1 of 12 on LibreWolf. A run that does not complete is reported as not measurable, never as a zero, so the figures above come from the runs that finished and rest on very few observations for those three.
 - **Tor and Mullvad ran with the proxy forced to a direct connection and their bundled NoScript moved aside**, so both are resistFingerprinting engine tests and say nothing about the Tor network. NoScript intermittently blocks all script loading on plain http, which makes a benchmark unusable; it is not a fingerprinting defence and does not touch resistFingerprinting.
 - **Fingerprint findability only.** Not tracker blocking, state partitioning, or the network layer.
 - **Numbers drift as browsers ship.** The date and versions are part of the result.
@@ -115,7 +115,7 @@ The Score column above is one configuration: both opt-ins off, three runs, one m
 |---|---|---|---|---|---|
 | Tor Browser | 74 | 78 | 74 | 78 | 74-78 |
 | Mullvad Browser | 74 | 78 | 74 | 78 | 74-78 |
-| LibreWolf | 48 | 42 | 55 | 49 | 42-55 |
+| LibreWolf | 48 | 42 | 48 or 55 | 42 or 49 | 42-55 |
 | Firefox | 9 | 8 | 20 | 18 | 8-20 |
 | Brave | 5 | 5 | 5 | 4 | 4-5 |
 | Chrome | 0 | 0 | 0 | 0 | 0 |
@@ -125,7 +125,9 @@ Three separate things move a score, and they should not be blurred together.
 
 **The opt-in setting.** Both opt-ins are off by default and each adds a category worth 3. A browser that *blocks* the thing being tested gains: Tor refuses WebRTC, so turning the test on adds 3 to what it hides and 3 to the total, and its score rises from 74 to 78. A browser that leaks it loses: LibreWolf drops 48 to 42 for the same reason in reverse. **Turning on a leak test can raise your score, so two numbers taken under different settings cannot be compared.** Firefox moves most, 9 to 20, because it partitions storage well and that only counts when you ask for it.
 
-**The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 17 to 30 across the sessions measured here: 30, 27, 21, 19 in one round and 24, 27, 19, 17 in the next, plus 22 in an earlier one. Every one is correct for the session it was taken in, and none of them is the number.
+**The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 17 to 30 across three rounds of measurement. Every one is correct for the session it was taken in, and none of them is the number.
+
+**Whether the probe finished.** The supercookie test needs a pop-up and the cross-site test needs a second origin to answer, and on the hardened Gecko builds neither is dependable. LibreWolf's storage column read 55 in one round and 48 in the next because the test ran in the first and did not in the second; its cross-site figure completed once in twelve runs. Where a test did not finish the report says so rather than scoring it, but the score still differs, so a figure taken from a run that completed is not comparable to one taken from a run that did not.
 
 **The run.** Within a single launch and setting, every browser measured here returned an identical score on all three runs. Run-to-run variation is not a source of spread in this data.
 

@@ -31,7 +31,7 @@ Headless, fresh browser per run so a farbling browser cannot re-use one seed. It
 
 ## Reviewing this
 
-The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. What decides a score:
+The whole tool is `index.html`, one file. Sections are marked `/* TITLE ==== */` and subsections `/* - detail ---- */`, so both levels scan as their own column down the file. There are no other comments: the reason behind each fix lives in the test that pins it. What decides a score:
 
 | What | Where |
 |---|---|
@@ -41,7 +41,7 @@ The whole tool is `index.html`, one file, sectioned with `/* ===== */` banners. 
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # 80 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm test              # 81 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
 npm run test:browser  # 33 checks in a real browser, including deliberate probe sabotage
 npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
 ```

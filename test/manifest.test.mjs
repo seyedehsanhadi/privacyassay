@@ -41,3 +41,22 @@ test("manifest: the CLI help text lists every flag the CLI reads", () => {
   const undocumented = read.filter((f) => !help.includes(f));
   assert.deepEqual(undocumented, []);
 });
+
+// The README tells a reviewer how the file is organised. A section added without a banner, or a
+// stray explanatory comment creeping back in, both drift silently. Check counts are deliberately
+// NOT asserted here: inject.test.mjs generates two tests from one loop, so any static count of
+// `test(` calls is wrong by construction, and a test that is wrong by construction is worse than
+// a stale number in a README.
+test("readme: the section markers it describes are the ones the file uses", () => {
+  const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8").split("\n");
+  const sections = src.filter((l) => /^\/\* [A-Z].*=+ \*\/$/.test(l));
+  const subs = src.filter((l) => /^\/\* - .*-+ \*\/$/.test(l));
+  assert.ok(sections.length >= 20, `expected a sectioned file, found ${sections.length} section banners`);
+  assert.ok(subs.length >= 10, `expected subsections, found ${subs.length}`);
+  const widths = new Set(sections.map((l) => l.length));
+  assert.equal(widths.size, 1, `section banners must all be one width, got ${[...widths].join(", ")}`);
+  const subWidths = new Set(subs.map((l) => l.length));
+  assert.equal(subWidths.size, 1, `subsection banners must all be one width, got ${[...subWidths].join(", ")}`);
+  const loose = src.filter((l) => /^\s*\/\/(?!\/)/.test(l));
+  assert.deepEqual(loose, [], "index.html carries navigation markers only; explanations belong in the tests");
+});
