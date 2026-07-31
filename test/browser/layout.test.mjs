@@ -69,3 +69,21 @@ test("layout: the score working is collapsed by default and its summary carries 
     assert.ok(text.includes(String(F.score)), "the panel must end at the score it explains");
   } finally { await page.close(); srv.close(); }
 });
+
+// Raising the cross-site budget from 15s to 45s made the fallback iframe outlive the run that
+// created it, so six rapid runs left several stacked in the DOM. The frames are tagged and a new
+// run clears any left by a previous one; without that, the leak scales with the timeout.
+test("cross-site frames from an earlier run never survive into a later one", async () => {
+  const srv = await startServer();
+  const page = await launch({ port: srv.port });
+  try {
+    const counts = [];
+    for (let i = 0; i < 3; i++) {
+      await page.ev(`document.getElementById("runBtn").click();"go"`);
+      await new Promise((r) => setTimeout(r, 2500));
+      counts.push(Number(await page.ev(`document.querySelectorAll('iframe[data-pa-x]').length`)));
+    }
+    assert.ok(Math.max(...counts) <= 1,
+      `a run must never leave a previous run's cross-site frame behind, saw ${counts.join(", ")}`);
+  } finally { await page.close(); srv.close(); }
+});

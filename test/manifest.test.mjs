@@ -60,3 +60,19 @@ test("readme: the section markers it describes are the ones the file uses", () =
   const loose = src.filter((l) => /^\s*\/\/(?!\/)/.test(l));
   assert.deepEqual(loose, [], "index.html carries navigation markers only; explanations belong in the tests");
 });
+
+// The companion runs the whole audit before it can answer, and a hardened build is slower at it
+// than a stock one. At 15s the cross-site figure timed out far more often than it completed on
+// the three browsers this benchmark cares most about: measured over 12 runs each it finished
+// 12/12 on Chrome, Edge, Brave and stock Firefox but only 6/12 on Mullvad, 5/12 on Tor and 1/12
+// on LibreWolf. The budget is a named constant so it cannot drift back to a number that quietly
+// turns those rows into "not measurable".
+test("cross-site: the companion is given long enough for a hardened build to answer", () => {
+  const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
+  const budget = Number((src.match(/var PA_CROSS_MS\s*=\s*(\d+)/) || [])[1]);
+  const fallback = Number((src.match(/PA_CROSS_FALLBACK_MS\s*=\s*(\d+)/) || [])[1]);
+  assert.ok(budget >= 40000, `cross-site budget is ${budget}ms; a hardened Gecko build needs more`);
+  assert.ok(fallback < budget, `the iframe fallback (${fallback}ms) must fire well before the budget expires`);
+  assert.equal((src.match(/},\s*15000\)/g) || []).length, 0,
+    "a hardcoded 15s timeout is back; every cross-site deadline must use the named constant");
+});
