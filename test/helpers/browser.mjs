@@ -84,7 +84,7 @@ export async function launch({ port, preload = null, headful = false } = {}) {
 
   const ev = async (expression) => {
     const r = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true, userGesture: true });
-    if (r.exceptionDetails) throw new Error("page error: " + (r.exceptionDetails.text || ""));
+    if (r.exceptionDetails) throw new Error("page error: " + ((r.exceptionDetails.exception || {}).description || r.exceptionDetails.text || ""));
     return r.result.value;
   };
 

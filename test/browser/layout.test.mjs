@@ -87,3 +87,57 @@ test("cross-site frames from an earlier run never survive into a later one", asy
       `a run must never leave a previous run's cross-site frame behind, saw ${counts.join(", ")}`);
   } finally { await page.close(); srv.close(); }
 });
+
+// paRing draws the score's digits and its arc inside the ring SVG, so the ring carries its own
+// copy of the number. The render emits it as PAV.disp whenever PAV.lastScore !== score, and
+// paAnimateRing had two exits -- score unchanged, and prefers-reduced-motion -- that returned
+// without repainting. A storage-partition result arriving after the first render rescores into
+// exactly that state, so the ring froze at the pre-rescore number while every other figure on the
+// page showed the new one. Reduced motion is emulated here because it makes the unpainted exit
+// unconditional; without it the race only shows on some runs.
+const RING = `(function(){
+  var K=window.__KIT,svg=document.querySelector('#pa-view svg[role=img]');
+  if(!K||!svg)return JSON.stringify({missing:true});
+  var arc=[].slice.call(svg.querySelectorAll('rect[transform]'));
+  var lit=arc.filter(function(r){return (r.getAttribute('style')||'').indexOf('--ring-track')<0;}).length;
+  var s=K.findability.score;
+  return JSON.stringify({score:s,lit:lit,want:Math.round(31*(s/100))+1,
+    label:svg.getAttribute('aria-label')||""});
+})()`;
+
+// The real trigger: __paApplyPartition is what a late storage result calls. Held on the first
+// call and carried on the second, so the score is guaranteed to move between the two reads.
+const partition = (leaked) => `(function(){
+  var names={"localStorage":1,"IndexedDB":1},back=${leaked} ? {"localStorage":"T","IndexedDB":"T"} : {};
+  window.__paApplyPartition({tok:"T",origin:location.origin,
+    wrote:{ok:names,refused:[],unsupported:[]}},back);
+  return "ok";})()`;
+
+test("the ring draws the score it is labelled with, animation or not", async () => {
+  const srv = await startServer();
+  const page = await launch({ port: srv.port });
+  try {
+    await page.send("Emulation.setEmulatedMedia", {
+      features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+    });
+    const kit = await runAudit(page);
+    const first = JSON.parse(await page.ev(RING));
+    assert.equal(first.missing, undefined, "the ring must be rendered");
+    assert.equal(first.score, kit.findability.score);
+    assert.equal(first.lit, first.want, `the ring must draw ${first.score} straight after the audit`);
+
+    const seen = [];
+    for (const leaked of [false, true]) {
+      await page.ev(partition(leaked));
+      await new Promise((r) => setTimeout(r, 400));
+      const r = JSON.parse(await page.ev(RING));
+      assert.equal(r.lit, r.want,
+        `after a rescore the ring must redraw ${r.score}, not the number it last held`);
+      assert.match(r.label, new RegExp(`score ${r.score} out of 100`),
+        "the accessible label and the drawn ring must agree");
+      seen.push(r.score);
+    }
+    assert.notEqual(seen[0], seen[1],
+      `the two partition results must move the score, otherwise this proves nothing (both ${seen[0]})`);
+  } finally { await page.close(); srv.close(); }
+});
