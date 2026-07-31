@@ -115,7 +115,7 @@ The Score column above is one configuration: both opt-ins off, three runs, one m
 |---|---|---|---|---|---|
 | Tor Browser | 74 | 78 | 74 | 78 | 74-78 |
 | Mullvad Browser | 74 | 78 | 74 | 78 | 74-78 |
-| LibreWolf | 48 | 42 | 55 | 49 | 42-55 |
+| LibreWolf | 48 | 42 | 55 | 42-49 | 42-55 |
 | Firefox | 9 | 8 | 20 | 18 | 8-20 |
 | Brave | 5 | 5 | 5 | 4 | 4-5 |
 | Chrome | 0 | 0 | 0 | 0 | 0 |
@@ -127,9 +127,9 @@ Three separate things move a score, and they should not be blurred together.
 
 **The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 17 to 30 across three rounds of measurement. Every one is correct for the session it was taken in, and none of them is the number.
 
-**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. This used to be the largest source of spread here: LibreWolf's storage column read 55 in one round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made every cell in the table above reproduce. Tor and Mullvad never answer the supercookie read-back, so the category is left out of both the score and the total and their Supercookies column matches their default one. The pop-up it needs is not being blocked; why the answer never arrives is unresolved.
+**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. This is the largest source of spread here: LibreWolf's storage column read 55 in one round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made the cross-site figure reproduce on every browser, 85 runs of 85. The supercookie half still does not always finish, which is why LibreWolf's both-on cell is a range rather than a number. Tor and Mullvad never answer the supercookie read-back, so the category is left out of both the score and the total and their Supercookies column matches their default one. The pop-up it needs is not being blocked; why the answer never arrives is unresolved.
 
-**The run.** Within a single launch and setting, every browser measured here returned an identical score on all three runs. Run-to-run variation is not a source of spread in this data.
+**The run.** Within a single launch and setting, six of the seven browsers returned an identical score on all three runs. LibreWolf with both opt-ins on returned 42, 49, 49, because its supercookie probe answered on two of the three. So run-to-run variation here is one probe finishing or not, never measurement noise in a reading that was taken.
 
 ## Limits
 
