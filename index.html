@@ -524,7 +524,7 @@ function collectGPU(){
     try{rows.push(["WebGL extensions",fnvParts(gl.getSupportedExtensions()||[],",")]);}catch(e){}
     try{rows.push(["WebGL context attributes",fnv(JSON.stringify(gl.getContextAttributes()||{}))]);}catch(e){}
 
-    try{var c2=document.createElement("canvas");c2.width=96;c2.height=96;var g2=c2.getContext("webgl");var vs=g2.createShader(g2.VERTEX_SHADER);g2.shaderSource(vs,"attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);gl_PointSize=80.;}");g2.compileShader(vs);var fs=g2.createShader(g2.FRAGMENT_SHADER);g2.shaderSource(fs,"precision mediump float;void main(){gl_FragColor=vec4(.4,.7,.25,1.);}");g2.compileShader(fs);var pr=g2.createProgram();g2.attachShader(pr,vs);g2.attachShader(pr,fs);g2.linkProgram(pr);g2.useProgram(pr);var b=g2.createBuffer();g2.bindBuffer(g2.ARRAY_BUFFER,b);g2.bufferData(g2.ARRAY_BUFFER,new Float32Array([0,0]),g2.STATIC_DRAW);var l=g2.getAttribLocation(pr,"p");g2.enableVertexAttribArray(l);g2.vertexAttribPointer(l,2,g2.FLOAT,false,0,0);g2.drawArrays(g2.POINTS,0,1);var px=new Uint8Array(96*96*4);g2.readPixels(0,0,96,96,g2.RGBA,g2.UNSIGNED_BYTE,px);rows.push(["WebGL render hash",fnvBytes(px)]);glDone(g2);}catch(e){rows.push(["WebGL render hash","ERR"]);}
+    try{var c2=document.createElement("canvas");c2.width=96;c2.height=96;var g2=c2.getContext("webgl");var vs=g2.createShader(g2.VERTEX_SHADER);g2.shaderSource(vs,"attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);gl_PointSize=80.;}");g2.compileShader(vs);var fs=g2.createShader(g2.FRAGMENT_SHADER);g2.shaderSource(fs,"precision mediump float;void main(){gl_FragColor=vec4(.4,.7,.25,1.);}");g2.compileShader(fs);var pr=g2.createProgram();g2.attachShader(pr,vs);g2.attachShader(pr,fs);g2.linkProgram(pr);g2.useProgram(pr);var b=g2.createBuffer();g2.bindBuffer(g2.ARRAY_BUFFER,b);g2.bufferData(g2.ARRAY_BUFFER,new Float32Array([0,0]),g2.STATIC_DRAW);var l=g2.getAttribLocation(pr,"p");g2.enableVertexAttribArray(l);g2.vertexAttribPointer(l,2,g2.FLOAT,false,0,0);g2.drawArrays(g2.POINTS,0,1);var px=new Uint8Array(96*96*4);g2.readPixels(0,0,96,96,g2.RGBA,g2.UNSIGNED_BYTE,px);var _drew=false;for(var _pi=0;_pi<px.length;_pi++){if(px[_pi]!==0){_drew=true;break;}}rows.push(["WebGL render hash",_drew?fnvBytes(px):"ERR"]);glDone(g2);}catch(e){rows.push(["WebGL render hash","ERR"]);}
     glDone(gl);
   }else rows.push(["WebGL","unavailable"]);
   rows.push(["WebGL2 support",present(window.WebGL2RenderingContext)]);
@@ -1544,8 +1544,8 @@ function observeVectors(){
     canvasClass:paCanvasClass(),
     audioHash:paRow("Audio & Media Codecs","audiocontext render hash"),
     webglHash:paRow("Active Rendering & GPU","webgl render hash"),
-    audioRenderClass:paHashClass(paRow("Audio & Media Codecs","audiocontext render hash")),
-    webglRenderClass:paHashClass(paRow("Active Rendering & GPU","webgl render hash")),
+    audioRenderClass:paRow("Audio & Media Codecs","audiocontext render hash"),
+    webglRenderClass:paRow("Active Rendering & GPU","webgl render hash"),
     canvasHash:P(function(){var c=document.createElement("canvas");c.width=90;c.height=24;
       var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
       x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
@@ -1590,7 +1590,6 @@ function findability(observed,familyKey){
       v=String(v);
       
       var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
-                 ((s.k==="webglRenderClass"||s.k==="audioRenderClass")&&v==="unavailable")||
                  ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
                  (s.k==="availFrame"&&v==="masked")||
                  (s.k==="speechVoices"&&/^0[\s(]/.test(v))||
@@ -2080,6 +2079,31 @@ function paGroupsFrom(F){
       value:val,valueFull:rep.state==="shown"?String(rep.value||""):"",why:rep.why||""};
   });
 }
+/* - the two axes and the defence strategy behind them ---- */
+var PAMONO="font-family:ui-monospace,Menlo,Consolas,monospace;";
+var PASTRAT={
+  uniformity:["Uniformity","every user of this browser is meant to look the same, so you hide in that crowd"],
+  randomization:["Randomization","values are altered per site and per session, so they cannot be matched up later"],
+  mixed:["Mixed","some readings are made uniform and others are altered"],
+  exposed:["No strategy","readings are handed over as they are"]};
+function paAxisPair(R,F,cs){
+  var st=PASTRAT[R.strategy]||null;
+  var here=F.score,there=(cs&&!cs.pending&&!cs.failed&&!cs.unavailable&&typeof cs.score==="number")?cs.score:null;
+  var box='flex:1 1 132px;min-width:132px;background:var(--inset);border:1px solid var(--line-soft);border-radius:12px;padding:11px 13px;';
+  var lab=PAMONO+"font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);";
+  var num=PAMONO+"font-size:23px;font-weight:700;line-height:1.15;color:var(--text);margin-top:5px;";
+  var h='<div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">';
+  h+='<div style="'+box+'"><div style="'+lab+'">This page</div><div style="'+num+'">'+here+'</div>'+
+     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">of what it checks, hidden</div></div>';
+  h+='<div style="'+box+'"><div style="'+lab+'">Another site</div><div style="'+num+'">'+
+     (there===null?'<span style="color:var(--text-3);font-size:15px;font-weight:600;">'+(cs&&cs.pending?"measuring":"not measurable")+'</span>':there)+'</div>'+
+     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">'+(there!==null?'hidden from a site on another domain':(cs&&cs.pending?'opening a second site to compare':'the second site did not answer'))+'</div></div>';
+  if(st)h+='<div style="flex:2 1 240px;min-width:200px;'+box+'"><div style="'+lab+'">Strategy</div>'+
+     '<div style="font-size:15px;font-weight:650;color:var(--text);margin-top:5px;">'+paEsc(st[0])+'</div>'+
+     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.45;">'+paEsc(st[1])+'</div></div>';
+  return h+'</div>';
+}
+
 function paRing(score,color){
   var N=32,sweep=270,startA=-135,on=Math.round((N-1)*(score/100)),out="";
   for(var i=0;i<N;i++){var a=(startA+(sweep/(N-1))*i).toFixed(1);
@@ -2101,8 +2125,9 @@ function paCrossData(R){
   var a=(location.host||"this page"),b="",comp=null;
   try{comp=paCompanion();b=comp?comp.host:(otherOrigin()||"");}catch(e){}
   if(!b)b="a second site";
-  if(R.crossFailed)return {failed:true,reason:R.crossFailed,skipRand:!!R.crossSkippedRandomizer,canMeasure:!!R.crossCanMeasure,measuring:!!R.crossMeasuring,originA:a,originB:b};
-  if(!Fc)return comp?{pending:true,originA:a,originB:b}:{unavailable:true,originA:a,originB:b};
+  var pb=(!R.partitioning&&window.__paStoreBlocked)?window.__paStoreBlocked:null;
+  if(R.crossFailed)return {failed:true,reason:R.crossFailed,skipRand:!!R.crossSkippedRandomizer,canMeasure:!!R.crossCanMeasure,measuring:!!R.crossMeasuring,originA:a,originB:b,partitionBlocked:pb};
+  if(!Fc)return comp?{pending:true,originA:a,originB:b,partitionBlocked:pb}:{unavailable:true,originA:a,originB:b,partitionBlocked:pb};
   var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
   var anon=(Fc.changedAcrossOrigins||[]).length;
   var linked=Math.max(0,total-anon);
@@ -2118,7 +2143,7 @@ function paCrossData(R){
       ? ("Enough stayed identical on both sites that a tracker present on each could link the visits to one person. "+anon+" of "+total+" signals changed; the rest matched.")
       : ("Your fingerprint changed enough between the two sites that linking the visits is unreliable. "+anon+" of "+total+" signals differed.")};
   var p=R.partitioning;
-  if(!p&&window.__paStoreBlocked)cs.partitionBlocked=window.__paStoreBlocked;
+  if(pb)cs.partitionBlocked=pb;
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
   return cs;
 }
@@ -2180,7 +2205,8 @@ function paRenderView(R){
   h+='<div class="pa-sentence">'+paEsc(sentence)+'</div>';
   h+='<div style="margin-top:11px;font-size:clamp(14px,1.05vw,15.5px);line-height:1.5;color:var(--text-2);max-width:56ch;display:flex;gap:9px;align-items:flex-start;">';
   if(cs.pending)h+='<span style="width:9px;height:9px;border-radius:50%;background:var(--amber);flex:0 0 auto;margin-top:6px;animation:paPulse 1.3s ease-in-out infinite;display:block;"></span>';
-  h+='<span>'+paEsc(supporting)+'</span></div></div></div>';
+  h+='<span>'+paEsc(supporting)+'</span></div>';
+  h+=paAxisPair(R,F,cs)+'</div></div>';
   h+='<div style="flex:1 1 340px;min-width:300px;display:flex;"><div style="flex:1;display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);padding:20px 22px;">';
   h+='<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;"><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><circle cx="9" cy="9" r="7" stroke-width="1.6" style="stroke:var(--text-3);"></circle><circle cx="21" cy="9" r="7" stroke-width="1.6" style="stroke:var(--accent);"></circle></svg>';
   h+='<span style="font-size:16px;font-weight:650;color:var(--text);">Recognized on a second site?</span>';

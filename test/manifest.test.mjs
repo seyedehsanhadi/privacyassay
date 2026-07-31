@@ -76,3 +76,19 @@ test("cross-site: the companion is given long enough for a hardened build to ans
   assert.equal((src.match(/},\s*15000\)/g) || []).length, 0,
     "a hardcoded 15s timeout is back; every cross-site deadline must use the named constant");
 });
+
+// Every unit test here extracts one function out of index.html and runs it in isolation, so a
+// syntax error ANYWHERE ELSE in the file passes all of them while the page loads nothing at all.
+// That happened: a mis-escaped quote in a style string took the whole tool down and 82 checks
+// stayed green. Parse each inline script the way the browser would.
+test("index.html: every inline script parses", () => {
+  const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  assert.ok(scripts.length >= 3, `expected the tool's inline scripts, found ${scripts.length}`);
+  const broken = [];
+  scripts.forEach((src, i) => {
+    if (!src.trim()) return;
+    try { new Function(src); } catch (e) { broken.push(`script ${i}: ${e.message}`); }
+  });
+  assert.deepEqual(broken, [], "a script that does not parse means the page loads nothing");
+});

@@ -61,10 +61,19 @@ test("mask: canvas noise-per-read and uniform-masked blend, any other canvas val
   assert.equal(stateOf({ canvasClass: "unique" }, "other", "canvasClass"), "shown");
 });
 
-test("mask: an unavailable render class blends for webgl and audio only", () => {
-  assert.equal(stateOf({ webglRenderClass: "unavailable" }, "other", "webglRenderClass"), "blended");
-  assert.equal(stateOf({ audioRenderClass: "unavailable" }, "other", "audioRenderClass"), "blended");
-  assert.equal(stateOf({ webglRenderClass: "3f2a11bc" }, "other", "webglRenderClass"), "shown");
+// These two are labelled "3D rendered image" and "rendered sound", and they now score the render
+// itself. They used to score paHashClass's present/unavailable, so the reading answered whether
+// audio WORKS rather than what it sounds like: a browser randomizing its audio per read showed a
+// constant "present" and read as exposed, which is exactly the strategy Brave uses.
+test("render readings score the output, not whether the render happened", () => {
+  for (const k of ["webglRenderClass", "audioRenderClass"]) {
+    assert.equal(stateOf({ [k]: "3f2a11bc" }, "other", k), "shown", `${k}: a real hash is a value handed over`);
+    assert.equal(stateOf({ [k]: "ERR" }, "other", k), "refused", `${k}: a failed render is refused`);
+    assert.equal(stateOf({ [k]: "unavailable" }, "other", k), "refused", `${k}: an absent API is refused`);
+    assert.equal(stateOf({ [k]: "" }, "other", k), "refused", `${k}: nothing read is refused`);
+    assert.equal(stateOf({ [k]: "3f2a11bc", _noisy: { [k]: 1 } }, "other", k), "blended",
+      `${k}: a render that differs between two reads cannot follow you`);
+  }
 });
 
 test("mask: a letterboxed size blends only for a family whose build letterboxes", () => {
