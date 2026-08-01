@@ -197,15 +197,15 @@ test("methodology: the opt-in range and the reason for it are published", () => 
     "run-to-run stability must be stated so the three causes stay separate");
 });
 
-// Tor and Mullvad never answer the supercookie read-back, so their opt-in column is not a
-// measurement. Publishing it as one would be the flattering-direction error again. The cause was
-// written up for a while as a blocked pop-up, but the blocked-pop-up path sets a notice of its own
-// and never fired on either browser, so the document now states the outcome and leaves the cause
-// open. An unmeasured category must be excluded from the total, never scored as a zero.
+// Tor and Mullvad plant the token but cannot deliver the read-back: traced end to end, the second
+// site reads its own storage, finds nothing, computes the right target origin and posts to its
+// opener, and the opener never receives it. Both browsers cut that channel, which is the linkability
+// defence this tool exists to measure. It was written up as a blocked pop-up for a while, which the
+// trace disproved. An undeliverable answer must be excluded from the total, never scored as a zero.
 test("methodology: an opt-in test that could not run is disclosed rather than scored", () => {
   assert.match(DOC, /left out of both the score and the total/i,
     "an unanswered opt-in must be documented as excluded from the total, not scored");
-  assert.match(DOC, /unresolved/i,
-    "the cause must be left open while it is unestablished, rather than asserted");
+  assert.match(DOC, /not measured rather than scored/i,
+    "an opt-in whose answer cannot be delivered must be reported as not measured, never scored either way");
   assert.doesNotMatch(DOC, /they block the pop-up/i, "the disproven cause must not return");
 });

@@ -6,7 +6,7 @@ Each reading is your real value (**shown**), a value every user of that browser 
 
 Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
-A `<meta>` Content-Security-Policy (`default-src 'none'`, `connect-src 'self'`) blocks external loads. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
+A `<meta>` Content-Security-Policy denies everything by default and allows only this origin, plus loopback frames for the two-origin test. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
 
 ## Run it
 
@@ -41,9 +41,9 @@ The whole tool is `index.html`, one file. Sections are marked `/* TITLE ==== */`
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # 83 checks: scoring arithmetic, every classifier branch, catalog consistency, docs against code
-npm run test:browser  # 35 checks in a real browser, including deliberate probe sabotage
-npm run test:stress   # 11 checks: repeated runs, re-entrancy, viewport extremes
+npm test              # scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm run test:browser  # a real browser, including deliberate probe sabotage
+npm run test:stress   # repeated runs, re-entrancy, viewport extremes
 ```
 
 A refused reading is credited as protection, so a broken probe would raise the score. The browser suite breaks each probe on purpose and asserts it never scores as a value handed over.

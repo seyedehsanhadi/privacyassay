@@ -1,6 +1,6 @@
 # Security
 
-Privacyassay runs entirely in your browser and, by default, makes no third-party request. The one claim worth attacking is that the report never leaves your machine.
+Privacyassay runs entirely in your browser. As shipped it requests no host but the one serving it; configuring a companion origin (see DEPLOY.md) adds that origin and no other. The one claim worth attacking is that the report never leaves your machine.
 
 ## Reporting a vulnerability
 

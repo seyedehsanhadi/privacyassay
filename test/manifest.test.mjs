@@ -61,6 +61,33 @@ test("readme: the section markers it describes are the ones the file uses", () =
   assert.deepEqual(loose, [], "index.html carries navigation markers only; explanations belong in the tests");
 });
 
+// PA_HOME bounces a direct visit to the companion host back to the main site. The exemption list
+// is the only thing that keeps the companion's own machine-readable loads alive, and it named just
+// pabeacon: the supercookie write frame loads ?pa=w#pastore=TOKEN, so on a real deployment it was
+// redirected away before the store handler ran. Loopback never showed it, because PA_COMPANION is
+// empty there and the whole guard is skipped. Every second-origin entry point must be exempt.
+test("companion: the home redirect exempts every second-origin entry point", () => {
+  const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
+  const guard = (src.match(/if\(location\.host===_cu\.host&&PA_HOME&&!\/([^/]+)\/\.test/) || [])[1];
+  assert.ok(guard, "the PA_HOME redirect guard was not found");
+  for (const mode of ["pabeacon", "pastore"]) {
+    assert.ok(new RegExp(mode).test(guard),
+      `the redirect guard does not exempt #${mode}, so that load is bounced to PA_HOME on a real deployment`);
+  }
+});
+
+// Tor and Mullvad strip the cross-origin referrer, so a second-origin handler that replies to
+// new URL(document.referrer).origin computes an empty string and posts nowhere. postMessage with
+// a falsy target is skipped, not thrown, so the write promise sat until its deadline and resolved
+// null: the whole supercookie category was dropped for both browsers with nothing reported. The
+// beacon half was fixed for this once; the store half kept the referrer and was missed. Every
+// second-origin reply must resolve its target from PA_HOME or its own location instead.
+test("second-origin: a reply target is never derived from document.referrer", () => {
+  const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
+  assert.equal((src.match(/document\.referrer/g) || []).length, 0,
+    "a second-origin reply target derived from document.referrer is empty on any browser that strips it");
+});
+
 // The companion runs the whole audit before it can answer, and a hardened build is slower at it
 // than a stock one. At 15s the cross-site figure timed out far more often than it completed on
 // the three browsers this benchmark cares most about: measured over 12 runs each it finished
@@ -75,6 +102,19 @@ test("cross-site: the companion is given long enough for a hardened build to ans
   assert.ok(fallback < budget, `the iframe fallback (${fallback}ms) must fire well before the budget expires`);
   assert.equal((src.match(/},\s*15000\)/g) || []).length, 0,
     "a hardcoded 15s timeout is back; every cross-site deadline must use the named constant");
+
+  // The READ half was raised to the named constant and the WRITE half was missed: it kept its own
+  // hardcoded 16000, one thousand past what the check above looks for. It loads the same whole
+  // page at the second origin, so on a hardened Gecko build it expired, resolved null, and the
+  // supercookie category was dropped for Tor and Mullvad without a reading ever being taken.
+  const body = src.slice(src.indexOf("function paPartitionWrite"), src.indexOf("/* LIE-DETECTION"));
+  assert.match(body, /PA_CROSS_MS/,
+    "paPartitionWrite must share the named cross-origin budget, not carry its own deadline");
+  for (const m of body.matchAll(/,\s*(\d{4,})\s*\)/g)) {
+    const ms = Number(m[1]);
+    assert.ok(ms < 2000 || ms >= 40000,
+      `paPartitionWrite has a ${ms}ms deadline; the second origin needs the full budget`);
+  }
 
   // The document said fifteen seconds in one section and forty-five in two others, because
   // nothing tied the prose to the constant. Whatever the budget becomes, the doc has to say it
