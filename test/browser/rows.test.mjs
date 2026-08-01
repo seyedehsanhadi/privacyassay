@@ -1,3 +1,5 @@
+// paRow looks readings up by category and a lowercase needle. A needle that matches nothing, or
+// two rows, silently feeds the wrong value into the score, so every lookup is resolved for real.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SRC } from "../helpers/extract.mjs";

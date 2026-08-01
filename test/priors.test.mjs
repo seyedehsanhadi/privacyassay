@@ -1,3 +1,5 @@
+// The scored catalog's own consistency: unique keys and labels, valid tiers, and every implies,
+// hashKey and group reference pointing at something real.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { grabVar, grabFn } from "./helpers/extract.mjs";

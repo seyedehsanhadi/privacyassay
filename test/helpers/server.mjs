@@ -1,3 +1,5 @@
+// Serves the repo on loopback for the browser tests, answering both localhost and 127.0.0.1 so
+// the two-origin cross-site probe has a second origin to talk to.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";

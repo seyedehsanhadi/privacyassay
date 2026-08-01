@@ -1,3 +1,5 @@
+// Tests the harness, not the tool. If launch or the preload hook is broken, every browser test
+// below it passes for the wrong reason.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "./server.mjs";

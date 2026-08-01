@@ -1,3 +1,5 @@
+// Tests the extractor, not the tool. grabVar and grabFn pull source out of index.html by brace
+// matching; if that returns junk, the unit tests silently run something that is not the product.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SRC, grabVar, grabFn, matchBrace } from "./extract.mjs";

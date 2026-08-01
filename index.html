@@ -266,9 +266,9 @@
 .pa-solid-hov:hover{opacity:.88}
 .pa-mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
 .pa-vcard{display:flex;gap:18px 28px;align-items:center;flex-wrap:nowrap}
-.pa-vcard>.pa-gauge{flex:0 0 auto;width:clamp(142px,13.5vw,192px);position:relative;aspect-ratio:1}
+.pa-vcard>.pa-gauge{flex:0 0 auto;width:clamp(172px,16.4vw,232px);position:relative;aspect-ratio:1}
 .pa-vcard>.pa-vtext{flex:1 1 0;min-width:0}
-.pa-sentence{font-size:clamp(16.5px,1.45vw,22px);line-height:1.25;font-weight:600;letter-spacing:-.012em;max-width:38ch;color:var(--text)}
+.pa-sentence{font-size:clamp(15px,1.25vw,19px);line-height:1.25;font-weight:600;letter-spacing:-.012em;max-width:38ch;color:var(--text)}
 .pa-kvgrid{padding:0 16px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(370px,1fr));gap:0 34px}
 .pa-kv{display:grid;grid-template-columns:172px 1fr;border-top:1px solid var(--line-soft);font-size:12.5px;min-width:0}
 .pa-kv>span{min-width:0;overflow-wrap:anywhere;word-break:break-word;display:flex;align-items:center;padding:9px 0;line-height:1.45}
@@ -276,7 +276,7 @@
 .pa-kv>span:last-child{border-left:1px solid var(--line);padding-left:16px}
 #pa-view,#pa-raw{max-width:100%;overflow-x:hidden}
 #pa-view img,#pa-raw img{max-width:100%}
-@media (max-width:780px){.pa-vcard{flex-wrap:wrap;gap:14px}.pa-vcard>.pa-vtext{flex:1 1 100%}.pa-vcard>.pa-gauge{width:clamp(132px,38vw,168px);margin:0 auto}}
+@media (max-width:780px){.pa-vcard{flex-wrap:wrap;gap:14px}.pa-vcard>.pa-vtext{flex:1 1 100%}.pa-vcard>.pa-gauge{width:clamp(158px,44vw,196px);margin:0 auto}}
 @media (max-width:560px){.pa-kvgrid{gap:0;grid-template-columns:1fr}.pa-kv{grid-template-columns:1fr}.pa-kv>span{padding:5px 0}.pa-kv>span:first-child{padding-right:0}.pa-kv>span:last-child{border-left:0;padding-left:0}}
 .pa-cohg{margin-top:2px}
 .pa-cohgt{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 5px;margin-top:2px;border-top:1px solid var(--line-soft)}
@@ -2122,7 +2122,11 @@ function paRing(score,color){
   return out;
 }
 function paIsRand(R){
-  return R.strategy==="randomization"||R.strategy==="mixed"||/Brave/i.test((R.whoYouAre||[]).map(function(f){return f.what;}).join(" "));
+  var tells=R.strategy==="randomization"||R.strategy==="mixed"||/Brave/i.test((R.whoYouAre||[]).map(function(f){return f.what;}).join(" "));
+  if(!tells)return false;
+  var Fc=R.findabilityCross;
+  if(Fc&&(Fc.changedAcrossOrigins||[]).length===0)return false;
+  return true;
 }
 
 /* - shape the cross-site result for the card ------------- */
@@ -2172,8 +2176,8 @@ function paRenderView(R){
   var rand=paIsRand(R),cs=paCrossData(R);
   var sentence=rand
     ? ("Your browser shuffles its fingerprint per site. On one page it looks like "+score+"; its real protection is cross-site, measured below.")
-    : (color==="var(--green)"?"Your browser is hard to identify. It gives away little that can follow you."
-      :color==="var(--amber)"?"Your browser is partly exposed. A tracker has a few clear ways to recognize you."
+    : ((grade==="A"||grade==="B")?"Your browser is hard to identify. It gives away little that can follow you."
+      :grade==="C"?"Your browser is partly exposed. A tracker has a few clear ways to recognize you."
       :"Your browser is easy to identify. It hands over enough to be followed across sites.");
   var strongN=(F.exposedStrong||[]).length;
   var supporting=(F.strongest?("Biggest tell: "+F.strongest+". "):"")+
@@ -2209,25 +2213,25 @@ function paRenderView(R){
   h+='<div class="pa-vtext">';
   h+='<div class="pa-mono" style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;">Verdict</div>';
   h+='<div class="pa-sentence">'+paEsc(sentence)+'</div>';
-  h+='<div style="margin-top:11px;font-size:clamp(14px,1.05vw,15.5px);line-height:1.5;color:var(--text-2);max-width:56ch;display:flex;gap:9px;align-items:flex-start;">';
+  h+='<div style="margin-top:11px;font-size:clamp(13px,0.95vw,14px);line-height:1.5;color:var(--text-2);max-width:56ch;display:flex;gap:9px;align-items:flex-start;">';
   if(cs.pending)h+='<span style="width:9px;height:9px;border-radius:50%;background:var(--amber);flex:0 0 auto;margin-top:6px;animation:paPulse 1.3s ease-in-out infinite;display:block;"></span>';
   h+='<span>'+paEsc(supporting)+'</span></div>';
   h+=paAxisPair(R,F,cs)+'</div></div>';
   h+='<div style="flex:1 1 340px;min-width:300px;display:flex;"><div style="flex:1;display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);padding:20px 22px;">';
   h+='<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;"><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><circle cx="9" cy="9" r="7" stroke-width="1.6" style="stroke:var(--text-3);"></circle><circle cx="21" cy="9" r="7" stroke-width="1.6" style="stroke:var(--accent);"></circle></svg>';
-  h+='<span style="font-size:16px;font-weight:650;color:var(--text);">Recognized on a second site?</span>';
+  h+='<span style="font-size:15px;font-weight:650;color:var(--text);">Recognized on a second site?</span>';
   h+='<span style="margin-left:auto;padding:4px 11px;border-radius:999px;background:'+((cs.pending||cs.unavailable||cs.failed)?"var(--hover)":cs.bg)+';color:'+((cs.pending||cs.unavailable||cs.failed)?"var(--text-2)":cs.tone)+';font-size:12px;font-weight:700;white-space:nowrap;">'+(cs.pending?"Checking…":cs.unavailable?"http only":cs.failed?(cs.skipRand?"randomizes":"no response"):cs.answer)+'</span></div>';
   h+='<div class="pa-mono" style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;"><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">'+paEsc(cs.originA)+'</span><span style="color:var(--text-3);">&#8596;</span><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">'+paEsc(cs.originB)+'</span></div>';
   if(cs.pending){
-    h+='<div style="margin-top:18px;flex:1;display:flex;align-items:center;gap:12px;"><span style="width:16px;height:16px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);display:inline-block;animation:paSpin .8s linear infinite;"></span><span style="font-size:15px;color:var(--text-2);">Comparing your fingerprint on a second site to see if a tracker could link you across both.</span></div>';
+    h+='<div style="margin-top:18px;flex:1;display:flex;align-items:center;gap:12px;"><span style="width:16px;height:16px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);display:inline-block;animation:paSpin .8s linear infinite;"></span><span style="font-size:14px;color:var(--text-2);">Comparing your fingerprint on a second site to see if a tracker could link you across both.</span></div>';
   }else if(cs.unavailable){
-    h+='<div style="margin-top:18px;flex:1;font-size:14.5px;color:var(--text-2);line-height:1.5;">The two-origin cross-site test needs an http origin. Serve the folder (<code>python serve.py</code>) to run it; it is skipped on file://.</div>';
+    h+='<div style="margin-top:18px;flex:1;font-size:13.5px;color:var(--text-2);line-height:1.5;">The two-origin cross-site test needs an http origin. Serve the folder (<code>python serve.py</code>) to run it; it is skipped on file://.</div>';
   }else if(cs.failed){
     if(cs.measuring){
-      h+='<div style="margin-top:18px;flex:1;display:flex;align-items:center;gap:12px;"><span style="width:16px;height:16px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);display:inline-block;animation:paSpin .8s linear infinite;"></span><span style="font-size:15px;color:var(--text-2);">Measuring this browser on a second site in a brief window.</span></div>';
+      h+='<div style="margin-top:18px;flex:1;display:flex;align-items:center;gap:12px;"><span style="width:16px;height:16px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);display:inline-block;animation:paSpin .8s linear infinite;"></span><span style="font-size:14px;color:var(--text-2);">Measuring this browser on a second site in a brief window.</span></div>';
     }else{
-      h+='<div style="margin-top:18px;font-size:14.5px;color:var(--text-2);line-height:1.5;">'+paEsc(cs.reason)+'</div>';
-      if(cs.canMeasure)h+='<button data-pa="measureRand" class="pa-solid-hov" style="margin-top:14px;align-self:flex-start;background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>Measure across two sites</button>';
+      h+='<div style="margin-top:18px;font-size:13.5px;color:var(--text-2);line-height:1.5;">'+paEsc(cs.reason)+'</div>';
+      if(cs.canMeasure)h+='<button data-pa="measureRand" class="pa-solid-hov" style="margin-top:14px;align-self:flex-start;background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:9px;padding:10px 16px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>Measure across two sites</button>';
     }
   }else{
     var _rec=cs.answer==="Yes",_d=cs.delta,_mid=(_rec?"linked":(_d>0?"+"+_d:(_d===0?"same":String(_d)))),_mc=(_rec?"var(--gradeF)":(_d>0?"var(--gradeB)":_d<0?"var(--gradeF)":"var(--text-3)"));
@@ -2236,35 +2240,35 @@ function paRenderView(R){
     h+='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;"><span style="color:var(--text-3);font-size:17px;line-height:1;">&#8594;</span><span class="pa-mono" style="font-size:11px;font-weight:700;color:'+_mc+';white-space:nowrap;">'+_mid+'</span></div>';
     h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On a second site</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.crossColor+';letter-spacing:-.02em;">'+cs.score+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.crossColor+';margin-top:2px;">grade '+cs.grade+'</div></div>';
     h+='</div>';
-    h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:15px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
-    if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' storage mechanisms stayed partitioned'+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):'; no persistent supercookie carried')+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); browsers partition it per site on real cross-origin domains, so it is shown but not scored':'')+'.</div>';
+    h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
+    if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' storage mechanisms stayed partitioned'+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):'; no persistent supercookie carried')+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); browsers partition it per site on real cross-origin domains, so it is shown but not scored':'')+'.</div>';
   }
-  if(cs.partitionBlocked)h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--amber);line-height:1.5;"><b>Supercookie test did not run.</b> '+paEsc(cs.partitionBlocked)+'</div>';
+  if(cs.partitionBlocked)h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--amber);line-height:1.5;"><b>Supercookie test did not run.</b> '+paEsc(cs.partitionBlocked)+'</div>';
   h+='</div></div>';
   var xb=R.crossBrowser;
   if(xb){
     var xbYes=xb.exposed>=Math.ceil((xb.total||1)/2),xbTone=xb.exposed===0?"var(--green)":xbYes?"var(--gradeF)":"var(--amber)",xbBadge=xb.exposed===0?"No":xbYes?"Yes":"Partly";
     h+='<div style="flex:1 1 320px;min-width:290px;display:flex;"><div style="flex:1;display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);padding:20px 22px;">';
     h+='<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;"><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><rect x="2" y="3" width="15" height="12" rx="2.5" stroke-width="1.6" style="stroke:var(--text-3);"></rect><rect x="13" y="4" width="15" height="12" rx="2.5" stroke-width="1.6" style="stroke:var(--accent);fill:var(--panel-2);"></rect></svg>';
-    h+='<span style="font-size:16px;font-weight:650;color:var(--text);">Recognized in another browser?</span>';
+    h+='<span style="font-size:15px;font-weight:650;color:var(--text);">Recognized in another browser?</span>';
     h+='<span style="margin-left:auto;padding:4px 11px;border-radius:999px;background:var(--hover);color:'+xbTone+';font-size:12px;font-weight:700;white-space:nowrap;">'+xbBadge+'</span></div>';
     h+='<div class="pa-mono" style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;"><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">this browser</span><span style="color:var(--text-3);">&#8596;</span><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">another browser, same machine</span></div>';
     h+='<div style="margin-top:16px;display:flex;align-items:stretch;gap:10px;"><div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Hardware anchors exposed</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+xbTone+';letter-spacing:-.02em;">'+xb.exposed+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/'+xb.total+'</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+xbTone+';margin-top:2px;">'+(xb.exposed?(PAV.redact?"signature redacted":"signature "+paEsc(xb.hash)):"no signature to take")+'</div></div></div>';
-    h+='<div style="margin-top:14px;font-size:15px;line-height:1.5;color:var(--text);">'+(xbYes?"GPU, fonts, screen and other hardware readings are exposed, so this machine stays recognizable even in a different browser.":xb.exposed?"Some hardware readings still leak, so another browser on this machine is partly linkable.":"The hardware layer is masked, so switching browsers breaks the link.")+'</div>';
-    h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2);"><b>Follows you across browsers:</b> '+(xb.anchors&&xb.anchors.length?xb.anchors.map(paEsc).join(", "):"nothing exposed")+'. Hardware and OS signals, separate from the per-site test on the left.</div>';
+    h+='<div style="margin-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+(xbYes?"GPU, fonts, screen and other hardware readings are exposed, so this machine stays recognizable even in a different browser.":xb.exposed?"Some hardware readings still leak, so another browser on this machine is partly linkable.":"The hardware layer is masked, so switching browsers breaks the link.")+'</div>';
+    h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Follows you across browsers:</b> '+(xb.anchors&&xb.anchors.length?xb.anchors.map(paEsc).join(", "):"nothing exposed")+'. Hardware and OS signals, separate from the per-site test on the left.</div>';
     h+='</div></div>';
   }
   h+='</div>';
   h+=paCalcPanel(F);
   h+=paExportBar();
-  h+='<section style="padding:22px 0 26px;"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;"><h2 style="margin:0;font-size:20px;font-weight:650;color:var(--text);">What each surface gave away</h2><span class="pa-mono" style="font-size:11.5px;color:var(--text-3);">worst first &#183; weight = how much a surface narrows you down</span></div>';
+  h+='<section style="padding:22px 0 26px;"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;"><h2 style="margin:0;font-size:18px;font-weight:650;color:var(--text);">What each surface gave away</h2><span class="pa-mono" style="font-size:11.5px;color:var(--text-3);">worst first &#183; weight = how much a surface narrows you down</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">';
   tiles.forEach(function(t){var act=PAV.tileFilter===t[3],dis=!t[1];
     h+='<button class="pa-tile'+(act?" on":"")+'" data-pa="tile" data-filter="'+t[3]+'" aria-pressed="'+(act?"true":"false")+'"'+(dis?" disabled":"")+' style="text-align:left;cursor:'+(dis?"default":"pointer")+';background:var(--panel-2);border:1px solid '+(act?t[2]:"var(--line)")+';border-radius:12px;box-shadow:var(--card-shadow);padding:12px 15px;opacity:'+(dis?".5":"1")+';"><div class="pa-mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);display:flex;align-items:center;justify-content:space-between;gap:6px;"><span>'+t[0]+'</span><span style="font-size:11px;color:'+t[2]+';visibility:'+(act?"visible":"hidden")+';">&#10003;</span></div><div style="font-size:24px;font-weight:700;margin-top:5px;color:'+t[2]+';">'+t[1]+'</div></button>';});
   h+='</div>';
   if(PAV.tileFilter){var _tl=((tiles.filter(function(t){return t[3]===PAV.tileFilter;})[0])||["",""])[0];
-    h+='<div class="pa-mono" style="margin-top:10px;font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:9px;flex-wrap:wrap;">Showing <b style="color:var(--text-2);">'+paEsc(_tl.toLowerCase())+'</b> only. <button data-pa="tile" data-filter="'+PAV.tileFilter+'" style="background:transparent;border:1px solid var(--line-strong);border-radius:7px;padding:3px 9px;font:inherit;color:var(--text-2);cursor:pointer;">Show all</button></div>';}
-  else{h+='<div class="pa-mono" style="margin-top:9px;font-size:11.5px;color:var(--text-3);">Tap a card to show only those surfaces below.</div>';}
+    h+='<div class="pa-mono" style="margin-top:10px;font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:9px;flex-wrap:wrap;">Showing <b style="color:var(--text-2);">'+paEsc(_tl.toLowerCase())+'</b> only. <button data-pa="tile" data-filter="'+PAV.tileFilter+'" style="background:transparent;border:1px solid var(--line-strong);border-radius:7px;padding:3px 9px;font:inherit;color:var(--text-2);cursor:pointer;">Show all</button></div>';}
+  else{h+='<div class="pa-mono" style="margin-top:9px;font-size:11px;color:var(--text-3);">Tap a card to show only those surfaces below.</div>';}
   var rowsList=PAV.tileFilter?main.filter(function(g){return paTileMatch(g,PAV.tileFilter);}):main;
   h+='<div class="pa-rows">';
   var prevKey=null;

@@ -1,3 +1,5 @@
+// Repeated audits in one page: re-entrant Run clicks, viewport extremes, and a server that 404s
+// every helper. Guards resource exhaustion, mainly the WebGL context ceiling near sixteen.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";

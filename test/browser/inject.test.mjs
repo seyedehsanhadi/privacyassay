@@ -1,3 +1,5 @@
+// Deliberate sabotage. A refused reading counts as protection, so a broken probe would raise the
+// score. Each surface is broken on its own and asserted never to score as a value handed over.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "../helpers/server.mjs";
@@ -32,6 +34,7 @@ async function scoreWith(port, preload, probeExpr) {
   } finally { await page.close(); }
 }
 
+// ---- single probes: one surface sabotaged at a time ----
 test("inject: a probe that throws is never scored as shown", async () => {
   const srv = await startServer();
   try {
@@ -226,6 +229,7 @@ function diffBatch(rows, cleanRows, labels) {
   return { noEffect, stillShown };
 }
 
+// ---- matrix: every scored surface, sabotaged on its own ----
 test("inject-matrix: property surfaces (throw) - never shown, score never drops below clean", async () => {
   const srv = await getServer();
   const clean = await getClean();
@@ -354,6 +358,7 @@ test("inject-matrix: at least half the method surfaces are genuinely injectable,
     `only ${proven} of ${METHOD_SURFACES.length} method surfaces could be injected; the guarantee is untested on the rest`);
 });
 
+// ---- regressions: sabotage that used to take the whole page down ----
 test("inject-crash regression: a throw in deviceMemory, platform or languages still produces a score", async () => {
   const srv = await getServer();
   const preload = [

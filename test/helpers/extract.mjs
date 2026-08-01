@@ -1,3 +1,5 @@
+// Pulls a named var or function out of index.html so it can run in isolation. The matcher is
+// string, comment and regex aware, because a naive brace count breaks on the first regex literal.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

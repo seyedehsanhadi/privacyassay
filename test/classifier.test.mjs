@@ -1,3 +1,5 @@
+// Every branch that decides shown, blended or refused. These run against PRIORS directly, so a
+// classification change shows up here before any browser is launched.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { grabVar, grabFn } from "./helpers/extract.mjs";
@@ -18,6 +20,7 @@ const { findability, PRIORS, paFamilyKey } = new Function(core)();
 // drops a Tor run onto the plain "firefox" entry and takes every tor-build credit with it.
 const TOR_UA = "Mozilla/5.0 (Windows NT 10.0; rv:140.0) Gecko/20100101 Firefox/140.0";
 
+// ---- family: which catalog a browser is scored against ----
 test("family: a Tor or Mullvad build routes to tor-build, not to the Firefox entries below it", () => {
   assert.equal(paFamilyKey("Tor Browser", TOR_UA), "tor-build");
   assert.equal(paFamilyKey("Mullvad Browser", TOR_UA), "tor-build");
@@ -222,6 +225,7 @@ test("webgpu: both readings are scored, sit in the GPU category, and refuse when
 // The page shows its own working under "How this number was reached". It renders F.categories
 // rather than recomputing, so these three have to stay true or the panel would contradict the
 // score printed above it.
+// ---- working: the breakdown the report shows must add up to the score ----
 test("working: the per-category breakdown adds up to the score it is shown beside", () => {
   const cases = [
     ["all shown", Object.fromEntries(PRIORS.surfaces.filter((s) => !s.optional).map((s) => [s.k, "real_" + s.k]))],

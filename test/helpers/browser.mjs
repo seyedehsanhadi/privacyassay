@@ -1,3 +1,5 @@
+// Chromium over CDP: launch a throwaway profile, run an audit, evaluate in the page.
+// Gecko cannot be driven here; Firefox dropped CDP, and those browsers go through the harness.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";

@@ -1,3 +1,5 @@
+// The parts that must agree with each other: package.json, schema.json, the CLI flags, the README
+// section markers, and the deadlines the document quotes. Drift here is invisible until it ships.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

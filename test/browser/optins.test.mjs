@@ -1,3 +1,5 @@
+// The two opt-ins each add a category to the denominator, so a reading that is off must be
+// absent from the total rather than counted as hidden.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "../helpers/server.mjs";

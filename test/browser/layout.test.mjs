@@ -1,3 +1,5 @@
+// What the rendered page must show: no overlap at any width, the working panel collapsed, the
+// ring drawing the score it is labelled with, and no frame left behind by an earlier run.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "../helpers/server.mjs";

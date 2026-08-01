@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Headless benchmark CLI. A fresh browser per run so a farbling browser cannot re-use one seed;
+// serves 127.0.0.1 and localhost from one handler so the cross-site figure is measurable too.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";

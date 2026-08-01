@@ -1,5 +1,8 @@
+// The arithmetic and what it is allowed to credit: the share rule, the grade bands, redaction,
+// and the claims the verdict sentence is permitted to make.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { grabVar, grabFn } from "./helpers/extract.mjs";
 
 // The tool is one self-contained index.html, so the scoring core is not importable.
@@ -193,4 +196,43 @@ test("identity: browser and addons compose, multiple addons join with +", () => 
 test("identity: an addon under an unrecognised UA still names the addon", () => {
   const { paIdentity } = makeIdentity("something nonstandard");
   assert.equal(paIdentity({ whoYouAre: [{ what: "Privacy Badger", kind: "addon" }] }), "an unrecognised browser, with Privacy Badger");
+});
+
+// The verdict sentence branched on the colour string paBandFor returns, comparing it against
+// "var(--green)" and "var(--amber)". That function only ever returns "var(--gradeA)" through
+// "var(--gradeF)", so both branches were dead and every browser was told it was easy to identify,
+// including the ones that hide the most. It must key off the grade instead.
+const sentenceSrc = grabFn("paBandFor");
+test("verdict: the sentence is not decided by a colour string that paBandFor never returns", () => {
+  const { paBandFor } = new Function(sentenceSrc + ";return { paBandFor };")();
+  const bands = ["A", "B", "C", "D", "F"].map((g) => paBandFor(g).band);
+  for (const b of bands) {
+    assert.notEqual(b, "var(--green)", "a dead comparison target is back");
+    assert.notEqual(b, "var(--amber)", "a dead comparison target is back");
+  }
+  const src = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /color===\"var\(--green\)\"/,
+    "the sentence must key off the grade, not a colour string that is never produced");
+});
+
+// "mixed" meant randomizer, so LibreWolf, Tor and Mullvad were all told "your browser shuffles its
+// fingerprint per site; its real protection is cross-site, measured below" while the cross-site
+// card beside it showed the identical score and 0 of 29 signals changed. Nothing shuffled. The
+// claim is disproved by our own measurement, so it must not survive a cross-site result that found
+// no change. With no cross-site result there is nothing to disprove it with, so it stands.
+const { paIsRand } = new Function(grabFn("paIsRand") + ";return { paIsRand };")();
+
+test("randomizer: a cross-site result showing no change disproves the per-site shuffle claim", () => {
+  const mixed = { strategy: "mixed", whoYouAre: [] };
+  assert.equal(paIsRand({ ...mixed }), true, "with no cross-site result the claim stands");
+  assert.equal(paIsRand({ ...mixed, findabilityCross: { changedAcrossOrigins: [] } }), false,
+    "measured across two origins and nothing changed, so it is not shuffling per site");
+  assert.equal(paIsRand({ ...mixed, findabilityCross: { changedAcrossOrigins: ["canvas drawing"] } }), true,
+    "something did change across origins, so the claim holds");
+});
+
+test("randomizer: Brave still reads as a randomizer once its values differ across origins", () => {
+  const brave = { strategy: "randomization", whoYouAre: [{ what: "Brave" }],
+    findabilityCross: { changedAcrossOrigins: ["canvas drawing", "GPU name"] } };
+  assert.equal(paIsRand(brave), true);
 });

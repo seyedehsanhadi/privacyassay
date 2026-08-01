@@ -1,3 +1,5 @@
+// Redaction guards a file users are invited to post in public. Anything a report can carry is
+// checked here, because the default-deny only holds if nothing routes around it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "../helpers/server.mjs";

@@ -8,6 +8,36 @@ Redact is on by default, so values on screen and in any saved report are masked.
 
 A `<meta>` Content-Security-Policy denies everything by default and allows only this origin, plus loopback frames for the two-origin test. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
 
+## Results
+
+One machine, Windows 11, 2026-07-31. Three runs per setting, a fresh browser launch each. Higher means more of what this tool checks is hidden.
+
+```
+           0        20        40        60        80       100
+           +----+----+----+----+----+----+----+----+----+----+
+Tor                                             ##              74-78
+Mullvad                                         ##              74-78
+LibreWolf                       #######                         42-55
+Firefox        ######                                            8-20
+Brave        #                                                    4-5
+Chrome     |                                                        0
+Edge       |                                                        0
+```
+
+| Browser | Version | Default | Range | Why it moves |
+|---|---|---:|---:|---|
+| Tor Browser | 140.13.0 | 74 | 74-78 | the WebRTC test adds a category it refuses outright |
+| Mullvad Browser | 140.13.0 | 74 | 74-78 | same |
+| LibreWolf | 152.0.6-1 | 48 | 42-55 | loses on WebRTC, gains on supercookies; one run of three did not finish that probe |
+| Firefox | 153.0.1 | 9 | 8-20 | partitions storage well, which only counts when you ask for it |
+| Brave | 150.1.92.144 | 5 | 4-5 | flat within a single visit by design |
+| Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
+| Edge | 150.0.4078.105 | 0 | 0 | nothing hidden under any setting |
+
+Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **17 to 30 across sessions**, because it re-seeds each session and keys per site. Every other browser's cross-site figure equals its single-site score.
+
+These ranges are not measurement noise. Within one launch and setting, six of the seven browsers returned an identical score on all three runs. The spread comes from the opt-in setting, which changes the denominator, and for LibreWolf from a probe that did not always finish, so **two scores taken under different settings cannot be compared**. [METHODOLOGY.md](METHODOLOGY.md) separates the causes.
+
 ## Run it
 
 Open `index.html` and press Run.

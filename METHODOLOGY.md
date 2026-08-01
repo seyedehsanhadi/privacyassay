@@ -4,9 +4,9 @@ The score is how much of what this tool checks your browser hides, weighted by h
 
 ## Three states
 
-- **shown** — your real value
-- **blended** — credited three ways and no others: the catalog records that browser family as reporting one value for every user, or the value differed between two reads in the same page, or the code recognised a specific mask it looks for (a blanked or noisy canvas, an unavailable render, a letterboxed window or screen, a zeroed taskbar, an empty voice list, a blocked `local()` font probe)
-- **refused** — blank, blocked, or an error
+- **shown**: your real value
+- **blended**: credited three ways and no others: the catalog records that browser family as reporting one value for every user, or the value differed between two reads in the same page, or the code recognised a specific mask it looks for (a blanked or noisy canvas, an unavailable render, a letterboxed window or screen, a zeroed taskbar, an empty voice list, a blocked `local()` font probe)
+- **refused**: blank, blocked, or an error
 
 Only shown counts against you. Rarity is never assumed: a value is not credited for looking unusual.
 
@@ -42,13 +42,13 @@ score = round( 100 * sum(category hidden) / sum(category weight) )
 grade = A 90+ | B 75-89 | C 60-74 | D 40-59 | F below 40
 ```
 
-Worked example, the GPU category. Seven readings: canvas drawing (3), and six medium ones (2 each) — 15 points of weight in a category worth 3. A browser that hides canvas and the two WebGL hashes hides 7 of those 15, so it earns 3 x 7/15 = 1.4 of the 3 the category is worth.
+Worked example, the GPU category. Seven readings: canvas drawing (3), and six medium ones (2 each), so 15 points of weight in a category worth 3. A browser that hides canvas and the two WebGL hashes hides 7 of those 15, so it earns 3 x 7/15 = 1.4 of the 3 the category is worth.
 
 An earlier version paid only for the heaviest reading a category still hid. That made hiding anything lighter worth nothing: seven of the twenty-nine readings could not move any score at all, and a browser hiding four of five GPU readings scored the same as one hiding none.
 
 ## How much the number means
 
-The ordering is the result; the number is an indicator. Recomputed under six alternative weightings — all readings equal, tiers inverted, tiers squared, the previous heaviest-reading-only rule, and two schemes with the category weighting dropped entirely — the ordering never changed. A jackknife dropping each of the thirteen categories in turn changed it once.
+The ordering is the result; the number is an indicator. Recomputed under six alternative weightings (all readings equal, tiers inverted, tiers squared, the previous heaviest-reading-only rule, and two schemes with the category weighting dropped entirely) the ordering never changed. A jackknife dropping each of the thirteen categories in turn changed it once.
 
 Every perturbation that moves the ordering moves the same pair. Dropping the OS category, or replacing the weights with published per-attribute entropy estimates, puts Brave above Firefox; the two sit at 5 and 9 here and their difference is not something this model resolves. Every other pair held under all of it.
 

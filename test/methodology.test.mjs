@@ -1,3 +1,5 @@
+// METHODOLOGY.md recomputed from the code. Every weight, count, band and claim in the document is
+// derived from PRIORS and index.html here, so prose cannot drift away from what the tool does.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

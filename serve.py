@@ -1,3 +1,5 @@
+# Local dev server for the three checks that need a real origin: header echo, two-origin
+# cross-site, supercookies. Loopback only, no directory listings, warns before binding wider.
 import base64, json, os, sys
 from collections import defaultdict
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
