@@ -209,3 +209,20 @@ test("methodology: an opt-in test that could not run is disclosed rather than sc
     "an opt-in whose answer cannot be delivered must be reported as not measured, never scored either way");
   assert.doesNotMatch(DOC, /they block the pop-up/i, "the disproven cause must not return");
 });
+
+// The two-read randomizer check only sees readings taken live; anything observeVectors pulls via
+// paRow was already computed by a collector, so a second call returns it unchanged and it can never
+// be credited for varying. That count is a real limit on what the check can catch, and it drifted
+// silently when a render reading was switched to paRow: the document said twelve while the code had
+// fifteen. Recomputed from the source so prose and code cannot disagree again.
+test("methodology: the count of readings the two-read check cannot cover matches the code", () => {
+  const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
+  const i = src.indexOf("function observeVectors");
+  const body = src.slice(i, src.indexOf(String.fromCharCode(10) + "function ", i + 10));
+  const fromRows = [...body.matchAll(/^\s{4}[A-Za-z_][A-Za-z0-9_]*\s*:\s*paRow\(/gm)].length;
+  const WORDS = { 11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen", 16: "Sixteen", 17: "Seventeen" };
+  const word = WORDS[fromRows];
+  assert.ok(word, `${fromRows} readings come from precomputed rows; add it to the word map`);
+  assert.ok(DOC.includes(`${word} are pulled from rows`),
+    `${fromRows} readings are pulled from precomputed rows, but METHODOLOGY does not say "${word} are pulled from rows"`);
+});
