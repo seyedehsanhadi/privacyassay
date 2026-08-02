@@ -1,8 +1,11 @@
 <div align="center">
 
-<img src="logo.svg" width="84" height="84" alt="">
-
-# Privacyassay
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg">
+    <img src="logo-light.svg" width="392" alt="Privacyassay">
+  </picture>
+</h1>
 
 **One HTML file that shows what a website can read about your browser and how much of it singles you out.**
 Everything runs on your machine; the fingerprint is never uploaded.
@@ -48,17 +51,10 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 One machine, Windows 11, 2026-07-31. Three runs per setting, a fresh browser launch each. Higher means more of what this tool checks is hidden.
 
-```
-           0        20        40        60        80       100
-           +----+----+----+----+----+----+----+----+----+----+
-Tor                                             ##              74-78
-Mullvad                                         ##              74-78
-LibreWolf                       #######                         42-55
-Firefox        ######                                            8-20
-Brave        #                                                    4-5
-Chrome     |                                                        0
-Edge       |                                                        0
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
+  <img src="chart-light.svg" width="756" alt="Score by browser: Tor 74 (range 74-78), Mullvad 74 (74-78), LibreWolf 48 (42-55), Firefox 9 (8-20), Brave 5 (4-5), Chrome 0, Edge 0">
+</picture>
 
 | Browser | Version | Default | Range | Why it moves |
 |---|---|---:|---:|---|
@@ -86,7 +82,7 @@ python serve.py
 
 Serves `http://localhost:8000`, loopback only, and pairs it with `127.0.0.1` as the second origin.
 
-Hosting the file yourself works the same way for everything except those two-origin checks, which need a second host that answers back. Set `PA_COMPANION` and `PA_HOME` near the top of the file to your own pair and serve the identical file from both. Until they name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
+Hosting it yourself works the same way for everything except those two-origin checks, which need a second host that answers back. [DEPLOY.md](DEPLOY.md) has the four steps. Until the two origins name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
 
 ## In CI
 
@@ -145,9 +141,7 @@ npm test && npm run test:browser && npm run test:stress
 
 ## Security
 
-Report a vulnerability through [private security advisories](https://github.com/seyedehsanhadi/privacyassay/security/advisories/new) rather than a public issue.
-
-The tool takes a fingerprint, so treat any report you export as sensitive. Redact is on by default and masks values on screen and in saved reports; a report saved with it turned off contains your real readings.
+[SECURITY.md](SECURITY.md) has what is in scope and how to report privately.
 
 ## License
 

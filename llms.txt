@@ -1,0 +1,22 @@
+# Privacyassay
+
+> A single HTML file that measures what a website can read about a visitor's browser, and scores how much of that the browser hides. Everything is measured and scored in the page; no fingerprint is uploaded. Apache-2.0, no build step, no dependencies.
+
+Each reading is classified as shown (the real value), blended (a value every user of that browser shares, or one that changes on every read), or refused (blank, blocked, or an error). Only shown counts against the visitor. The score is the share of what the tool checks that the browser hides, weighted by how identifying each reading is, and it is not an estimate of how rare a visitor is: that would need a population of real fingerprints, which this has no access to.
+
+The catalog holds 32 readings across 13 categories. A category is worth its heaviest reading, and inside a category you earn the share of it you hide. Three readings are opt-in and off by default: the WebRTC IP leak, extension enumeration, and storage carried across sites.
+
+Published measurements were taken on one machine on 2026-07-31, over a loopback pair rather than two registered domains. The ordering they produce is supported by the sensitivity analysis; a particular absolute score is one weighting on one machine on one date.
+
+## Docs
+
+- [README](https://github.com/seyedehsanhadi/privacyassay/blob/main/README.md): what it is, measured results by browser, how to run it
+- [Methodology](https://github.com/seyedehsanhadi/privacyassay/blob/main/METHODOLOGY.md): the weights, the formula, the sensitivity analysis, and every stated limit
+- [Deploy](https://github.com/seyedehsanhadi/privacyassay/blob/main/DEPLOY.md): hosting it, and the second origin the cross-site test needs
+- [Security](https://github.com/seyedehsanhadi/privacyassay/blob/main/SECURITY.md): what is in scope and how to report privately
+
+## Source
+
+- [Repository](https://github.com/seyedehsanhadi/privacyassay): one `index.html`, plus a CLI and the test suite
+- [Live tool](https://privacyassay.com/): the same file, hosted
+- [Benchmark](https://github.com/seyedehsanhadi/privacyassay/tree/main/bench): recomputes the calibration figures from saved captures, without a browser

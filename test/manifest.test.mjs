@@ -34,6 +34,33 @@ test("manifest: the size the README quotes is the size of the file", () => {
     `README says ${stated} KB, index.html is ${Math.round(real)} KB`);
 });
 
+test("manifest: the results chart shows the numbers the results table states", () => {
+  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
+  const section = (readme.match(/## Results[\s\S]*?(?=\n## )/) || [""])[0];
+  const dataRows = section.split("\n")
+    .filter((l) => l.startsWith("| ") && !/^\| *Browser/.test(l) && !/^\|[\s\-:|]+\|$/.test(l));
+  const table = [...section.matchAll(/^\| ([A-Z][A-Za-z ]+?) \| [\w.\-]+ \| (\d+) \| (\d+)(?:-(\d+))? \|/gm)]
+    .map(([, name, dflt, lo, hi]) => ({ name: name.trim(), dflt: +dflt, lo: +lo, hi: hi ? +hi : +lo }));
+  assert.equal(table.length, dataRows.length,
+    `parsed ${table.length} of ${dataRows.length} result rows; a row this pattern skips is a row nothing checks`);
+  assert.ok(table.length >= 7, `expected every browser in the results table, parsed ${table.length}`);
+  for (const file of ["chart-light.svg", "chart-dark.svg"]) {
+    const svg = fs.readFileSync(path.join(ROOT, file), "utf8");
+    for (const r of table) {
+      assert.ok(svg.includes(`>${r.name}<`) || svg.includes(`>${r.name.replace(" Browser", "")}<`),
+        `${file} has no row for ${r.name}`);
+      const label = r.hi > r.lo ? `${r.lo}-${r.hi}` : String(r.dflt);
+      assert.ok(svg.includes(`>${label}<`),
+        `${file} does not show "${label}" for ${r.name}; the chart and the table disagree`);
+    }
+  }
+  const alt = (readme.match(/alt="Score by browser: ([^"]+)"/) || [])[1] || "";
+  for (const r of table) {
+    const shown = r.hi > r.lo ? `${r.lo}-${r.hi}` : String(r.dflt);
+    assert.ok(alt.includes(shown), `the chart's alt text omits ${r.name}'s ${shown}, so it reads wrong aloud`);
+  }
+});
+
 test("manifest: every file listed in package.json files exists", () => {
   const missing = PKG.files.filter((f) => !fs.existsSync(path.join(ROOT, f)));
   assert.deepEqual(missing, []);
@@ -249,12 +276,24 @@ test("cross-site: the companion is given long enough for a hardened build to ans
 
 test("index.html: every inline script parses", () => {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-  assert.ok(scripts.length >= 3, `expected the tool's inline scripts, found ${scripts.length}`);
+  const tags = [...html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)];
+  const js = tags.filter((m) => !/type\s*=\s*"application\/ld\+json"/.test(m[1]));
+  const ld = tags.filter((m) => /type\s*=\s*"application\/ld\+json"/.test(m[1]));
+  assert.ok(js.length >= 3, `expected the tool's inline scripts, found ${js.length}`);
   const broken = [];
-  scripts.forEach((src, i) => {
-    if (!src.trim()) return;
-    try { new Function(src); } catch (e) { broken.push(`script ${i}: ${e.message}`); }
+  js.forEach((m, i) => {
+    if (!m[2].trim()) return;
+    try { new Function(m[2]); } catch (e) { broken.push(`script ${i}: ${e.message}`); }
   });
   assert.deepEqual(broken, [], "a script that does not parse means the page loads nothing");
+
+  assert.equal(ld.length, 1, "the page should carry exactly one structured-data block");
+  let data = null;
+  try { data = JSON.parse(ld[0][2]); } catch (e) {
+    assert.fail(`the structured-data block is not valid JSON, so every crawler drops it: ${e.message}`);
+  }
+  const { PRIORS: P } = new Function(grabVar("PRIORS") + "return {PRIORS};")();
+  assert.equal(data.softwareVersion, P.version,
+    "the version in structured data drifted from the one the tool reports");
+  assert.equal(data.url, "https://privacyassay.com/");
 });

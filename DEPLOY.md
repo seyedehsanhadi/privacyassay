@@ -15,9 +15,15 @@ var PA_COMPANION="https://companion.pages.dev/index.html";
 var PA_HOME="https://your-domain.example/";
 ```
 
-`PA_HOME` redirects a direct visit to the companion back to the main site. Both ship empty for local use.
+`PA_HOME` redirects a direct visit to the companion back to the main site. Both ship set to this
+project's own pair, so a copy you host yourself has to change them or it gets no cross-site result:
+the companion answers only to the `PA_HOME` it was built with, and a reply addressed elsewhere is
+dropped by the browser. A page served from loopback or opened from disk ignores both values and
+pairs with loopback instead, so a local copy never contacts either host.
 
-4. Add **both** origins to the `Content-Security-Policy` meta tag. Skipping this fails silently: the shipped policy allows only `'self'` and loopback, so the frame never loads and the cross-site result reads as unmeasured rather than as an error. Only `frame-src` and `child-src` name the companion origin. Every probe URL is relative, so it stays same-origin inside whichever page runs it.
+4. Add **both** origins to the `Content-Security-Policy` meta tag. Skipping this fails silently: the shipped policy allows `'self'`, loopback and this project's own
+two origins, so a companion of yours that is not named there never loads and the cross-site result
+reads as unmeasured rather than as an error. Only `frame-src` and `child-src` name the companion origin. Every probe URL is relative, so it stays same-origin inside whichever page runs it.
 
 The two copies must stay byte-identical. Point both hosts at the same file. `.gitattributes` pins line endings so a checkout cannot rewrite them and break the match or a published hash.
 
