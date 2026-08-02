@@ -219,14 +219,23 @@ async function getClean() {
 function diffBatch(rows, cleanRows, labels) {
   const noEffect = [];
   const stillShown = [];
+  const absent = [];
   for (const label of labels) {
     const row = rows.find((r) => r.label === label);
     const cleanRow = cleanRows.find((r) => r.label === label);
     if (!row || !cleanRow) { noEffect.push(`${label} (row missing from response)`); continue; }
+    if (cleanRow.value === "" || cleanRow.value === "ERR") { absent.push(label); continue; }
     if (row.value === cleanRow.value) { noEffect.push(`${label} (value unchanged: ${JSON.stringify(row.value)})`); continue; }
     if (row.state === "shown") stillShown.push(`${label} (value=${JSON.stringify(row.value)}, state=shown, clean-value=${JSON.stringify(cleanRow.value)})`);
   }
-  return { noEffect, stillShown };
+  return { noEffect, stillShown, absent };
+}
+
+function assertBatch(kind, { noEffect, stillShown, absent }, labels) {
+  assert.equal(noEffect.length + stillShown.length, 0,
+    `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || still classified shown after ${kind}: ${stillShown.join(" | ") || "none"}`);
+  assert.ok(labels.length - absent.length >= Math.ceil(labels.length * 0.6),
+    `only ${labels.length - absent.length} of ${labels.length} surfaces exist on this machine, so the ${kind} matrix barely tested anything: ${absent.join(", ")}`);
 }
 
 // ---- matrix: every scored surface, sabotaged on its own ----
@@ -234,20 +243,18 @@ test("inject-matrix: property surfaces (throw) - never shown, score never drops 
   const srv = await getServer();
   const clean = await getClean();
   const { rows, score } = await scoreWith(srv.port, propPreload("throw"));
-  const { noEffect, stillShown } = diffBatch(rows, clean.rows, PROP_LABELS);
+  const batch = diffBatch(rows, clean.rows, PROP_LABELS);
   assert.ok(score >= clean.score, `score dropped below clean under throw: clean ${clean.score}, injected ${score}`);
-  assert.equal(noEffect.length + stillShown.length, 0,
-    `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || still classified shown after throw: ${stillShown.join(" | ") || "none"}`);
+  assertBatch("throw", batch, PROP_LABELS);
 });
 
 test("inject-matrix: property surfaces (undefined) - never shown, score never drops below clean", async () => {
   const srv = await getServer();
   const clean = await getClean();
   const { rows, score } = await scoreWith(srv.port, propPreload("undefined"));
-  const { noEffect, stillShown } = diffBatch(rows, clean.rows, PROP_LABELS);
+  const batch = diffBatch(rows, clean.rows, PROP_LABELS);
   assert.ok(score >= clean.score, `score dropped below clean under undefined: clean ${clean.score}, injected ${score}`);
-  assert.equal(noEffect.length + stillShown.length, 0,
-    `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || still classified shown after undefined: ${stillShown.join(" | ") || "none"}`);
+  assertBatch("undefined", batch, PROP_LABELS);
 });
 
 // installed fonts (tier 3, the only tier-3 reading in its category) is measured through the
