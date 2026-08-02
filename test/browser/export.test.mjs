@@ -64,6 +64,15 @@ async function saveAndRead(page, which) {
 
 // ---- the schema itself ----
 
+// additionalProperties defaulted to true, so a typo or a field nobody declared validated silently
+// and the schema constrained nothing a consumer could rely on. Both producers were checked against
+// their real output first: the page emits 13 fields, the CLI 15, and runs/runScores appear only
+// under --runs>1. All 21 plus those 2 are declared, so closing the object breaks nothing.
+test("export: the schema is closed, so an undeclared field cannot validate", () => {
+  assert.equal(SCHEMA.additionalProperties, false,
+    "additionalProperties must be false or the schema constrains nothing");
+});
+
 test("export: schema.json constrains every property it lists", () => {
   const loose = Object.entries(SCHEMA.properties || {})
     .filter(([, v]) => !v.type && v.const === undefined && !v.enum)
@@ -116,6 +125,8 @@ test("export: the full report is valid JSON and carries the same score as the su
     const sum = await saveAndRead(page, "savesum");
     const full = await saveAndRead(page, "savefull");
     assert.equal(typeof full.json, "object", "the full report must parse as an object");
+    assert.equal(full.json.schema, "privacyassay-full/1.0",
+      "the full report must identify itself; 64KB of JSON with no schema id cannot be consumed safely");
     assert.equal(full.json.score ?? sum.json.score, sum.json.score,
       "the two files disagree about the score of the same run");
   } finally { await page.close(); srv.close(); }
@@ -140,7 +151,11 @@ test("export: with Redact on, no saved value looks like a fingerprint", async ()
   } finally { await page.close(); srv.close(); }
 });
 
-test("export: turning Redact off changes the file, so the toggle is not decorative", async () => {
+// An earlier version of this asserted the summary differs with Redact off. It passed, but only on
+// the `generated` timestamp: the two files are otherwise byte-identical, because the summary holds
+// labels, weights, counts and grades and never a raw value. That is the property worth pinning.
+// Redaction has to bite somewhere though, and where it bites is the full report and the filename.
+test("export: the summary is safe by construction, identical with Redact on or off", async () => {
   const srv = await startServer();
   const page = await launch({ port: srv.port, preload: CAPTURE });
   try {
@@ -149,7 +164,26 @@ test("export: turning Redact off changes the file, so the toggle is not decorati
     await page.ev(`document.querySelector('[data-pa="redact"]').click();"ok"`);
     await new Promise((r) => setTimeout(r, 400));
     const off = await saveAndRead(page, "savesum");
-    assert.notDeepEqual(off.json, on.json, "the redact toggle produced an identical file both ways");
+    const strip = (o) => { const c = { ...o.json }; delete c.generated; return c; };
+    assert.deepEqual(strip(off), strip(on),
+      "the summary must carry nothing that redaction could need to remove");
     assert.equal(off.json.score, on.json.score, "redaction must never change the score");
+    assert.notEqual(off.name, on.name, "with Redact off the filename must stop hiding the fingerprint");
+  } finally { await page.close(); srv.close(); }
+});
+
+test("export: the full report is where redaction actually bites", async () => {
+  const srv = await startServer();
+  const page = await launch({ port: srv.port, preload: CAPTURE });
+  try {
+    await runAudit(page);
+    const on = await saveAndRead(page, "savefull");
+    await page.ev(`document.querySelector('[data-pa="redact"]').click();"ok"`);
+    await new Promise((r) => setTimeout(r, 400));
+    const off = await saveAndRead(page, "savefull");
+    assert.notDeepEqual(off.json, on.json,
+      "the full report holds raw values, so the redact toggle must change it");
+    assert.ok(JSON.stringify(on.json).length < JSON.stringify(off.json).length,
+      "a redacted report should not be larger than the raw one it masks");
   } finally { await page.close(); srv.close(); }
 });

@@ -2493,7 +2493,8 @@ function paSave(kind){
       var v=r[1];if(!red)return r;
       var k0=String(r[0]).replace(/ = [\s\S]*$/," = [redacted]");
       return [k0,Array.isArray(v)?[paRedactVal(r[0],v[0]),v[1]]:paRedactVal(r[0],v)];})};});
-  var out={summary:{schema:"privacyassay-full/1.0",generated:new Date().toISOString(),browser:who,verdict:verdict,
+  var out={schema:"privacyassay-full/1.0",
+    summary:{generated:new Date().toISOString(),browser:who,verdict:verdict,
       score:F.score,grade:F.grade,randomizer:rand,crossSiteScore:Fc?Fc.score:null,crossSiteGrade:Fc?Fc.grade:null,
       biggestLeak:F.strongest||null,strongLeaks:(F.exposedStrong||[]),redacted:red,
       note:"Provenance text for each reading is not repeated here; it is static per version and lives in METHODOLOGY.md."},

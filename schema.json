@@ -8,7 +8,7 @@
     "score",
     "grade"
   ],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "schema": {
       "const": "privacyassay-summary/1.0"
