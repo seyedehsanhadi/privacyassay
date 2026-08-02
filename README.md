@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.svg" width="84" height="84" alt="">
+
 # Privacyassay
 
 **One HTML file that shows what a website can read about your browser and how much of it singles you out.**
@@ -122,6 +124,14 @@ A refused reading is credited as protection, so a broken probe would raise the s
 - **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains. The hosted copy pairs two real sites, but the benchmark serves the file itself and reads the result back over its own connection, so it can only measure the loopback pair: every number published here was measured that way.
 
 A high score means most of what it checks is hidden, not that you are anonymous.
+
+## Prior art
+
+Browser fingerprinting has been measured in public for years, and this tool is not the first to do it.
+
+[EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than seven. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
+
+What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and a stated refusal to guess at anything it could not measure.
 
 ## Contributing
 
