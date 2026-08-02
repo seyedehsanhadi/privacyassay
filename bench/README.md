@@ -8,7 +8,6 @@ computed from. Everything here is reproducible; nothing here ships in the npm pa
 | `calibration.mjs` | the 0.76 tier correlation, and the agreement against published per-attribute entropy |
 | `sensitivity.mjs` | the six alternative weightings and the thirteen-category jackknife |
 | `matrix.mjs` | the seven-browser by four-setting table |
-| `audit-exports.mjs` | the export invariants; needs a full `matrix.mjs` run, not the sanitised set |
 | `postback.mjs`, `runner.js`, `runner.html` | how a headful browser reports a run back |
 
 ## Recompute the published figures
