@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: 48 of 100 hidden, grade D, 48 on a second site, strategy mixed](screenshot.png)
+![Privacyassay result: Mullvad Browser, 74 of 100 hidden, grade C, 74 on a second site, no hardware anchors exposed](screenshot.png)
 
-<div align="center"><sub>A real run: LibreWolf 152.0.6-1, both opt-ins off, 2026-07-31. The two origins are loopback, which is the local setup; a deployed pair compares two registered domains. Your own result will differ.</sub></div>
+<div align="center"><sub>A real run on the hosted pair: Mullvad Browser 140.13.0, both opt-ins off, 2026-08-03. The two origins are privacyassay.com and privacyassay.github.io, separate registrable domains. Its bundled NoScript was moved aside, which is not a fingerprinting defence and does not touch resistFingerprinting. Your own result will differ.</sub></div>
 
 ---
 
