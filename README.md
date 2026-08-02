@@ -1,6 +1,25 @@
-# Privacyassay 0.9.0-beta
+<div align="center">
 
-One HTML file that shows what a website can read about your browser and how much of it singles you out. Everything runs on your machine; the fingerprint is never uploaded.
+# Privacyassay
+
+**One HTML file that shows what a website can read about your browser and how much of it singles you out.**
+Everything runs on your machine; the fingerprint is never uploaded.
+
+[Results](#results) &middot; [Run it](#run-it) &middot; [Methodology](METHODOLOGY.md) &middot; [Reviewing this](#reviewing-this) &middot; [Limits](#what-it-cannot-do)
+
+</div>
+
+![Privacyassay result: 48 of 100 hidden, grade D, 48 on a second site, strategy mixed](screenshot.png)
+
+<div align="center"><sub>A real run: LibreWolf 152.0.6-1, both opt-ins off, 2026-07-31. The two origins are loopback, which is the local setup; a deployed pair compares two registered domains. Your own result will differ.</sub></div>
+
+---
+
+- **One file, no build, no dependencies.** Open it, or host it anywhere static.
+- **A formula you can recompute by hand** from the report it prints.
+- **Says what it cannot measure** as loudly as what it can.
+- **Nothing leaves the machine.** Redact is on by default, so screenshots stay safe to post.
+- **Runs in CI** and fails a build below a threshold you set.
 
 Each reading is your real value (**shown**), a value every user of that browser shares or one that changes on every read (**blended**), or nothing (**refused**). The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
@@ -34,9 +53,9 @@ Edge       |                                                        0
 | Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
 | Edge | 150.0.4078.105 | 0 | 0 | nothing hidden under any setting |
 
-Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **17 to 30 across sessions**, because it re-seeds each session and keys per site. Every other browser's cross-site figure equals its single-site score.
+Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **17 to 30 across sessions**, because it re-seeds each session and keys per site. Every other browser cross-site figure equals its single-site score.
 
-These ranges are not measurement noise. Within one launch and setting, six of the seven browsers returned an identical score on all three runs. The spread comes from the opt-in setting, which changes the denominator, and for LibreWolf from a probe that did not always finish, so **two scores taken under different settings cannot be compared**. [METHODOLOGY.md](METHODOLOGY.md) separates the causes.
+> These ranges are not measurement noise. Within one launch and setting, six of the seven browsers returned an identical score on all three runs. The spread comes from the opt-in setting, which changes the denominator, and for LibreWolf from a probe that did not always finish, so **two scores taken under different settings cannot be compared**.
 
 ## Run it
 
