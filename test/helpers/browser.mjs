@@ -92,15 +92,22 @@ async function connect(wsUrl) {
 }
 // ---- launch and close one throwaway browser ----
 
+export function launchArgs(udd, headful = false, env = process.env) {
+  return [
+    ...(headful ? [] : ["--headless=new"]),
+    ...(env.CI ? ["--no-sandbox", "--disable-dev-shm-usage"] : []),
+    "--remote-debugging-port=0", `--user-data-dir=${udd}`,
+    "--no-first-run", "--no-default-browser-check", "--disable-extensions", "about:blank",
+  ];
+}
+
 export async function launch({ port, preload = null, headful = false } = {}) {
   sweepStaleProfiles();
   const binary = findBrowser();
   const udd = fs.mkdtempSync(path.join(os.tmpdir(), "pa-test-"));
-  const proc = spawn(binary, [
-    ...(headful ? [] : ["--headless=new"]),
-    "--remote-debugging-port=0", `--user-data-dir=${udd}`,
-    "--no-first-run", "--no-default-browser-check", "--disable-extensions", "about:blank",
-  ], { stdio: "ignore" });
+  const proc = spawn(binary, launchArgs(udd, headful), { stdio: ["ignore", "ignore", "pipe"] });
+  let stderr = "";
+  if (proc.stderr) proc.stderr.on("data", (d) => { stderr = (stderr + d).slice(-1200); });
 
   const portFile = path.join(udd, "DevToolsActivePort");
   let cdpPort = null;
@@ -111,7 +118,11 @@ export async function launch({ port, preload = null, headful = false } = {}) {
     }
     if (!cdpPort) await sleep(150);
   }
-  if (!cdpPort) throw new Error("browser did not expose a debugging port");
+  if (!cdpPort) {
+    try { proc.kill(); } catch {}
+    throw new Error(`browser did not expose a debugging port (${binary}, exit ${proc.exitCode})`
+      + (stderr.trim() ? `\n${stderr.trim()}` : "\nit printed nothing to stderr"));
+  }
 
   let target = null;
   for (let i = 0; i < 60 && !target; i++) {

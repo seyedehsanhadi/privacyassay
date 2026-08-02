@@ -7,7 +7,7 @@
 -->
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob: data:; child-src 'self' blob: data: http://localhost:* http://127.0.0.1:*; frame-src 'self' http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob: data:; child-src 'self' blob: data: http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; frame-src 'self' http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; base-uri 'none'; form-action 'none'">
 <script>
 
 (function(){try{var o={t:(performance&&performance.now)?performance.now():0};
@@ -471,8 +471,8 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 
 /* DEPLOY CONFIG - automatic two-origin test (per-site randomizers) ======= */
 var PA_CROSS_MS=45000, PA_CROSS_FALLBACK_MS=9000, PA_STORE_JOB_MS=8000;
-var PA_COMPANION="";
-var PA_HOME="";
+var PA_COMPANION="https://privacyassay.github.io/index.html";
+var PA_HOME="https://privacyassay.com/";
 try{if(PA_COMPANION){var _cu=new URL(PA_COMPANION);if(location.host===_cu.host&&PA_HOME&&!/pabeacon|pastore/.test(location.hash+location.search)){location.replace(PA_HOME);return;}}}catch(e){}
 
 /* HELPERS - hashing, guarded probes, category registry =================== */
@@ -1263,9 +1263,9 @@ function paStoreClear(){
 /* - the write half of the supercookie test --------------- */
 function paPartitionWrite(tok){
   
-  var oh=otherOrigin();if(!oh)return Promise.resolve(null);
+  var comp=paCompanion();if(!comp)return Promise.resolve(null);
   tok=tok||("pa"+Math.random().toString(36).slice(2,10));
-  var pOrigin=location.protocol+"//"+oh;
+  var oh=comp.host,pOrigin=comp.origin;
   return new Promise(function(res){
     var f=document.createElement("iframe");f.setAttribute("aria-hidden","true");
     f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";
@@ -1276,7 +1276,7 @@ function paPartitionWrite(tok){
       if(e.data.paStoreTok===tok&&!resolved){resolved=true;res({tok:tok,wrote:e.data.wrote||{},origin:oh,clear:clear});}
       else if(e.data.paStoreCleared===tok)drop();}
     window.addEventListener("message",onM);
-    f.src=pOrigin+location.pathname+"?pa=w#pastore="+tok;
+    f.src=comp.url+"?pa=w#pastore="+tok;
     document.body.appendChild(f);
     setTimeout(function(){if(!resolved){resolved=true;res(null);}clear();},PA_CROSS_MS);
   });
@@ -2602,7 +2602,7 @@ async function runKit(){
     var _st=null;try{_st=await Promise.race([paStoreEach("r",_btm?_btm[1]:""),new Promise(function(r){setTimeout(function(){r(null);},6000);})]);}catch(e){}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=(function(){try{if(PA_HOME&&/^https?:/i.test(PA_HOME))return new URL(PA_HOME).origin;}catch(e){}var o=otherOrigin();if(o)return location.protocol+"//"+o;return "";})();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
+    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
@@ -2855,14 +2855,15 @@ async function runKit(){
 }
 
 /* CROSS-ORIGIN TEST + TOOLBAR - popup handshake, save, print ============= */
-function paBackOrigin(){try{if(PA_HOME&&/^https?:/i.test(PA_HOME))return new URL(PA_HOME).origin;}catch(e){}var o=otherOrigin();if(o)return location.protocol+"//"+o;return "";}
+function paBackOrigin(){var o=otherOrigin();if(o)return location.protocol+"//"+o;try{if(PA_HOME&&/^https?:/i.test(PA_HOME)&&!paIsLocalPage())return new URL(PA_HOME).origin;}catch(e){}return "";}
 function otherOrigin(){if(!/^https?:$/.test(location.protocol))return null;var hn=location.hostname,pt=location.port?":"+location.port:"";if(hn==="localhost")return "127.0.0.1"+pt;if(hn==="127.0.0.1")return "localhost"+pt;return null;}
-function paCompanion(){try{if(PA_COMPANION&&/^https?:\/\//i.test(PA_COMPANION)){var u=new URL(PA_COMPANION);if(u.origin!==location.origin)return {host:u.host,origin:u.origin,url:PA_COMPANION.replace(/#.*$/,"")};}}catch(e){}var oh=otherOrigin();return oh?{host:oh,origin:location.protocol+"//"+oh,url:location.protocol+"//"+oh+location.pathname}:null;}
+function paIsLocalPage(){return !/^https?:$/.test(location.protocol)||/^(localhost|\[?::1\]?|127(\.\d{1,3}){3})$/i.test(location.hostname);}
+function paCompanion(){var oh=otherOrigin();if(oh)return {host:oh,origin:location.protocol+"//"+oh,url:location.protocol+"//"+oh+location.pathname};try{if(PA_COMPANION&&/^https?:\/\//i.test(PA_COMPANION)&&PA_HOME&&location.origin===new URL(PA_HOME).origin){var u=new URL(PA_COMPANION);if(u.origin!==location.origin)return {host:u.host,origin:u.origin,url:PA_COMPANION.replace(/#.*$/,"")};}}catch(e){}return null;}
 function paRunCrossWindow(){
   
   var K=window.__KIT;if(!K||!K.findability)return;
   var comp=paCompanion();var oh=comp?comp.host:null;
-  if(!oh){K.crossFailed="Serve the folder over http (python serve.py) to run the two-site test.";K.crossCanMeasure=false;try{paRenderView(K);}catch(e){}return;}
+  if(!oh){K.crossFailed="The two-site test needs a second origin. Serve the folder over http (python serve.py) to use the loopback pair, or point PA_COMPANION and PA_HOME at your own two hosts.";K.crossCanMeasure=false;try{paRenderView(K);}catch(e){}return;}
   var xTok="pa"+Math.random().toString(36).slice(2,10);
   var pop=window.open("about:blank","pa_unlink","width=460,height=320,left=100,top=100");
   if(!pop){K.crossFailed="The window was blocked. Allow pop-ups for this page, then press Measure again.";K.crossCanMeasure=true;try{paRenderView(K);}catch(e){}return;}

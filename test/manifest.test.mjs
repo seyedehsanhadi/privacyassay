@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { grabVar } from "./helpers/extract.mjs";
+import { grabVar, grabFn } from "./helpers/extract.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, "..");
@@ -17,6 +17,21 @@ const { PRIORS } = new Function(grabVar("PRIORS") + "return {PRIORS};")();
 
 test("manifest: package.json version and PRIORS.version agree", () => {
   assert.equal(PKG.version, PRIORS.version, "a version that drifts makes every exported report unattributable");
+});
+
+test("manifest: the no-dependencies claim on the README badge is still true", () => {
+  for (const field of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"])
+    assert.deepEqual(Object.keys(PKG[field] || {}), [],
+      `package.json declares ${field}, but the README badge and the headline both say there are none`);
+});
+
+test("manifest: the size the README quotes is the size of the file", () => {
+  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
+  const stated = Number((readme.match(/one HTML file, (\d+) KB/) || [])[1]);
+  assert.ok(stated > 0, "the README should state the size of the one file it ships");
+  const real = fs.statSync(path.join(ROOT, "index.html")).size / 1024;
+  assert.ok(Math.abs(real - stated) < 10,
+    `README says ${stated} KB, index.html is ${Math.round(real)} KB`);
 });
 
 test("manifest: every file listed in package.json files exists", () => {
@@ -82,11 +97,101 @@ test("readme: the section markers it describes are the ones the file uses", () =
 });
 // ---- second-origin: entry points, reply targets and deadlines ----
 
-// PA_HOME bounces a direct visit to the companion host back to the main site. The exemption list
-// is the only thing that keeps the companion's own machine-readable loads alive, and it named just
-// pabeacon: the supercookie write frame loads ?pa=w#pastore=TOKEN, so on a real deployment it was
-// redirected away before the store handler ran. Loopback never showed it, because PA_COMPANION is
-// empty there and the whole guard is skipped. Every second-origin entry point must be exempt.
+const SRC = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const originSrc = [grabFn("otherOrigin"), grabFn("paIsLocalPage"), grabFn("paCompanion"), grabFn("paBackOrigin")].join("\n");
+const onPage = (href, fn) => {
+  const u = new URL(href);
+  const location = { protocol: u.protocol, hostname: u.hostname, port: u.port, pathname: u.pathname, origin: u.origin };
+  return new Function("location", "PA_COMPANION", "PA_HOME", `${originSrc};return ${fn}();`)(
+    location, "https://privacyassay.github.io/index.html", "https://privacyassay.com/");
+};
+const LOCAL = ["http://127.0.0.1:8000/index.html", "http://localhost:8000/index.html",
+  "file:///C:/tmp/index.html", "http://[::1]:8000/index.html", "https://localhost/index.html"];
+
+test("second-origin: no local form of the page ever contacts the deployed pair", () => {
+  for (const href of LOCAL) {
+    const c = onPage(href, "paCompanion");
+    assert.ok(!c || !/privacyassay\.(com|github\.io)/.test(c.host),
+      `${href} framed the deployed companion (${c && c.host}); a local copy must reach nothing`);
+    const back = onPage(href, "paBackOrigin");
+    assert.ok(!/privacyassay\.com/.test(back),
+      `${href} would post its reply to ${back}; a local parent never receives it`);
+  }
+});
+
+test("second-origin: the loopback pair still resolves both ways", () => {
+  assert.match(onPage("http://127.0.0.1:8000/index.html", "paCompanion").host, /^localhost/);
+  assert.match(onPage("http://localhost:8000/index.html", "paCompanion").host, /^127\.0\.0\.1/);
+  assert.match(onPage("http://127.0.0.1:8000/index.html", "paBackOrigin"), /^http:\/\/localhost/);
+});
+
+test("second-origin: a deployed page uses the configured pair", () => {
+  assert.match(onPage("https://privacyassay.com/", "paCompanion").host, /github\.io$/);
+  assert.equal(onPage("https://privacyassay.github.io/", "paBackOrigin"), "https://privacyassay.com");
+});
+
+test("second-origin: loopback is an exact address, not a prefix", () => {
+  const isLocal = (href) => {
+    const u = new URL(href);
+    return new Function("location", grabFn("paIsLocalPage") + ";return paIsLocalPage();")(
+      { protocol: u.protocol, hostname: u.hostname });
+  };
+  for (const href of ["http://127.0.0.1:8000/", "http://localhost:8000/", "http://[::1]/", "file:///c:/x.html"])
+    assert.equal(isLocal(href), true, `${href} is local`);
+  for (const href of ["https://localhost.example.com/", "https://127.0.0.1.example.com/", "https://privacyassay.com/"])
+    assert.equal(isLocal(href), false, `${href} is a remote host, not loopback`);
+});
+
+test("second-origin: the CSP allows both configured origins to be framed", () => {
+  const csp = (SRC.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/) || [])[1];
+  assert.ok(csp, "the CSP meta tag was not found");
+  const configured = ["PA_COMPANION", "PA_HOME"]
+    .map((v) => (SRC.match(new RegExp(`var ${v}="([^"]*)"`)) || [])[1])
+    .filter((u) => /^https?:\/\//.test(u))
+    .map((u) => new URL(u).origin);
+  assert.equal(configured.length, 2, "both PA_COMPANION and PA_HOME must name an absolute origin once deployed");
+  assert.ok(!/\?/.test((SRC.match(/var PA_COMPANION="([^"]*)"/) || [])[1] || ""),
+    "PA_COMPANION must carry no query string; the supercookie write appends its own");
+  for (const directive of ["frame-src", "child-src"]) {
+    const list = (csp.match(new RegExp(`${directive} ([^;]+)`)) || [])[1] || "";
+    for (const origin of configured) {
+      assert.ok(list.includes(origin),
+        `${directive} does not allow ${origin}; the frame is refused and the row reads "not measurable" with no error`);
+    }
+  }
+});
+
+test("second-origin: a copy hosted at a third domain pairs with nothing", () => {
+  for (const href of ["https://example.com/index.html", "https://privacyassay.net/", "https://evil.example/pa.html"])
+    assert.equal(onPage(href, "paCompanion"), null,
+      `${href} would frame a companion that replies to PA_HOME, so it waits out the budget for a message it can never receive`);
+});
+
+test("second-origin: the supercookie write resolves its target the same way everything else does", () => {
+  const body = SRC.slice(SRC.indexOf("function paPartitionWrite"), SRC.indexOf("/* LIE-DETECTION"));
+  assert.match(body, /paCompanion\(\)/,
+    "paPartitionWrite must resolve the second origin through paCompanion, or it writes nothing on a deployed copy");
+  assert.equal((body.match(/otherOrigin\(\)/g) || []).length, 0,
+    "otherOrigin only knows the loopback pair; using it here silently disables the storage test in production");
+});
+
+test("second-origin: the hosts the docs name are the hosts the tool configures", () => {
+  const hosts = ["PA_COMPANION", "PA_HOME"]
+    .map((v) => new URL((SRC.match(new RegExp(`var ${v}="([^"]+)"`)) || [])[1]).host);
+  for (const doc of ["README.md", "METHODOLOGY.md"]) {
+    const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
+    const named = [...text.matchAll(/\b(?:[a-z0-9-]+\.)*privacyassay\.(?:com|github\.io)\b/g)].map((m) => m[0]);
+    for (const h of named) {
+      assert.ok(hosts.includes(h), `${doc} names ${h}, which is neither configured host (${hosts.join(", ")})`);
+    }
+  }
+});
+
+test("second-origin: the reply target is resolved in one place", () => {
+  assert.equal((SRC.match(/PA_HOME&&\/\^https\?:\/i\.test\(PA_HOME\)/g) || []).length, 1,
+    "the reply-target resolution is duplicated; both copies have to be fixed every time");
+});
+
 test("companion: the home redirect exempts every second-origin entry point", () => {
   const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
   const guard = (src.match(/if\(location\.host===_cu\.host&&PA_HOME&&!\/([^/]+)\/\.test/) || [])[1];
@@ -97,22 +202,12 @@ test("companion: the home redirect exempts every second-origin entry point", () 
   }
 });
 
-// Tor and Mullvad strip the cross-origin referrer, so a second-origin handler that replies to
-// new URL(document.referrer).origin computes an empty string and posts nowhere. postMessage with
-// a falsy target is skipped, not thrown, so the write promise sat until its deadline and resolved
-// null: the whole supercookie category was dropped for both browsers with nothing reported. The
-// beacon half was fixed for this once; the store half kept the referrer and was missed. Every
-// second-origin reply must resolve its target from PA_HOME or its own location instead.
 test("second-origin: a reply target is never derived from document.referrer", () => {
   const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
   assert.equal((src.match(/document\.referrer/g) || []).length, 0,
     "a second-origin reply target derived from document.referrer is empty on any browser that strips it");
 });
 
-// The page runs the two-origin comparison and waits PA_CROSS_MS for it. The CLI polls with its own
-// deadline, and that was 25s against the page's 45s: the CLI gave up twenty seconds early, so on
-// exactly the hardened browsers that need the full budget it reported "not measurable" for a run
-// the page went on to finish, failing a --min-score gate on a browser that was fine.
 test("cli: the cross-site deadline is not shorter than the page's own budget", () => {
   const src = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const page = Number((src.match(/var PA_CROSS_MS\s*=\s*(\d+)/) || [])[1]);
@@ -122,12 +217,6 @@ test("cli: the cross-site deadline is not shorter than the page's own budget", (
     `CLI waits ${cli}ms for the cross-site result but the page waits ${page}ms; the CLI gives up first`);
 });
 
-// The companion runs the whole audit before it can answer, and a hardened build is slower at it
-// than a stock one. At 15s the cross-site figure timed out far more often than it completed on
-// the three browsers this benchmark cares most about: measured over 12 runs each it finished
-// 12/12 on Chrome, Edge, Brave and stock Firefox but only 6/12 on Mullvad, 5/12 on Tor and 1/12
-// on LibreWolf. The budget is a named constant so it cannot drift back to a number that quietly
-// turns those rows into "not measurable".
 test("cross-site: the companion is given long enough for a hardened build to answer", () => {
   const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
   const budget = Number((src.match(/var PA_CROSS_MS\s*=\s*(\d+)/) || [])[1]);
@@ -137,10 +226,6 @@ test("cross-site: the companion is given long enough for a hardened build to ans
   assert.equal((src.match(/},\s*15000\)/g) || []).length, 0,
     "a hardcoded 15s timeout is back; every cross-site deadline must use the named constant");
 
-  // The READ half was raised to the named constant and the WRITE half was missed: it kept its own
-  // hardcoded 16000, one thousand past what the check above looks for. It loads the same whole
-  // page at the second origin, so on a hardened Gecko build it expired, resolved null, and the
-  // supercookie category was dropped for Tor and Mullvad without a reading ever being taken.
   const body = src.slice(src.indexOf("function paPartitionWrite"), src.indexOf("/* LIE-DETECTION"));
   assert.match(body, /PA_CROSS_MS/,
     "paPartitionWrite must share the named cross-origin budget, not carry its own deadline");
@@ -150,9 +235,6 @@ test("cross-site: the companion is given long enough for a hardened build to ans
       `paPartitionWrite has a ${ms}ms deadline; the second origin needs the full budget`);
   }
 
-  // The document said fifteen seconds in one section and forty-five in two others, because
-  // nothing tied the prose to the constant. Whatever the budget becomes, the doc has to say it
-  // and must not leave an older figure behind in another paragraph.
   const doc = fs.readFileSync(path.join(HERE, "..", "METHODOLOGY.md"), "utf8");
   const WORDS = { 15: "fifteen", 30: "thirty", 45: "forty-five", 60: "sixty" };
   const secs = budget / 1000;
@@ -165,10 +247,6 @@ test("cross-site: the companion is given long enough for a hardened build to ans
   }
 });
 
-// Every unit test here extracts one function out of index.html and runs it in isolation, so a
-// syntax error ANYWHERE ELSE in the file passes all of them while the page loads nothing at all.
-// That happened: a mis-escaped quote in a style string took the whole tool down and 82 checks
-// stayed green. Parse each inline script the way the browser would.
 test("index.html: every inline script parses", () => {
   const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);

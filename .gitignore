@@ -6,3 +6,4 @@ Thumbs.db
 .scratch/
 .claude/
 bench/captures/export-audit.json
+bench/captures/browsers.json

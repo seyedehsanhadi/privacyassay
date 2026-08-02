@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "./server.mjs";
-import { launch, runAudit, sweepStaleProfiles } from "./browser.mjs";
+import { launch, runAudit, sweepStaleProfiles, launchArgs } from "./browser.mjs";
 
 test("harness: serves index.html and completes an audit", async () => {
   const srv = await startServer();
@@ -45,4 +45,15 @@ test("harness: a stale profile from a dead run is swept, a fresh one is left alo
   } finally {
     for (const d of [stale, fresh]) { try { fs.rmSync(d, { recursive: true, force: true }); } catch {} }
   }
+});
+
+test("launch: a hosted runner gets the flags Chrome needs to start there", () => {
+  const ci = launchArgs("/tmp/p", false, { CI: "true" });
+  assert.ok(ci.includes("--no-sandbox"), "Chrome on a hosted runner never reaches the debugging port without this");
+  assert.ok(ci.includes("--disable-dev-shm-usage"), "a container's /dev/shm is too small for the default");
+  const local = launchArgs("/tmp/p", false, {});
+  assert.ok(!local.includes("--no-sandbox"), "a local run keeps the sandbox on");
+  for (const a of ["--headless=new", "--remote-debugging-port=0", "--user-data-dir=/tmp/p"])
+    assert.ok(local.includes(a), `${a} is required for the harness to drive the browser`);
+  assert.ok(!launchArgs("/tmp/p", true, {}).includes("--headless=new"), "headful means a real window");
 });

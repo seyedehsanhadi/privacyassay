@@ -5,6 +5,13 @@
 **One HTML file that shows what a website can read about your browser and how much of it singles you out.**
 Everything runs on your machine; the fingerprint is never uploaded.
 
+[![CI](https://github.com/seyedehsanhadi/privacyassay/actions/workflows/ci.yml/badge.svg)](https://github.com/seyedehsanhadi/privacyassay/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/seyedehsanhadi/privacyassay?color=blue)](package.json)
+[![License](https://img.shields.io/github/license/seyedehsanhadi/privacyassay?color=blue)](LICENSE)
+[![Dependencies](https://img.shields.io/badge/dependencies-none-blue)](package.json)
+
+### [Open it at privacyassay.com](https://privacyassay.com)
+
 [Results](#results) &middot; [Run it](#run-it) &middot; [Methodology](METHODOLOGY.md) &middot; [Reviewing this](#reviewing-this) &middot; [Limits](#what-it-cannot-do)
 
 </div>
@@ -18,14 +25,22 @@ Everything runs on your machine; the fingerprint is never uploaded.
 - **One file, no build, no dependencies.** Open it, or host it anywhere static.
 - **A formula you can recompute by hand** from the report it prints.
 - **Says what it cannot measure** as loudly as what it can.
-- **Nothing leaves the machine.** Redact is on by default, so screenshots stay safe to post.
+- **No fingerprint is uploaded.** Every reading is taken and scored in the browser. Redact is on by default, so screenshots stay safe to post.
 - **Runs in CI** and fails a build below a threshold you set.
+
+| | |
+|---|---|
+| **Size** | one HTML file, 276 KB |
+| **Needs** | any current browser; Node 22+ for the CLI |
+| **Status** | beta; the scoring model is settled, the published numbers are loopback |
 
 Each reading is your real value (**shown**), a value every user of that browser shares or one that changes on every read (**blended**), or nothing (**refused**). The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
 Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
-A `<meta>` Content-Security-Policy denies everything by default and allows only this origin, plus loopback frames for the two-origin test. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
+A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
+
+A copy you run yourself contacts neither of those hosts: the second origin is resolved local-first, so a file opened from disk or served on loopback pairs with loopback and reaches nothing. On the hosted copy the second origin is fetched like any page, so it sees the request the way any site you visit does. It is sent no reading; it measures in your browser and answers over `postMessage`.
 
 ## Results
 
@@ -67,7 +82,9 @@ Three checks (request-header echo, two-origin cross-site, supercookies) need a r
 python serve.py
 ```
 
-Serves `http://localhost:8000`, loopback only.
+Serves `http://localhost:8000`, loopback only, and pairs it with `127.0.0.1` as the second origin.
+
+Hosting the file yourself works the same way for everything except those two-origin checks, which need a second host that answers back. Set `PA_COMPANION` and `PA_HOME` near the top of the file to your own pair and serve the identical file from both. Until they name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
 
 ## In CI
 
@@ -102,9 +119,25 @@ A refused reading is credited as protection, so a broken probe would raise the s
 - **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity.
 - **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
 - **See behaviour.** Mouse, typing and scroll are not measured.
-- **Test true cross-site behaviour.** The two-origin test uses `localhost` and `127.0.0.1`, which browsers treat more permissively than two registered domains.
+- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains. The hosted copy pairs two real sites, but the benchmark serves the file itself and reads the result back over its own connection, so it can only measure the loopback pair: every number published here was measured that way.
 
 A high score means most of what it checks is hidden, not that you are anonymous.
+
+## Contributing
+
+Issues and pull requests are welcome, particularly a browser this scores wrongly: say which reading it got wrong and what the browser actually returns.
+
+Two things the suite enforces, so they are worth knowing before you open a pull request. `index.html` carries section markers and no other comments, because the reason behind a fix belongs in the test that pins it. And any number stated in prose is checked against the code that produces it, so a value changed in one place fails the build in the other.
+
+```bash
+npm test && npm run test:browser && npm run test:stress
+```
+
+## Security
+
+Report a vulnerability through [private security advisories](https://github.com/seyedehsanhadi/privacyassay/security/advisories/new) rather than a public issue.
+
+The tool takes a fingerprint, so treat any report you export as sensitive. Redact is on by default and masks values on screen and in saved reports; a report saved with it turned off contains your real readings.
 
 ## License
 
