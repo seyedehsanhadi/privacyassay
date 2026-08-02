@@ -61,6 +61,23 @@ test("manifest: the results chart shows the numbers the results table states", (
   }
 });
 
+test("manifest: the cross-site range the docs quote is the range the published capture contains", () => {
+  const matrix = JSON.parse(fs.readFileSync(path.join(ROOT, "bench", "captures", "matrix.json"), "utf8"));
+  const cross = matrix.filter((r) => r.browser === "brave").flatMap((r) => r.cross || []);
+  assert.ok(cross.length >= 3, `expected brave cross values in the capture, found ${cross.length}`);
+  const stated = `${Math.min(...cross)} to ${Math.max(...cross)}`;
+  for (const doc of ["README.md", "METHODOLOGY.md"]) {
+    const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
+    const ranges = [...text.matchAll(/(\d+) to (\d+) (?:across|on the hosted)/g)].map((m) => `${m[1]} to ${m[2]}`);
+    const fromCapture = ranges.filter((r) => text.includes(`${r} across`));
+    assert.ok(fromCapture.length > 0, `${doc} states no capture-derived cross-site range`);
+    for (const r of fromCapture) {
+      assert.equal(r, stated,
+        `${doc} says "${r} across" but bench/captures/matrix.json contains ${stated}; a reviewer recomputing from the published data cannot reach that number`);
+    }
+  }
+});
+
 test("manifest: every file listed in package.json files exists", () => {
   const missing = PKG.files.filter((f) => !fs.existsSync(path.join(ROOT, f)));
   assert.deepEqual(missing, []);

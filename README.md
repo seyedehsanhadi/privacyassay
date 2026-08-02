@@ -35,7 +35,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 | | |
 |---|---|
-| **Size** | one HTML file, 276 KB |
+| **Size** | one HTML file, 277 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
 | **Status** | beta; the scoring model is settled, the published numbers are loopback |
 
@@ -62,11 +62,13 @@ One machine, Windows 11, 2026-07-31. Three runs per setting, a fresh browser lau
 | Mullvad Browser | 140.13.0 | 74 | 74-78 | same |
 | LibreWolf | 152.0.6-1 | 48 | 42-55 | loses on WebRTC, gains on supercookies; one run of three did not finish that probe |
 | Firefox | 153.0.1 | 9 | 8-20 | partitions storage well, which only counts when you ask for it |
-| Brave | 150.1.92.144 | 5 | 4-5 | flat within a single visit by design |
+| Brave | 150.1.92.144 | 5 | 4-5 | flat within a single visit by design; loopback under-credits its storage, see below |
 | Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
 | Edge | 150.0.4078.105 | 0 | 0 | nothing hidden under any setting |
 
-Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **17 to 30 across sessions**, because it re-seeds each session and keys per site. Every other browser cross-site figure equals its single-site score.
+Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **19 to 24 across the sessions in the published capture, and 27 to 34 on the hosted pair**, because it re-seeds each session and keys per site. Every other browser cross-site figure equals its single-site score.
+
+Measured again one browser at a time against the hosted pair, ten of the eleven runs came back identical. The exception is Brave with supercookies on, which reads 5 here and 17 on two real domains, because Chromium browsers report storage as carried across `localhost` and `127.0.0.1`. Running one Brave build against both on the same day gives the same split, so it is the pair of origins and not the browser version. The order does not change: at 17 Brave still sits below Firefox at 20.
 
 > These ranges are not measurement noise. Within one launch and setting, six of the seven browsers returned an identical score on all three runs. The spread comes from the opt-in setting, which changes the denominator, and for LibreWolf from a probe that did not always finish, so **two scores taken under different settings cannot be compared**.
 
