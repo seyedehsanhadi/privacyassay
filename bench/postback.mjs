@@ -1,3 +1,5 @@
+// Drives a headful browser through a real run and collects the result over a loopback postback.
+// Gecko cannot be driven by CDP, so the browser reports back rather than being queried.
 import http from "node:http";
 import fs from "node:fs";
 import os from "node:os";
@@ -46,6 +48,7 @@ function sweepOldProfiles() {
   }
   if (freed) console.log(`swept ${freed} stale browser profiles`);
 }
+// ---- profiles: fresh per capture, swept when a previous run died ----
 
 function profileFor(key) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pa-post-"));
@@ -116,6 +119,7 @@ export async function capturePostback(key, opts = {}) {
     return r;
   } finally { setNoscript(key, true); }
 }
+// ---- one capture: serve, launch, wait for the postback ----
 
 async function captureOnce(key, { runs = 5, mode = "headful", timeout = 300000, webrtc = false, store = false, tag = "" } = {}) {
   const entry = MANIFEST[key];

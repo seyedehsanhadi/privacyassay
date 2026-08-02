@@ -49,6 +49,7 @@ function score(rows, weightOf, collapse) {
   for (const r of rows) { const w = weightOf(r); tot += w; if (r.state !== "shown") hid += w; }
   return tot ? Math.round((100 * hid) / tot) : 100;
 }
+// ---- the alternative weightings the ordering is tested against ----
 
 const SCHEMES = [
   ["as shipped (tiers 3/2/1, category share)", (r) => r.tier, "share"],

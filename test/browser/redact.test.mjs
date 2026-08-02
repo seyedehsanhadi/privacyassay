@@ -97,6 +97,7 @@ async function capture(port, redact) {
 
 const leaksIn = (haystack, secrets) =>
   Object.entries(secrets).filter(([, v]) => haystack.includes(v)).map(([k, v]) => `${k}=${JSON.stringify(v.slice(0, 30))}`);
+// ---- the control: prove the OFF state really does expose values ----
 
 test("redact control: with redaction OFF the export does contain real values, so the search can detect a leak", async () => {
   const srv = await startServer();
@@ -106,6 +107,7 @@ test("redact control: with redaction OFF the export does contain real values, so
     assert.ok(found.length >= 3, `expected harvested values to appear unredacted, found ${found.length}: ${found.join(", ")}`);
   } finally { srv.close(); }
 });
+// ---- the ON state: file, screen, and the tool's own fields ----
 
 test("redact: no real value survives into the exported file", async () => {
   const srv = await startServer();

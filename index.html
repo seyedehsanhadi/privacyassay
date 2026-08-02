@@ -32,6 +32,7 @@
 <style>
   
   :root{
+
     /* BASE STYLES - theme tokens (light-first), header, score dial + axis, cat ==== */
     --bg:#eef2f8;--bg2:#f7f9fc;--panel:#ffffff;--panel2:#f6f9fd;--line:#e3e9f2;--line2:#eef3f9;
     --fg:#172338;--dim:#57687f;--muted:#96a5ba;--acc:#2f6fed;--acc-soft:#eaf1ff;
@@ -235,6 +236,7 @@
 <style>
 
 :root{
+
   /* RESULTS-VIEW DESIGN SYSTEM - dark-first tokens, verdict card, tiles, rea ==== */
   --bg:#0A0C11;--panel:#12151C;--panel-2:#14181F;--inset:#0E1117;
   --line:rgba(255,255,255,.08);--line-soft:rgba(255,255,255,.06);--line-strong:rgba(255,255,255,.16);--hover:rgba(255,255,255,.05);
@@ -2085,6 +2087,7 @@ function paGroupsFrom(F){
       value:val,valueFull:rep.state==="shown"?String(rep.value||""):"",why:rep.why||""};
   });
 }
+
 /* - the two axes and the defence strategy behind them ---- */
 var PAMONO="font-family:ui-monospace,Menlo,Consolas,monospace;";
 var PASTRAT={
@@ -2261,6 +2264,8 @@ function paRenderView(R){
   h+='</div>';
   h+=paCalcPanel(F);
   h+=paExportBar();
+
+/* - the findings table under the cards ------------------- */
   h+='<section style="padding:22px 0 26px;"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;"><h2 style="margin:0;font-size:18px;font-weight:650;color:var(--text);">What each surface gave away</h2><span class="pa-mono" style="font-size:11.5px;color:var(--text-3);">worst first &#183; weight = how much a surface narrows you down</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">';
   tiles.forEach(function(t){var act=PAV.tileFilter===t[3],dis=!t[1];
@@ -2334,6 +2339,8 @@ function paRenderView(R){
   host.innerHTML=h;
   paAnimateRing(score);
 }
+
+/* - the ring: paint and animate -------------------------- */
 function paPaintRing(){
   var svg=document.querySelector("#pa-view svg[role=img]");
   if(!svg)return;

@@ -11,6 +11,7 @@ import { launch, runAudit } from "../helpers/browser.mjs";
 // second row; and the brand's transform was cleared on transitionend, which does not fire when
 // the measured offset is zero, leaving it translated across the opt-in chips.
 const WIDTHS = [1440, 1180, 1000, 900, 780, 680, 520, 400];
+// ---- layout at every width ----
 
 test("layout: the brand never overlaps the controls in the sticky bar, at any width", async () => {
   const srv = await startServer();
@@ -71,6 +72,7 @@ test("layout: the score working is collapsed by default and its summary carries 
     assert.ok(text.includes(String(F.score)), "the panel must end at the score it explains");
   } finally { await page.close(); srv.close(); }
 });
+// ---- what a run must not leave behind, and what the ring must show ----
 
 // Raising the cross-site budget from 15s to 45s made the fallback iframe outlive the run that
 // created it, so six rapid runs left several stacked in the DOM. The frames are tagged and a new

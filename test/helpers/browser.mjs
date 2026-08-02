@@ -64,6 +64,7 @@ function findBrowser() {
   for (const c of cands) if (fs.existsSync(c)) return c;
   throw new Error("No Chrome or Chromium found. Set PRIVACYASSAY_BROWSER.");
 }
+// ---- CDP: connect and evaluate ----
 
 async function connect(wsUrl) {
   const ws = new WebSocket(wsUrl);
@@ -89,6 +90,7 @@ async function connect(wsUrl) {
     }),
   };
 }
+// ---- launch and close one throwaway browser ----
 
 export async function launch({ port, preload = null, headful = false } = {}) {
   sweepStaleProfiles();
@@ -156,6 +158,7 @@ export async function launch({ port, preload = null, headful = false } = {}) {
     },
   };
 }
+// ---- drive a full audit ----
 
 export async function runAudit(page, { timeout = 90000 } = {}) {
   await page.ev(`document.getElementById("runBtn").click();"go"`);

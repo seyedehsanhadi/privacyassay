@@ -12,6 +12,7 @@ const DOC = fs.readFileSync(path.join(HERE, "..", "METHODOLOGY.md"), "utf8");
 const { PRIORS, paTier } = new Function(grabVar("PRIORS") + grabFn("paTier") + "return {PRIORS, paTier};")();
 
 const TIERWORD = { 3: "strong", 2: "medium", 1: "weak" };
+// ---- the catalog: weights, bands, vocabulary and counts ----
 
 test("methodology: every reading named in the weight table exists in PRIORS with the stated weight", () => {
   const rows = DOC.split("\n").filter((l) => /^\| [A-Z]/.test(l) && l.includes("("));
@@ -69,6 +70,7 @@ function referenceRows() {
       return { browser: c[0], version: c[1], score: Number(c[2]), grade: c[3], runs: (c[4] || "").split(",").map((n) => Number(n.trim())) };
     });
 }
+// ---- the published table: shape, arithmetic and the caveats that keep it honest ----
 
 test("reference table: every row is present and parses", () => {
   const rows = referenceRows();
@@ -122,6 +124,7 @@ test("reference table: the measurement date matches the catalog date in PRIORS",
   assert.ok(dates.includes(String(P.dated)),
     `document dates ${dates.join(", ")} but PRIORS.dated is ${P.dated}`);
 });
+// ---- the claims most likely to be trimmed by a future editor ----
 
 // The calibration statement is the part of the document most likely to be trimmed by a future
 // editor who thinks it reads as hedging. It is not hedging: it is the finding that the ordering

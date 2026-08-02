@@ -13,6 +13,7 @@ const PKG = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 const SCHEMA = JSON.parse(fs.readFileSync(path.join(ROOT, "schema.json"), "utf8"));
 const CLI = fs.readFileSync(path.join(ROOT, "bin", "privacyassay.mjs"), "utf8");
 const { PRIORS } = new Function(grabVar("PRIORS") + "return {PRIORS};")();
+// ---- manifests: package.json, schema.json and the CLI help ----
 
 test("manifest: package.json version and PRIORS.version agree", () => {
   assert.equal(PKG.version, PRIORS.version, "a version that drifts makes every exported report unattributable");
@@ -37,12 +38,29 @@ test("manifest: every required field in schema.json is actually emitted by the C
   assert.deepEqual(missing, [], "a required field the CLI never emits makes every real output invalid against its own schema");
 });
 
+// Listing a flag is not the same as describing it truthfully. The help said "default 25000" for
+// --cross-timeout after the code moved to 50000, so the one place a user looks to understand the
+// tool disagreed with the tool. Every default the help quotes is compared against the real one.
+test("manifest: every default the help text quotes is the default the CLI uses", () => {
+  const help = (CLI.match(/Usage: privacyassay[\s\S]*?`\)/) || [""])[0];
+  const real = new Map([...CLI.matchAll(/(?:num|val)\("(--[a-z-]+)",\s*"([^"]+)"/g)].map((m) => [m[1], m[2]]));
+  const wrong = [];
+  // The value only: a help line may read "(default 1; farbling browsers vary run to run)".
+  for (const m of help.matchAll(/(--[a-z-]+)[^\n]*?\(default ([^;)\s]+)/g)) {
+    const [, flag, stated] = m;
+    if (!real.has(flag)) continue;
+    if (real.get(flag) !== stated.trim()) wrong.push(`${flag}: help says ${stated.trim()}, code uses ${real.get(flag)}`);
+  }
+  assert.deepEqual(wrong, [], "the help text quotes a default the CLI does not use");
+});
+
 test("manifest: the CLI help text lists every flag the CLI reads", () => {
   const help = (CLI.match(/Usage: privacyassay[\s\S]*?`\)/) || [""])[0];
   const read = [...new Set([...CLI.matchAll(/(?:flag|val|num)\("(--[a-z-]+)"/g)].map((m) => m[1]))];
   const undocumented = read.filter((f) => !help.includes(f));
   assert.deepEqual(undocumented, []);
 });
+// ---- the README's description of the source ----
 
 // The README tells a reviewer how the file is organised. A section added without a banner, or a
 // stray explanatory comment creeping back in, both drift silently. Check counts are deliberately
@@ -62,6 +80,7 @@ test("readme: the section markers it describes are the ones the file uses", () =
   const loose = src.filter((l) => /^\s*\/\/(?!\/)/.test(l));
   assert.deepEqual(loose, [], "index.html carries navigation markers only; explanations belong in the tests");
 });
+// ---- second-origin: entry points, reply targets and deadlines ----
 
 // PA_HOME bounces a direct visit to the companion host back to the main site. The exemption list
 // is the only thing that keeps the companion's own machine-readable loads alive, and it named just

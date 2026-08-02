@@ -1,3 +1,5 @@
+// Runs inside the browser: sets the opt-ins, clicks Run, waits for the audit and the cross-site
+// probe, then posts the result back to the harness.
 
 var s=document.getElementById("s"),host=document.getElementById("host");
 var RUNS=+((location.search.match(/runs=(\d+)/)||[])[1]||1);

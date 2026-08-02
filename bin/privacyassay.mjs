@@ -42,7 +42,7 @@ Usage: privacyassay [options]
   --runs N        run N times and report the median score (default 1; farbling browsers like Brave vary run to run)
   --timeout MS    max run time per run (default 90000)
   --no-cross      skip the two-origin cross-site comparison
-  --cross-timeout MS  how long to wait for the second origin (default 25000)
+  --cross-timeout MS  how long to wait for the second origin (default 50000)
   --quiet         suppress progress on stderr
 
 By default the tool runs entirely on your machine and makes no external request.
@@ -75,6 +75,7 @@ const CROSS_TIMEOUT = num("--cross-timeout", "50000", { min: 1 });
 const RUNS = num("--runs", "1", { min: 1, integer: true });
 const log = (m) => { if (!QUIET) process.stderr.write(m + "\n"); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// ---- argument parsing, and the browser to drive ----
 
 function findBrowser() {
   const env = val("--browser", process.env.PRIVACYASSAY_BROWSER || process.env.CHROME_PATH);
@@ -94,6 +95,7 @@ function findBrowser() {
   for (const c of cands) if (fs.existsSync(c)) return c;
   throw new Error("No Chrome/Chromium/Brave/Edge found. Pass --browser PATH or set PRIVACYASSAY_BROWSER.");
 }
+// ---- one audit: launch, connect, run, read the result ----
 
 async function cdp(wsUrl) {
   const ws = new WebSocket(wsUrl);
@@ -182,6 +184,7 @@ async function runOnce(browser, port) {
     }
   }
 }
+// ---- the run: serve, repeat, take the median, emit JSON ----
 
 async function main() {
   if (!fs.existsSync(INDEX)) throw new Error("index.html not found next to bin/ (expected " + INDEX + ")");
