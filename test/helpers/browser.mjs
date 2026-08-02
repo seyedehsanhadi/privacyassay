@@ -3,9 +3,50 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// A run killed externally, or wedged before close, leaves its browser holding the profile dir.
+// The close path itself is clean (22 processes while open, 9 after), so this is only for the
+// wreckage of a previous run: nothing else reaps it, and it accumulates across sessions until the
+// machine is starved. One hour is comfortably past the 30 minute per-test timeout, so a profile
+// this old cannot belong to a live run. Killing by profile tag first is what the bench sweep
+// missed: rmSync alone fails while a process still holds the directory.
+const STALE_MS = 60 * 60 * 1000;
+
+function killByProfile(tag) {
+  if (!tag.startsWith("pa-test-") || tag.length < 12) return;
+  try {
+    if (process.platform === "win32") {
+      spawnSync("powershell", ["-NoProfile", "-Command",
+        `Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | ` +
+        `Where-Object { $_.CommandLine -like '*${tag}*' } | ` +
+        `ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }`],
+        { stdio: "ignore", timeout: 20000 });
+    } else {
+      spawnSync("pkill", ["-9", "-f", tag], { stdio: "ignore", timeout: 20000 });
+    }
+  } catch {}
+}
+
+export function sweepStaleProfiles(maxAgeMs = STALE_MS) {
+  let freed = 0;
+  const tmp = os.tmpdir();
+  let entries = [];
+  try { entries = fs.readdirSync(tmp); } catch { return 0; }
+  for (const d of entries) {
+    if (!d.startsWith("pa-test-")) continue;
+    const full = path.join(tmp, d);
+    try {
+      if (Date.now() - fs.statSync(full).mtimeMs < maxAgeMs) continue;
+      killByProfile(d);
+      fs.rmSync(full, { recursive: true, force: true });
+      freed++;
+    } catch {}
+  }
+  return freed;
+}
 
 function findBrowser() {
   const env = process.env.PRIVACYASSAY_BROWSER || process.env.CHROME_PATH;
@@ -50,6 +91,7 @@ async function connect(wsUrl) {
 }
 
 export async function launch({ port, preload = null, headful = false } = {}) {
+  sweepStaleProfiles();
   const binary = findBrowser();
   const udd = fs.mkdtempSync(path.join(os.tmpdir(), "pa-test-"));
   const proc = spawn(binary, [

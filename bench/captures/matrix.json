@@ -1,0 +1,962 @@
+[
+  {
+    "browser": "chrome",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 187,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 29
+    }
+  },
+  {
+    "browser": "chrome",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 180,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 30
+    }
+  },
+  {
+    "browser": "chrome",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 38,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 30
+    }
+  },
+  {
+    "browser": "chrome",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 82,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 31,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 31
+    }
+  },
+  {
+    "browser": "edge",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 179,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 29
+    }
+  },
+  {
+    "browser": "edge",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 49,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 30
+    }
+  },
+  {
+    "browser": "edge",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 37,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 30
+    }
+  },
+  {
+    "browser": "edge",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 36,
+    "scores": [
+      0,
+      0,
+      0
+    ],
+    "min": 0,
+    "max": 0,
+    "stable": true,
+    "rows": 31,
+    "cross": [
+      0,
+      0,
+      0
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 31
+    }
+  },
+  {
+    "browser": "brave",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 41,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "min": 5,
+    "max": 5,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      24,
+      24,
+      24
+    ],
+    "crossFailed": [],
+    "changed": [
+      5,
+      5,
+      5
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 27,
+      "blended": 2
+    }
+  },
+  {
+    "browser": "brave",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 70,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "min": 5,
+    "max": 5,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      21,
+      21,
+      21
+    ],
+    "crossFailed": [],
+    "changed": [
+      5,
+      5,
+      5
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 28,
+      "blended": 2
+    }
+  },
+  {
+    "browser": "brave",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 38,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "min": 5,
+    "max": 5,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      21,
+      21,
+      21
+    ],
+    "crossFailed": [],
+    "changed": [
+      5,
+      5,
+      5
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 28,
+      "blended": 2
+    }
+  },
+  {
+    "browser": "brave",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 210,
+    "scores": [
+      4,
+      4,
+      4
+    ],
+    "min": 4,
+    "max": 4,
+    "stable": true,
+    "rows": 31,
+    "cross": [
+      19,
+      19,
+      19
+    ],
+    "crossFailed": [],
+    "changed": [
+      5,
+      5,
+      5
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "shown",
+    "states": {
+      "shown": 29,
+      "blended": 2
+    }
+  },
+  {
+    "browser": "firefox",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 57,
+    "scores": [
+      9,
+      9,
+      9
+    ],
+    "min": 9,
+    "max": 9,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      9,
+      9,
+      9
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 26,
+      "refused": 2,
+      "blended": 1
+    }
+  },
+  {
+    "browser": "firefox",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 59,
+    "scores": [
+      8,
+      8,
+      8
+    ],
+    "min": 8,
+    "max": 8,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      8,
+      8,
+      8
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "shown": 27,
+      "refused": 2,
+      "blended": 1
+    }
+  },
+  {
+    "browser": "firefox",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 67,
+    "scores": [
+      20,
+      20,
+      20
+    ],
+    "min": 20,
+    "max": 20,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      23,
+      23,
+      23
+    ],
+    "crossFailed": [],
+    "changed": [
+      1,
+      1,
+      1
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "refused",
+    "states": {
+      "shown": 26,
+      "refused": 3,
+      "blended": 1
+    }
+  },
+  {
+    "browser": "firefox",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 86,
+    "scores": [
+      18,
+      18,
+      18
+    ],
+    "min": 18,
+    "max": 18,
+    "stable": true,
+    "rows": 31,
+    "cross": [
+      20,
+      20,
+      20
+    ],
+    "crossFailed": [],
+    "changed": [
+      1,
+      1,
+      1
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "refused",
+    "states": {
+      "shown": 27,
+      "refused": 3,
+      "blended": 1
+    }
+  },
+  {
+    "browser": "librewolf",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 86,
+    "scores": [
+      48,
+      48,
+      48
+    ],
+    "min": 48,
+    "max": 48,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      48,
+      48,
+      48
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 12,
+      "shown": 10,
+      "refused": 7
+    }
+  },
+  {
+    "browser": "librewolf",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 206,
+    "scores": [
+      42,
+      42,
+      42
+    ],
+    "min": 42,
+    "max": 42,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      42,
+      42,
+      42
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 12,
+      "shown": 11,
+      "refused": 7
+    }
+  },
+  {
+    "browser": "librewolf",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 154,
+    "scores": [
+      55,
+      55,
+      55
+    ],
+    "min": 55,
+    "max": 55,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      55,
+      55,
+      55
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "refused",
+    "states": {
+      "blended": 12,
+      "shown": 10,
+      "refused": 8
+    }
+  },
+  {
+    "browser": "librewolf",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 209,
+    "scores": [
+      42,
+      49,
+      49
+    ],
+    "min": 42,
+    "max": 49,
+    "stable": false,
+    "rows": 30,
+    "cross": [
+      42,
+      49,
+      49
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "shown",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 12,
+      "shown": 11,
+      "refused": 7
+    }
+  },
+  {
+    "browser": "mullvad",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 149,
+    "scores": [
+      74,
+      74,
+      74
+    ],
+    "min": 74,
+    "max": 74,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      74,
+      74,
+      74
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 4
+    }
+  },
+  {
+    "browser": "mullvad",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 179,
+    "scores": [
+      78,
+      78,
+      78
+    ],
+    "min": 78,
+    "max": 78,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      78,
+      78,
+      78
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "refused",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 5
+    }
+  },
+  {
+    "browser": "mullvad",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 196,
+    "scores": [
+      74,
+      74,
+      74
+    ],
+    "min": 74,
+    "max": 74,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      74,
+      74,
+      74
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 4
+    }
+  },
+  {
+    "browser": "mullvad",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 94,
+    "scores": [
+      78,
+      78,
+      78
+    ],
+    "min": 78,
+    "max": 78,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      78,
+      78,
+      78
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "refused",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 5
+    }
+  },
+  {
+    "browser": "tor",
+    "scenario": "both off",
+    "tag": "",
+    "secs": 54,
+    "scores": [
+      74,
+      74,
+      74
+    ],
+    "min": 74,
+    "max": 74,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      74,
+      74,
+      74
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=off",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 4
+    }
+  },
+  {
+    "browser": "tor",
+    "scenario": "webrtc on",
+    "tag": "-rtc",
+    "secs": 54,
+    "scores": [
+      78,
+      78,
+      78
+    ],
+    "min": 78,
+    "max": 78,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      78,
+      78,
+      78
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=off",
+    "sawWebrtcRow": "refused",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 5
+    }
+  },
+  {
+    "browser": "tor",
+    "scenario": "storage on",
+    "tag": "-store",
+    "secs": 79,
+    "scores": [
+      74,
+      74,
+      74
+    ],
+    "min": 74,
+    "max": 74,
+    "stable": true,
+    "rows": 29,
+    "cross": [
+      74,
+      74,
+      74
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=off_storage=on",
+    "sawWebrtcRow": "(absent)",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 4
+    }
+  },
+  {
+    "browser": "tor",
+    "scenario": "both on",
+    "tag": "-rtcstore",
+    "secs": 77,
+    "scores": [
+      78,
+      78,
+      78
+    ],
+    "min": 78,
+    "max": 78,
+    "stable": true,
+    "rows": 30,
+    "cross": [
+      78,
+      78,
+      78
+    ],
+    "crossFailed": [],
+    "changed": [
+      0,
+      0,
+      0
+    ],
+    "errors": [],
+    "optinPing": "webrtc=on_storage=on",
+    "sawWebrtcRow": "refused",
+    "sawStorageRow": "(absent)",
+    "states": {
+      "blended": 19,
+      "shown": 6,
+      "refused": 5
+    }
+  }
+]

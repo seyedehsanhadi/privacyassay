@@ -48,6 +48,8 @@ An earlier version paid only for the heaviest reading a category still hid. That
 
 ## How much the number means
 
+The figures in this section are recomputed by `bench/calibration.mjs` and `bench/sensitivity.mjs` from the captures in `bench/captures/`. No browser needed.
+
 The ordering is the result; the number is an indicator. Recomputed under six alternative weightings (all readings equal, tiers inverted, tiers squared, the previous heaviest-reading-only rule, and two schemes with the category weighting dropped entirely) the ordering never changed. A jackknife dropping each of the thirteen categories in turn changed it once.
 
 Every perturbation that moves the ordering moves the same pair. Dropping the OS category, or replacing the weights with published per-attribute entropy estimates, puts Brave above Firefox; the two sit at 5 and 9 here and their difference is not something this model resolves. Every other pair held under all of it.

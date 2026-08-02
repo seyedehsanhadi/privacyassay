@@ -1,0 +1,504 @@
+{
+  "browser": "brave",
+  "mode": "headful",
+  "runs": [
+    {
+      "score": 5,
+      "grade": "F",
+      "cross": 24,
+      "crossGrade": "F",
+      "changedAcrossOrigins": [
+        "canvas drawing",
+        "installed voices",
+        "rendered sound",
+        "CPU cores",
+        "device memory"
+      ],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "shown",
+          3
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "shown",
+          2
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "shown",
+          2
+        ],
+        [
+          "GPU feature list",
+          "shown",
+          2
+        ],
+        [
+          "installed voices",
+          "shown",
+          2
+        ],
+        [
+          "screen size",
+          "blended",
+          0
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU adapter",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU limits",
+          "shown",
+          2
+        ],
+        [
+          "display scaling",
+          "shown",
+          2
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "shown",
+          1
+        ],
+        [
+          "language",
+          "shown",
+          1
+        ],
+        [
+          "CPU cores",
+          "shown",
+          1
+        ],
+        [
+          "sound sample rate",
+          "shown",
+          1
+        ],
+        [
+          "platform",
+          "shown",
+          1
+        ],
+        [
+          "colour depth",
+          "shown",
+          1
+        ],
+        [
+          "timezone",
+          "shown",
+          1
+        ],
+        [
+          "device memory",
+          "shown",
+          1
+        ],
+        [
+          "device details (client hints)",
+          "shown",
+          2
+        ]
+      ]
+    },
+    {
+      "score": 5,
+      "grade": "F",
+      "cross": 24,
+      "crossGrade": "F",
+      "changedAcrossOrigins": [
+        "canvas drawing",
+        "installed voices",
+        "rendered sound",
+        "CPU cores",
+        "device memory"
+      ],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "shown",
+          3
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "shown",
+          2
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "shown",
+          2
+        ],
+        [
+          "GPU feature list",
+          "shown",
+          2
+        ],
+        [
+          "installed voices",
+          "shown",
+          2
+        ],
+        [
+          "screen size",
+          "blended",
+          0
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU adapter",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU limits",
+          "shown",
+          2
+        ],
+        [
+          "display scaling",
+          "shown",
+          2
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "shown",
+          1
+        ],
+        [
+          "language",
+          "shown",
+          1
+        ],
+        [
+          "CPU cores",
+          "shown",
+          1
+        ],
+        [
+          "sound sample rate",
+          "shown",
+          1
+        ],
+        [
+          "platform",
+          "shown",
+          1
+        ],
+        [
+          "colour depth",
+          "shown",
+          1
+        ],
+        [
+          "timezone",
+          "shown",
+          1
+        ],
+        [
+          "device memory",
+          "shown",
+          1
+        ],
+        [
+          "device details (client hints)",
+          "shown",
+          2
+        ]
+      ]
+    },
+    {
+      "score": 5,
+      "grade": "F",
+      "cross": 24,
+      "crossGrade": "F",
+      "changedAcrossOrigins": [
+        "canvas drawing",
+        "installed voices",
+        "rendered sound",
+        "CPU cores",
+        "device memory"
+      ],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "shown",
+          3
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "shown",
+          2
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "shown",
+          2
+        ],
+        [
+          "GPU feature list",
+          "shown",
+          2
+        ],
+        [
+          "installed voices",
+          "shown",
+          2
+        ],
+        [
+          "screen size",
+          "blended",
+          0
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU adapter",
+          "shown",
+          2
+        ],
+        [
+          "WebGPU limits",
+          "shown",
+          2
+        ],
+        [
+          "display scaling",
+          "shown",
+          2
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "shown",
+          1
+        ],
+        [
+          "language",
+          "shown",
+          1
+        ],
+        [
+          "CPU cores",
+          "shown",
+          1
+        ],
+        [
+          "sound sample rate",
+          "shown",
+          1
+        ],
+        [
+          "platform",
+          "shown",
+          1
+        ],
+        [
+          "colour depth",
+          "shown",
+          1
+        ],
+        [
+          "timezone",
+          "shown",
+          1
+        ],
+        [
+          "device memory",
+          "shown",
+          1
+        ],
+        [
+          "device details (client hints)",
+          "shown",
+          2
+        ]
+      ]
+    }
+  ],
+  "scores": [
+    5,
+    5,
+    5
+  ],
+  "identical": true,
+  "version": "150.1.92.144",
+  "optins": {
+    "webrtc": false,
+    "storage": false
+  },
+  "note": "Sanitised for publication: raw readings, user agent and fingerprint hashes removed. Each row is [label, state, tier], which is all the scoring needs."
+}

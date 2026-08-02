@@ -1,0 +1,486 @@
+{
+  "browser": "librewolf",
+  "mode": "headful",
+  "runs": [
+    {
+      "score": 48,
+      "grade": "D",
+      "cross": 48,
+      "crossGrade": "D",
+      "changedAcrossOrigins": [],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "blended",
+          0
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "refused",
+          0
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "refused",
+          0
+        ],
+        [
+          "GPU feature list",
+          "refused",
+          0
+        ],
+        [
+          "installed voices",
+          "blended",
+          0
+        ],
+        [
+          "screen size",
+          "shown",
+          2
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU adapter",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU limits",
+          "refused",
+          0
+        ],
+        [
+          "display scaling",
+          "blended",
+          0
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "blended",
+          0
+        ],
+        [
+          "language",
+          "blended",
+          0
+        ],
+        [
+          "CPU cores",
+          "blended",
+          0
+        ],
+        [
+          "sound sample rate",
+          "blended",
+          0
+        ],
+        [
+          "platform",
+          "blended",
+          0
+        ],
+        [
+          "colour depth",
+          "blended",
+          0
+        ],
+        [
+          "timezone",
+          "blended",
+          0
+        ],
+        [
+          "device memory",
+          "blended",
+          0
+        ],
+        [
+          "device details (client hints)",
+          "refused",
+          0
+        ]
+      ]
+    },
+    {
+      "score": 48,
+      "grade": "D",
+      "cross": 48,
+      "crossGrade": "D",
+      "changedAcrossOrigins": [],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "blended",
+          0
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "refused",
+          0
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "refused",
+          0
+        ],
+        [
+          "GPU feature list",
+          "refused",
+          0
+        ],
+        [
+          "installed voices",
+          "blended",
+          0
+        ],
+        [
+          "screen size",
+          "shown",
+          2
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU adapter",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU limits",
+          "refused",
+          0
+        ],
+        [
+          "display scaling",
+          "blended",
+          0
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "blended",
+          0
+        ],
+        [
+          "language",
+          "blended",
+          0
+        ],
+        [
+          "CPU cores",
+          "blended",
+          0
+        ],
+        [
+          "sound sample rate",
+          "blended",
+          0
+        ],
+        [
+          "platform",
+          "blended",
+          0
+        ],
+        [
+          "colour depth",
+          "blended",
+          0
+        ],
+        [
+          "timezone",
+          "blended",
+          0
+        ],
+        [
+          "device memory",
+          "blended",
+          0
+        ],
+        [
+          "device details (client hints)",
+          "refused",
+          0
+        ]
+      ]
+    },
+    {
+      "score": 48,
+      "grade": "D",
+      "cross": 48,
+      "crossGrade": "D",
+      "changedAcrossOrigins": [],
+      "crossFailed": null,
+      "crossSkipped": false,
+      "rows": [
+        [
+          "canvas drawing",
+          "blended",
+          0
+        ],
+        [
+          "window size",
+          "shown",
+          3
+        ],
+        [
+          "element geometry (subpixel)",
+          "shown",
+          2
+        ],
+        [
+          "installed fonts",
+          "shown",
+          3
+        ],
+        [
+          "GPU name",
+          "refused",
+          0
+        ],
+        [
+          "taskbar size",
+          "blended",
+          0
+        ],
+        [
+          "3D rendered image",
+          "refused",
+          0
+        ],
+        [
+          "GPU feature list",
+          "refused",
+          0
+        ],
+        [
+          "installed voices",
+          "blended",
+          0
+        ],
+        [
+          "screen size",
+          "shown",
+          2
+        ],
+        [
+          "rendered sound",
+          "shown",
+          2
+        ],
+        [
+          "media codecs",
+          "shown",
+          2
+        ],
+        [
+          "GPU limits",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU adapter",
+          "refused",
+          0
+        ],
+        [
+          "WebGPU limits",
+          "refused",
+          0
+        ],
+        [
+          "display scaling",
+          "blended",
+          0
+        ],
+        [
+          "SVG text metrics",
+          "shown",
+          2
+        ],
+        [
+          "text metrics",
+          "shown",
+          2
+        ],
+        [
+          "font measurement",
+          "shown",
+          2
+        ],
+        [
+          "MathML render size",
+          "shown",
+          2
+        ],
+        [
+          "touch points",
+          "blended",
+          0
+        ],
+        [
+          "language",
+          "blended",
+          0
+        ],
+        [
+          "CPU cores",
+          "blended",
+          0
+        ],
+        [
+          "sound sample rate",
+          "blended",
+          0
+        ],
+        [
+          "platform",
+          "blended",
+          0
+        ],
+        [
+          "colour depth",
+          "blended",
+          0
+        ],
+        [
+          "timezone",
+          "blended",
+          0
+        ],
+        [
+          "device memory",
+          "blended",
+          0
+        ],
+        [
+          "device details (client hints)",
+          "refused",
+          0
+        ]
+      ]
+    }
+  ],
+  "scores": [
+    48,
+    48,
+    48
+  ],
+  "identical": true,
+  "version": "152.0.6-1",
+  "optins": {
+    "webrtc": false,
+    "storage": false
+  },
+  "note": "Sanitised for publication: raw readings, user agent and fingerprint hashes removed. Each row is [label, state, tier], which is all the scoring needs."
+}

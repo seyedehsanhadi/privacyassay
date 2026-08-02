@@ -1,0 +1,30 @@
+{
+  "chrome": {
+    "engine": "chromium",
+    "path": "SET THIS TO YOUR OWN chrome BINARY"
+  },
+  "edge": {
+    "engine": "chromium",
+    "path": "SET THIS TO YOUR OWN edge BINARY"
+  },
+  "brave": {
+    "engine": "chromium",
+    "path": "SET THIS TO YOUR OWN brave BINARY"
+  },
+  "firefox": {
+    "engine": "gecko",
+    "path": "SET THIS TO YOUR OWN firefox BINARY"
+  },
+  "librewolf": {
+    "engine": "gecko",
+    "path": "SET THIS TO YOUR OWN librewolf BINARY"
+  },
+  "mullvad": {
+    "engine": "gecko",
+    "path": "SET THIS TO YOUR OWN mullvad BINARY"
+  },
+  "tor": {
+    "engine": "gecko",
+    "path": "SET THIS TO YOUR OWN tor BINARY"
+  }
+}
