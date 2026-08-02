@@ -90,6 +90,19 @@ test("second-origin: a reply target is never derived from document.referrer", ()
     "a second-origin reply target derived from document.referrer is empty on any browser that strips it");
 });
 
+// The page runs the two-origin comparison and waits PA_CROSS_MS for it. The CLI polls with its own
+// deadline, and that was 25s against the page's 45s: the CLI gave up twenty seconds early, so on
+// exactly the hardened browsers that need the full budget it reported "not measurable" for a run
+// the page went on to finish, failing a --min-score gate on a browser that was fine.
+test("cli: the cross-site deadline is not shorter than the page's own budget", () => {
+  const src = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const page = Number((src.match(/var PA_CROSS_MS\s*=\s*(\d+)/) || [])[1]);
+  const cli = Number((CLI.match(/num\("--cross-timeout",\s*"(\d+)"/) || [])[1]);
+  assert.ok(page > 0 && cli > 0, `could not read both budgets: page=${page} cli=${cli}`);
+  assert.ok(cli >= page,
+    `CLI waits ${cli}ms for the cross-site result but the page waits ${page}ms; the CLI gives up first`);
+});
+
 // The companion runs the whole audit before it can answer, and a hardened build is slower at it
 // than a stock one. At 15s the cross-site figure timed out far more often than it completed on
 // the three browsers this benchmark cares most about: measured over 12 runs each it finished

@@ -43,17 +43,10 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/__ctr":
             key = (parse_qs(u.query).get("k") or [""])[0]
             return self._json({"n": HITS.get(key, 0)})
-        if self.path.split("?")[0] == "/__headers":
+        if u.path == "/__headers":
             data = {k: v for k, v in self.headers.items()}
             data["__order"] = list(self.headers.keys())
-            body = json.dumps(data).encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
+            return self._json(data)
         return super().do_GET()
 
     def list_directory(self, path):

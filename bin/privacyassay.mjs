@@ -71,7 +71,7 @@ const WEBRTC = flag("--webrtc");
 const QUIET = flag("--quiet");
 const TIMEOUT = num("--timeout", "90000", { min: 1 });
 const NOCROSS = flag("--no-cross");
-const CROSS_TIMEOUT = num("--cross-timeout", "25000", { min: 1 });
+const CROSS_TIMEOUT = num("--cross-timeout", "50000", { min: 1 });
 const RUNS = num("--runs", "1", { min: 1, integer: true });
 const log = (m) => { if (!QUIET) process.stderr.write(m + "\n"); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -143,9 +143,10 @@ async function runOnce(browser, port) {
       while (Date.now() < deadline) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
       await sleep(600);
 
-      // The page starts the two-origin comparison itself once the audit finishes, and gives up
-      // after fifteen seconds. Wait for either the result or the page's own failure message; a
-      // wait that ends with neither is reported as not measurable, never as a zero.
+      // The page starts the two-origin comparison itself once the audit finishes and gives it
+      // PA_CROSS_MS. This wait must outlast that, or the CLI reports not measurable for a run the
+      // page went on to finish. Wait for the result or the page's own failure message; neither is
+      // reported as not measurable, never as a zero.
       if (!NOCROSS) {
         const crossDeadline = Date.now() + CROSS_TIMEOUT;
         while (Date.now() < crossDeadline) {
@@ -176,7 +177,9 @@ async function runOnce(browser, port) {
     } finally { try { ws.close(); } catch {} }
   } finally {
     try { proc.kill(); } catch {}
-    try { fs.rmSync(udd, { recursive: true, force: true }); } catch {}
+    for (let i = 0; i < 10 && fs.existsSync(udd); i++) {
+      try { fs.rmSync(udd, { recursive: true, force: true }); break; } catch { await sleep(200); }
+    }
   }
 }
 
