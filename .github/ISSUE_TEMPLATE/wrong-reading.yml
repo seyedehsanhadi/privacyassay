@@ -1,0 +1,69 @@
+name: A browser scores wrongly
+description: A reading was classified wrong, or a score does not match what the browser actually does.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You do not need all of this. The reading and what your browser actually returns are the parts
+        that matter; leave the rest blank if you do not have it.
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Brave 151.1.93.129, or Firefox 153.0.1
+    validations:
+      required: true
+
+  - type: input
+    id: reading
+    attributes:
+      label: Which reading
+      description: The row label as the report shows it.
+      placeholder: canvas drawing, installed fonts, storage carried across sites
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What it reported, and what your browser actually does
+      description: >-
+        The report classifies each reading as shown, blended or refused. Which did it say, and what
+        should it be? If you know why, say so; if you just know the answer is wrong, that is still
+        worth sending.
+      placeholder: |
+        Reported: shown
+        Actually: the value is different on every read, so it should blend
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did you run it
+      options:
+        - privacyassay.com
+        - a copy I am hosting myself
+        - opened the file from disk
+        - served over loopback with serve.py
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: optins
+    attributes:
+      label: Opt-ins that were on
+      description: Both are off unless you turned them on. They change the score, so it matters.
+      options:
+        - label: WebRTC IP leak test
+        - label: Supercookie test
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: >-
+        A saved report helps. Redact is on by default and masks your values, so a redacted one is safe
+        to attach; an unredacted one contains your real readings, so do not post that publicly.

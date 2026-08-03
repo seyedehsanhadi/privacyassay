@@ -135,13 +135,7 @@ What is different here is the combination: one file with no build, a score whose
 
 ## Contributing
 
-Issues and pull requests are welcome, particularly a browser this scores wrongly: say which reading it got wrong and what the browser actually returns.
-
-Two things the suite enforces, so they are worth knowing before you open a pull request. `index.html` carries section markers and no other comments, because the reason behind a fix belongs in the test that pins it. And any number stated in prose is checked against the code that produces it, so a value changed in one place fails the build in the other.
-
-```bash
-npm test && npm run test:browser && npm run test:stress
-```
+The most useful thing you can send is a browser this scores wrongly, and there is a form for it under New issue. Disagreeing with the method is just as welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the two conventions the test suite enforces.
 
 ## Security
 
