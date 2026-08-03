@@ -68,7 +68,7 @@ One machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.
 
 Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
-Cross-site is a separate measurement, and the only column where Brave differs from Chrome: **21 to 34 between two real domains**, because it re-seeds each session and keys per site. Every other browser cross-site figure equals its single-site score.
+**Brave's 5 is not a verdict on Brave, and the table would mislead you if you read it as one.** This column is one visit to one site, and Brave's defence is not built to operate inside one visit: it re-seeds per session and keys per site, so its values hold still while you are on a page and it reads as exposed. Between two real domains it scores **21 to 34**, the only column where it separates from Chrome. Every other browser's cross-site figure equals its single-site score.
 
 The same table measured on loopback differs in one place. `bench/captures/matrix.json` holds the `localhost` against `127.0.0.1` run, which anyone can recompute without a browser. Every cell agrees except Brave with supercookies on: 5 there, 17 here. Brave carries cookies across the loopback pair but blocks them between two real domains, and that single row is the whole storage category. The order does not change: at 17 Brave still sits below Firefox at 20.
 
