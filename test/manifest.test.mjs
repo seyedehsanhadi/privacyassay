@@ -79,6 +79,18 @@ test("manifest: the cross-site range the docs quote is the range the published c
     "no document cites the range in bench/captures/matrix.json, so the published capture is orphaned and nothing checks it");
 });
 
+test("manifest: the citation file agrees with the package it cites", () => {
+  const cff = fs.readFileSync(path.join(ROOT, "CITATION.cff"), "utf8");
+  const field = (k) => (cff.match(new RegExp(`^${k}:\\s*(.+)$`, "m")) || [])[1]?.trim();
+  assert.equal(field("version"), PKG.version,
+    "CITATION.cff cites a version the package is not on, so anyone citing this work names the wrong release");
+  assert.equal(field("license"), PKG.license, "the cited licence differs from the package licence");
+  assert.equal(field("cff-version"), "1.2.0", "GitHub renders the citation button from cff-version 1.2.0");
+  assert.match(cff, /^authors:/m, "a citation without an author cannot be cited");
+  assert.ok(!/date-released/.test(cff) || /^date-released:\s*\d{4}-\d{2}-\d{2}$/m.test(cff),
+    "date-released must be a real ISO date or absent; there is no release to date");
+});
+
 test("manifest: every file listed in package.json files exists", () => {
   const missing = PKG.files.filter((f) => !fs.existsSync(path.join(ROOT, f)));
   assert.deepEqual(missing, []);

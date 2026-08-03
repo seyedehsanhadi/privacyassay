@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: If you refer to this software, please cite it as below.
+title: Privacyassay
+abstract: >-
+  A single-file browser fingerprint auditor. It measures what a website can read
+  about a visitor's browser and scores how much of that the browser hides,
+  weighted by how identifying each reading is. Measurement and scoring both
+  happen in the page and no fingerprint is transmitted. The score is the share of
+  what this tool checks that a browser hides; it is not an estimate of how rare a
+  visitor is, which would require a population of real fingerprints.
+type: software
+authors:
+  - given-names: Seyed Ehsan
+    family-names: Hadi
+version: 0.9.0-beta
+license: Apache-2.0
+repository-code: https://github.com/seyedehsanhadi/privacyassay
+url: https://privacyassay.com
+keywords:
+  - browser fingerprinting
+  - privacy measurement
+  - web privacy
+  - anti-fingerprinting
+  - storage partitioning
+  - web security

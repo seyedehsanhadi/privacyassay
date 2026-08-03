@@ -1,7 +1,7 @@
 {
   "name": "privacyassay",
   "version": "0.9.0-beta",
-  "description": "Single-file browser-fingerprint auditor. Scores how much of what could identify you your browser withholds, on-device, uploading nothing.",
+  "description": "One HTML file that shows what a website can read about your browser, and scores how much of it your browser hides. Runs on-device, uploads nothing.",
   "type": "module",
   "bin": {
     "privacyassay": "bin/privacyassay.mjs"
