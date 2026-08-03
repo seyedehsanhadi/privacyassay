@@ -88,26 +88,33 @@ Default-deny: only recognised-harmless values pass, meaning status words and pla
 
 ## Reference measurements
 
-One machine, Windows 11, 2026-07-31. Real top-level window, three runs, a fresh browser launch per run, single origin, opt-ins off. Re-measured twice on separate days with identical results.
+One machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.com` against
+`privacyassay.github.io`, two separate registrable domains. Real top-level window, two runs, a fresh browser
+launch per run, opt-ins off. Every cell returned the same score on both runs.
 
 | Browser | Version | Score | Grade | Runs | Cross-site |
 |---|---|---|---|---|---|
-| Mullvad Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
+| Mullvad Browser | 140.13.0 | 74 | C | 74, 74 | 74, nothing differed |
 | Tor Browser | 140.13.0 | 74 | C | 74, 74, 74 | 74, nothing differed |
-| LibreWolf | 152.0.6-1 | 48 | D | 48, 48, 48 | 48, nothing differed |
-| Firefox | 153.0.1 | 9 | F | 9, 9, 9 | 9, nothing differed |
-| Brave | 150.1.92.144 | 5 | F | 5, 5, 5 | 19 to 24, four to six readings differed |
-| Chrome | 150.0.7871.187 | 0 | F | 0, 0, 0 | 0, nothing differed |
-| Edge | 150.0.4078.105 | 0 | F | 0, 0, 0 | 0, nothing differed |
+| LibreWolf | 152.0.6-1 | 48 | D | 48, 48 | 48, nothing differed |
+| Firefox | 153.0.1 | 9 | F | 9, 9 | 9, nothing differed |
+| Brave | 151.1.93.129 | 5 | F | 5, 5 | 21 to 34, four to six readings differed |
+| Chrome | 150.0.7871.187 | 0 | F | 0, 0 | 0, nothing differed |
+| Edge | 151.0.4129.59 | 0 | F | 0, 0 | 0, nothing differed |
+
+Every row is measured on the hosted pair except Tor, which keeps its loopback figure and its three runs: reaching
+a public site needs its network bootstrapped, which this harness does not do. Mullvad runs the same
+resistFingerprinting engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
 - **Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
 - **A score is only comparable to another score taken the same way.** See the range below.
 - **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
 - **Brave's 5 is not a verdict on Brave.** It re-seeds per session and keys per site, so within one visit its values are stable and it reads as exposed. Its defence appears between visits, and that figure is a range rather than a number: 19 to 24 across the sessions in the capture published here, and 27 to 34 measured on the hosted pair.
-- **The two-origin probe completes on every browser, 85 runs of 85.** The companion runs a whole audit before it can answer, so the budget is 45 seconds. A run that does not complete is reported as not measurable, never as a zero.
+- **The two-origin probe completed on every browser, 48 runs of 48.** The companion runs a whole audit before it can answer, so the budget is 45 seconds. A run that does not complete is reported as not measurable, never as a zero. The earlier loopback capture completed 85 of 85 on the same budget.
 - **Tor and Mullvad ran with the proxy forced to a direct connection and their bundled NoScript moved aside**, so both are resistFingerprinting engine tests and say nothing about the Tor network. NoScript intermittently blocks all script loading on plain http, which makes a benchmark unusable; it is not a fingerprinting defence and does not touch resistFingerprinting.
 - **Fingerprint findability only.** Not tracker blocking, state partitioning, or the network layer.
 - **Numbers drift as browsers ship.** The date and versions are part of the result.
+- **The same table measured on loopback differs in one place.** `bench/captures/matrix.json` holds the `localhost` against `127.0.0.1` run, which anyone can recompute without a browser. Every cell agrees with the hosted pair except Brave with supercookies on: 5 there, 17 here. Brave carries `document.cookie` and `CookieStore` across the loopback pair but blocks both between two real domains, and that single row is the whole three-point storage category. Chrome and Edge carry the same cookie pair across both, so Brave is the only browser loopback misreads. Its cross-site figure reads 19 to 24 across the sessions in that capture against 21 to 34 here, and LibreWolf's both-on cell is a 42 to 49 spread there because the supercookie probe did not always finish, against a stable 49 here. The ordering is identical either way.
 
 ## Why a browser has a range, not a number
 
@@ -117,9 +124,9 @@ The Score column above is one configuration: both opt-ins off, three runs, one m
 |---|---|---|---|---|---|
 | Tor Browser | 74 | 78 | 74 | 78 | 74-78 |
 | Mullvad Browser | 74 | 78 | 74 | 78 | 74-78 |
-| LibreWolf | 48 | 42 | 55 | 42-49 | 42-55 |
+| LibreWolf | 48 | 42 | 55 | 49 | 42-55 |
 | Firefox | 9 | 8 | 20 | 18 | 8-20 |
-| Brave | 5 | 5 | 5 | 4 | 4-5 |
+| Brave | 5 | 5 | 17 | 15 | 5-17 |
 | Chrome | 0 | 0 | 0 | 0 | 0 |
 | Edge | 0 | 0 | 0 | 0 | 0 |
 
@@ -129,9 +136,9 @@ Three separate things move a score, and they should not be blurred together.
 
 **The browsing session.** A per-site randomizer re-seeds itself each time it starts, so its cross-site figure is not one number. Brave's read 19 to 24 across the three rounds in `bench/captures/matrix.json`, and 27 to 34 on the hosted pair with supercookies on. Every one is correct for the session it was taken in, and none of them is the number.
 
-**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. This is the largest source of spread here: LibreWolf's storage column read 55 in one round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made the cross-site figure reproduce on every browser, 85 runs of 85. The supercookie half still does not always finish, which is why LibreWolf's both-on cell is a range rather than a number. Tor and Mullvad plant the token but never deliver the read-back, so the category is left out of both the score and the total and their Supercookies column matches their default one. The second site does read its own storage, and finds nothing there; what it cannot do is report that back, because both browsers cut the link between a pop-up and the page that opened it. That severed link is itself the protection being tested, and on a static host there is no other channel, so this is reported as not measured rather than scored either way.
+**Whether the probe finished.** A test that cannot run leaves its category out, and the score changes accordingly. It used to be the largest source of spread: LibreWolf's storage column read 55 in one loopback round and 48 in the next purely because the supercookie test finished once and timed out the other time. Both it and the cross-site figure share one deadline, and raising it from fifteen seconds to forty-five made every probe complete, 48 runs of 48 on the hosted pair, so no cell in the table above is a range for this reason. Tor and Mullvad plant the token but never deliver the read-back, so the category is left out of both the score and the total and their Supercookies column matches their default one. The second site does read its own storage, and finds nothing there; what it cannot do is report that back, because both browsers cut the link between a pop-up and the page that opened it. That severed link is itself the protection being tested, and on a static host there is no other channel, so this is reported as not measured rather than scored either way.
 
-**The run.** Within a single launch and setting, six of the seven browsers returned an identical score on all three runs. LibreWolf with both opt-ins on returned 42, 49, 49, because its supercookie probe answered on two of the three. So run-to-run variation here is one probe finishing or not, never measurement noise in a reading that was taken.
+**The run.** Every cell above returned the same score on both runs. On the earlier loopback capture LibreWolf with both opt-ins on returned 42, 49, 49, because its supercookie probe answered on two of the three. So run-to-run variation is one probe finishing or not, never measurement noise in a reading that was taken.
 
 ## Limits
 
@@ -143,9 +150,7 @@ Three separate things move a score, and they should not be blurred together.
 - The two-read check that detects a per-read randomizer reaches only the readings taken live. Fifteen are pulled from rows the collectors already computed, so a second call returns them unchanged and they can never be credited for varying. Canvas is covered separately by drawing twice. This under-credits rather than over-credits.
 - **A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** It fails in the flattering direction. It has happened: an extension scan that found nothing was scored as protection and every published number was three points too high. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as shown.
 - Weighting a category by its heaviest reading is still a judgment. Dropping the category weighting entirely and summing every reading moves Tor 74 to 77 and LibreWolf 48 to 58 without changing the order; it is kept because otherwise the GPU category, which this tool probes seven times, would outweigh Window, which it probes once.
-- For a per-session farbler the single-site number says little: Brave reads 5 on one page and 19 to 24 across origins in the round measured here. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run and reports both figures; it serves `127.0.0.1` and `localhost` from one handler and waits for the page to finish the comparison, so its cross-site number carries the same loopback floor as the page's.
-- The cross-site second origin measured here is `localhost` against `127.0.0.1`, which browsers treat more permissively than two registered domains, so a randomizer's cross-site figure is a floor. The hosted copy pairs `privacyassay.com` with `privacyassay.github.io`, two separate registrable domains by the Public Suffix List, and that pair is not what produced any number in this document. The benchmark serves the file from its own server and reads each result back over that same connection, so it cannot drive the hosted pair; closing the gap needs a harness that collects results without hosting the page.
-- Re-run one browser at a time against the hosted pair on 2026-08-03, eleven measurements were taken and ten reproduced this table exactly: with both opt-ins off Mullvad 74, LibreWolf 48, Firefox 9, Brave 5, Chrome 0 and Edge 0; with supercookies on LibreWolf 55, Firefox 20, Chrome 0 and Edge 0. The exception is Brave with supercookies on, which reads 5 on loopback and 17 on the hosted pair across three runs each. Brave had updated to 151.1.93.129 by then, so the same build was run against both: it reads 5 on loopback and 17 on the hosted pair on the same day, which rules out the version. All three Chromium browsers report storage as carried across `localhost` and `127.0.0.1`, so the loopback table credits Brave with none of the storage protection it applies between two real domains. The ordering is unchanged either way: at 17 Brave still sits below Firefox at 20. Tor is the one browser absent from that comparison, because reaching a public site needs its network bootstrapped and this harness does not do that; Mullvad runs the same resistFingerprinting engine at the same version and reads 74 on the hosted pair. Mullvad and Tor were not re-run with supercookies on.
+- For a per-session farbler the single-site number says little: Brave reads 5 on one page and 21 to 34 between two real domains. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run and reports both figures; it serves `127.0.0.1` and `localhost` from one handler, so its cross-site number carries the loopback floor described below rather than the figure in the table.
 
 ## Checking
 

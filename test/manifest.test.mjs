@@ -66,16 +66,17 @@ test("manifest: the cross-site range the docs quote is the range the published c
   const cross = matrix.filter((r) => r.browser === "brave").flatMap((r) => r.cross || []);
   assert.ok(cross.length >= 3, `expected brave cross values in the capture, found ${cross.length}`);
   const stated = `${Math.min(...cross)} to ${Math.max(...cross)}`;
+  let cited = 0;
   for (const doc of ["README.md", "METHODOLOGY.md"]) {
     const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
-    const ranges = [...text.matchAll(/(\d+) to (\d+) (?:across|on the hosted)/g)].map((m) => `${m[1]} to ${m[2]}`);
-    const fromCapture = ranges.filter((r) => text.includes(`${r} across`));
-    assert.ok(fromCapture.length > 0, `${doc} states no capture-derived cross-site range`);
-    for (const r of fromCapture) {
-      assert.equal(r, stated,
-        `${doc} says "${r} across" but bench/captures/matrix.json contains ${stated}; a reviewer recomputing from the published data cannot reach that number`);
+    for (const m of text.matchAll(/(\d+ to \d+) across/g)) {
+      cited++;
+      assert.equal(m[1], stated,
+        `${doc} says "${m[1]} across" but bench/captures/matrix.json contains ${stated}; a reviewer recomputing from the published data cannot reach that number`);
     }
   }
+  assert.ok(cited > 0,
+    "no document cites the range in bench/captures/matrix.json, so the published capture is orphaned and nothing checks it");
 });
 
 test("manifest: every file listed in package.json files exists", () => {

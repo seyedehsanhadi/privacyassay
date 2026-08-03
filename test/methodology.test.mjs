@@ -198,7 +198,7 @@ test("methodology: the opt-in range and the reason for it are published", () => 
   assert.match(DOC, /cannot be compared|not comparable/i,
     "the document must say scores under different settings are not comparable");
   assert.match(DOC, /re-seeds|per session/i, "session-to-session variance must be named separately");
-  assert.match(DOC, /identical score on all three runs|Run-to-run variation is not/i,
+  assert.match(DOC, /identical score on all three runs|same score on both runs|Run-to-run variation is not/i,
     "run-to-run stability must be stated so the three causes stay separate");
 });
 

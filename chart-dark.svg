@@ -38,10 +38,10 @@
 <text x="256.0" y="171.5" fill="#a1b2ca" font-size="13" class="n">8-20</text>
 <text x="118" y="208.5" fill="#e8eef8" font-size="14" text-anchor="end">Brave</text>
 <rect x="132.0" y="194" width="28.0" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="154.4" y1="204.0" x2="160.0" y2="204.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="154.4" y1="199.0" x2="154.4" y2="209.0" stroke="#cfe0ff" stroke-width="1.6"/>
+<line x1="160.0" y1="204.0" x2="227.2" y2="204.0" stroke="#cfe0ff" stroke-width="1.6"/>
 <line x1="160.0" y1="199.0" x2="160.0" y2="209.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="172.0" y="208.5" fill="#a1b2ca" font-size="13" class="n">4-5</text>
+<line x1="227.2" y1="199.0" x2="227.2" y2="209.0" stroke="#cfe0ff" stroke-width="1.6"/>
+<text x="239.2" y="208.5" fill="#a1b2ca" font-size="13" class="n">5-17</text>
 <text x="118" y="245.5" fill="#e8eef8" font-size="14" text-anchor="end">Chrome</text>
 <rect x="132.0" y="231" width="2.5" height="20" rx="3" fill="#3f6fd8"/>
 <text x="144.0" y="245.5" fill="#a1b2ca" font-size="13" class="n">0</text>
