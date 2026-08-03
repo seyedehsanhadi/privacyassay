@@ -66,7 +66,7 @@ One machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.
 | Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
 | Edge | 151.0.4129.59 | 0 | 0 | nothing hidden under any setting |
 
-Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
+Every browser ran on a fresh profile with nothing changed from its defaults, so each figure is that browser as it ships; Brave's Shields are at their defaults. Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
 **Brave's 5 is not a verdict on Brave, and the table would mislead you if you read it as one.** This column is one visit to one site, and Brave's defence is not built to operate inside one visit: it re-seeds per session and keys per site, so its values hold still while you are on a page and it reads as exposed. Between two real domains it scores **21 to 34**, the only column where it separates from Chrome. Every other browser's cross-site figure equals its single-site score.
 

@@ -106,6 +106,7 @@ Every row is measured on the hosted pair except Tor, which keeps its loopback fi
 a public site needs its network bootstrapped, which this harness does not do. Mullvad runs the same
 resistFingerprinting engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
+- **Every browser ran on a fresh profile with nothing changed from its defaults**, no extensions added and no settings touched, so each figure is that browser as it ships. Brave's Shields are at their defaults, and the harness flag that disables extensions was checked against a run without it: the two agree exactly, so the flag does not reach Shields. That Shields are working is visible in the result rather than assumed, since four to six of the thirty compared readings change between the two domains and no store carries across.
 - **Your result will differ.** The score depends on installed fonts, screen, GPU and window size.
 - **A score is only comparable to another score taken the same way.** See the range below.
 - **Each Score figure is one visit to one site.** The Cross-site column is the separate measurement, and it is the only column where Brave differs from Chrome.
