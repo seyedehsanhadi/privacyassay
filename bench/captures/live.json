@@ -1,0 +1,138 @@
+[
+ {
+  "browser": "brave",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   5,
+   5
+  ],
+  "cross": [
+   24,
+   23
+  ],
+  "stable": true,
+  "noscriptMovedAside": false,
+  "errors": []
+ },
+ {
+  "browser": "chrome",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   0,
+   0
+  ],
+  "cross": [
+   0,
+   0
+  ],
+  "stable": true,
+  "noscriptMovedAside": false,
+  "errors": []
+ },
+ {
+  "browser": "edge",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   0,
+   0
+  ],
+  "cross": [
+   0,
+   0
+  ],
+  "stable": true,
+  "noscriptMovedAside": false,
+  "errors": []
+ },
+ {
+  "browser": "firefox",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   9,
+   9
+  ],
+  "cross": [
+   9,
+   9
+  ],
+  "stable": true,
+  "noscriptMovedAside": false,
+  "errors": []
+ },
+ {
+  "browser": "librewolf",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   48,
+   48
+  ],
+  "cross": [
+   48,
+   48
+  ],
+  "stable": true,
+  "noscriptMovedAside": false,
+  "errors": []
+ },
+ {
+  "browser": "mullvad",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 2,
+  "scores": [
+   74,
+   74
+  ],
+  "cross": [
+   74,
+   74
+  ],
+  "stable": true,
+  "noscriptMovedAside": true,
+  "errors": []
+ },
+ {
+  "browser": "tor",
+  "url": "https://privacyassay.com/",
+  "optins": {
+   "storage": false,
+   "webrtc": false
+  },
+  "runs": 1,
+  "scores": [],
+  "cross": [],
+  "stable": false,
+  "noscriptMovedAside": true,
+  "errors": [
+   "the page never became ready at https://privacyassay.com/. Tor reaches a public s"
+  ]
+ }
+]

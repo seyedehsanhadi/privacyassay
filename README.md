@@ -121,7 +121,7 @@ A refused reading is credited as protection, so a broken probe would raise the s
 - **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity.
 - **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
 - **See behaviour.** Mouse, typing and scroll are not measured.
-- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The table above is measured on the hosted pair, one browser at a time; the benchmark in `bench/` serves the file itself and so can only reproduce the loopback figures.
+- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The table above is measured on the hosted pair by `bench/live.mjs`, which drives the browser rather than hosting it; `bench/matrix.mjs` measures the same grid over loopback and is faster but is not the same measurement.
 
 A high score means most of what it checks is hidden, not that you are anonymous.
 
