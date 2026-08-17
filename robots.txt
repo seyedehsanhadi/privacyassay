@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Probe endpoints, answered only by serve.py. On a static host they 404 by design;
+# the page handles that. Crawlers should not follow them or they are reported as broken.
+Disallow: /__
+
 Sitemap: https://privacyassay.com/sitemap.xml
