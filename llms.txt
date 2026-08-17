@@ -6,7 +6,7 @@ Each reading is classified as shown (the real value), blended (a value every use
 
 The catalog holds 32 readings across 13 categories. A category is worth its heaviest reading, and inside a category you earn the share of it you hide. Three readings are opt-in and off by default: the WebRTC IP leak, extension enumeration, and storage carried across sites.
 
-Published measurements were taken on one machine on 2026-07-31, over a loopback pair rather than two registered domains. The ordering they produce is supported by the sensitivity analysis; a particular absolute score is one weighting on one machine on one date.
+Published measurements were taken on one machine on 2026-08-03, over the hosted pair of two registrable domains; Tor is the one row that keeps its earlier loopback figure. The ordering they produce is supported by the sensitivity analysis; a particular absolute score is one weighting on one machine on one date.
 
 ## Docs
 

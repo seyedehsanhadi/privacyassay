@@ -224,7 +224,7 @@ test("methodology: the count of readings the two-read check cannot cover matches
   const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
   const i = src.indexOf("function observeVectors");
   const body = src.slice(i, src.indexOf(String.fromCharCode(10) + "function ", i + 10));
-  const fromRows = [...body.matchAll(/^\s{4}[A-Za-z_][A-Za-z0-9_]*\s*:\s*paRow\(/gm)].length;
+  const fromRows = body.split("\n").filter((l) => /^\s{4}[A-Za-z_][A-Za-z0-9_]*\s*:/.test(l) && /paRow\(|\bW\(/.test(l)).length;
   const WORDS = { 11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen", 16: "Sixteen", 17: "Seventeen" };
   const word = WORDS[fromRows];
   assert.ok(word, `${fromRows} readings come from precomputed rows; add it to the word map`);

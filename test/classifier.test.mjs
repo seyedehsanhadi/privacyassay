@@ -92,8 +92,11 @@ test("mask: a letterboxed size blends only for a family whose build letterboxes"
     "an off-grid size is not a letterbox even in a family that letterboxes");
 });
 
-test("mask: availFrame masked blends, a real taskbar size does not", () => {
-  assert.equal(stateOf({ availFrame: "masked" }, "other", "availFrame"), "blended");
+test("mask: availFrame masked blends only where the family is known to mask it", () => {
+  assert.equal(stateOf({ availFrame: "masked" }, "brave", "availFrame"), "blended");
+  assert.equal(stateOf({ availFrame: "masked" }, "tor-build", "availFrame"), "blended");
+  assert.equal(stateOf({ availFrame: "masked" }, "other", "availFrame"), "shown",
+    "an auto-hide taskbar, a tiling WM or a phone is not a defence");
   assert.equal(stateOf({ availFrame: "0x48" }, "other", "availFrame"), "shown");
 });
 

@@ -7,3 +7,15 @@ Thumbs.db
 .claude/
 bench/captures/export-audit.json
 bench/captures/browsers.json
+
+# promo assets, generated locally and not part of the tool
+banner-light.svg
+banner-dark.svg
+grades-light.svg
+grades-dark.svg
+social-preview.png
+privacyassay-*.mp4
+privacyassay-*.gif
+
+# generators and the browser icons they extract; the icons are vendor trademarks
+tools/

@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures how identifiable this browser is and how much of that it hides, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.0-beta","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures how identifiable this browser is and how much of that it hides, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.1-beta","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -862,7 +862,7 @@ function collectFeatures(){
 function collectTiming(){
   var rows=[];
   var mn=Infinity,t0=performance.now(),last=t0,chg=0;for(var i=0;i<2000000&&chg<8&&performance.now()-t0<60;i++){var a=performance.now();if(a>last){var d=a-last;if(d<mn)mn=d;last=a;chg++;}}
-  rows.push(["performance.now() resolution",(isFinite(mn)?mn.toFixed(5):"0")+" ms"]);
+  rows.push(["performance.now() resolution",isFinite(mn)?(mn.toFixed(5)+" ms"):"no tick within 60 ms - not measurable"]);
   rows.push(["performance.now() sample",performance.now().toString().slice(0,18)]);
   rows.push(["performance.timeOrigin present",present(performance.timeOrigin)]);
   rows.push(["Date.now precision","1 ms (spec)"]);
@@ -1170,7 +1170,7 @@ function refreshRate(){
 function collectLeaks2026(){
   var rows=[];
   try{
-    function cvh(){var c=document.createElement("canvas");c.width=180;c.height=40;var x=c.getContext("2d");if(!x)return 0;x.textBaseline="top";x.font="14px Arial";x.fillStyle="#f60";x.fillRect(0,0,90,20);x.fillStyle="#069";x.fillText("leak-probe",2,2);var d=x.getImageData(0,0,180,40).data;var h=2166136261;for(var i=0;i<d.length;i+=5){h=(h^d[i])>>>0;h=(h*16777619)>>>0;}return h;}
+    function cvh(){var c=document.createElement("canvas");c.width=180;c.height=40;var x=c.getContext("2d");if(!x)return 0;x.textBaseline="top";x.font="14px Arial";x.fillStyle="#f60";x.fillRect(0,0,90,20);x.fillStyle="#069";x.fillText("leak-probe",2,2);var d=x.getImageData(0,0,180,40).data;var h=2166136261;for(var i=0;i<d.length;i+=5){h=(h^d[i])>>>0;h=Math.imul(h,16777619)>>>0;}return h;}
     var h1=cvh(),h2=cvh(),h3=cvh();var perRead=!(h1===h2&&h2===h3);
     rows.push(["canvas per-read noise variance",[perRead?"PER-READ RANDOM - averageable = weak/defeatable defense":"stable per read (per-session-seeded or uniform = strong)",perRead?"no":"ok"]]);
   }catch(e){rows.push(["canvas per-read variance","ERR"]);}
@@ -1377,7 +1377,7 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.0-beta", dated:"2026-08-03",
+  version:"0.9.1-beta", dated:"2026-08-03",
   scale:{
     hundred:"nothing we check is readable here, so nothing on our list can pick you out. It does not mean you are unfindable anywhere.",
     zero:"your browser hands over enough that a tracker can point straight at you.",
@@ -1401,13 +1401,15 @@ var PRIORS={
     "firefox-rfp":{label:"Firefox with resistFingerprinting (LibreWolf, or Firefox with the pref on)",
                    implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
                             devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
-                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"]},
+                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
+                            availFrame:["masked"]},
                    verified:"these resistFingerprinting values were checked against Firefox source and confirmed by"},
     "tor-build":  {label:"Tor Browser or Mullvad Browser", letterboxes:true,
                    implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
                             devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
                             languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
-                            svgMetrics:["498cb0ef"], webglExt:["6c491bc1"], webglParams:["a95247b0"]},
+                            svgMetrics:["498cb0ef"], webglExt:["6c491bc1"], webglParams:["a95247b0"],
+                            availFrame:["masked"]},
                    verified:"everything the resistFingerprinting family carries, plus three measured hashes that"},
     "other":      {label:"another engine", implies:{}}
   },
@@ -1502,14 +1504,10 @@ function paRow(catName,needle){
   }catch(e){}
   return "";
 }
-function paHashClass(h){
-  if(!h||h==="ERR"||/^(n\/a|unavailable|blocked|absent)/i.test(h))return "unavailable";
-  return "present";
-}
 function paLetterboxed(w,h){
   
   if(!(w>50&&h>50))return false;
-  var wOk=(w<500)?(w%50===0):(w%200===0);
+  var wOk=(w<=500)?(w%50===0):(w%200===0);
   var hOk=(h<500)?(h%50===0):((h>1600)?(h%200===0):(h%100===0));
   return wOk&&hOk;
 }
@@ -1608,7 +1606,6 @@ function findability(observed,familyKey){
       
       var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
                  ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
-                 (s.k==="availFrame"&&v==="masked")||
                  (s.k==="speechVoices"&&/^0[\s(]/.test(v))||
                  (s.k==="fontSet"&&/blocked|protected/i.test(String(observed.fontLocalBlocked||"")));
       var noisy=!!(observed._noisy&&observed._noisy[s.k]&&!s.noCrossDiff);
@@ -1692,7 +1689,8 @@ function identify(){
   var dataUrlOk=T(function(){var c=document.createElement("canvas");c.width=c.height=8;
     var x=c.getContext("2d");x.fillStyle="#f60";x.fillRect(0,0,8,8);return c.toDataURL().length>22;},false);
 
-  var rpThrow=gl?T(function(){try{gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(4));return "";}
+  var rpGl=gl||offGl;
+  var rpThrow=rpGl?T(function(){try{rpGl.readPixels(0,0,1,1,rpGl.RGBA,rpGl.UNSIGNED_BYTE,new Uint8Array(4));return "";}
     catch(e){return e&&e.name||"throw";}},""):"";
   var baseBrowser=(rpThrow==="NotSupportedError"&&dataUrlOk);
 
@@ -1747,7 +1745,7 @@ function identify(){
     return !!(d&&d.get&&/return\s*"1"/.test(Function.prototype.toString.call(d.get)));},false))
     hit("Privacy Badger","certain","the doNotTrack getter is readable JavaScript source rather than native code","addon");
   if(!baseBrowser&&gl===null&&T(function(){return !!navigator.gpu;},false))
-    hit("A WebGL-blocking extension such as NoScript","strong","WebGL is unavailable while WebGPU is present; an engine or driver limitation would remove both","addon");
+    hit("WebGL turned off, by a pref or an extension such as NoScript","strong","WebGL is unavailable while WebGPU is present; an engine or driver limitation would remove both, but a pref such as webgl.disabled does exactly this");
   if(window.isSecureContext&&T(function(){return !("serviceWorker" in navigator)&&!("PushManager" in window);},false))
     hit("Pale Moon or another Goanna build","strong","neither ServiceWorker nor PushManager exists in a secure context, a combination effectively unique to UXP");
 
@@ -1755,6 +1753,7 @@ function identify(){
   [[/Vivaldi\/([\d.]+)/,"Vivaldi"],[/\bOPR\/([\d.]+)/,"Opera"],[/YaBrowser\/([\d.]+)/,"Yandex Browser"],[/Edg\/([\d.]+)/,"Edge"]].forEach(function(p){
     var m=p[0].exec(ua);if(m)hit(p[1]+" "+m[1],"strong","its vendor token is in the User-Agent; the fingerprint underneath is ordinary Chromium unless something else here says otherwise");
   });
+  glDone(gl);glDone(offGl);
   return out;
 }
 
@@ -2134,12 +2133,13 @@ function paRing(score,color){
   return out;
 }
 function paIsRand(R){
-  var tells=R.strategy==="randomization"||R.strategy==="mixed"||/Brave/i.test((R.whoYouAre||[]).map(function(f){return f.what;}).join(" "));
+  var tells=R.strategy==="randomization"||R.strategy==="mixed";
   if(!tells)return false;
   var Fc=R.findabilityCross;
   if(Fc&&(Fc.changedAcrossOrigins||[]).length===0)return false;
   return true;
 }
+window.__paIsRand=paIsRand;
 
 /* - shape the cross-site result for the card ------------- */
 function paCrossData(R){
@@ -2148,7 +2148,8 @@ function paCrossData(R){
   try{comp=paCompanion();b=comp?comp.host:(otherOrigin()||"");}catch(e){}
   if(!b)b="a second site";
   var pb=(!R.partitioning&&window.__paStoreBlocked)?window.__paStoreBlocked:null;
-  if(R.crossFailed)return {failed:true,reason:R.crossFailed,skipRand:!!R.crossSkippedRandomizer,canMeasure:!!R.crossCanMeasure,measuring:!!R.crossMeasuring,originA:a,originB:b,partitionBlocked:pb};
+  if(R.crossFailed==="measuring"||R.crossMeasuring)return {pending:true,measuring:true,originA:a,originB:b,partitionBlocked:pb};
+  if(R.crossFailed)return {failed:true,reason:R.crossFailed,skipRand:!!R.crossSkippedRandomizer,canMeasure:!!R.crossCanMeasure,originA:a,originB:b,partitionBlocked:pb};
   if(!Fc)return comp?{pending:true,originA:a,originB:b,partitionBlocked:pb}:{unavailable:true,originA:a,originB:b,partitionBlocked:pb};
   var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
   var anon=(Fc.changedAcrossOrigins||[]).length;
@@ -2156,7 +2157,8 @@ function paCrossData(R){
   var single=(R.findability&&R.findability.score),singleGrade=(R.findability&&R.findability.grade)||Fc.grade;
   if(single==null){single=Fc.score;}
   
-  var recog=anon<Math.max(3,Math.round(total*0.2));
+  var shownTotal=(Fc.shownCount!=null)?Fc.shownCount:((Fc.rows||[]).filter(function(r){return r&&r.state==="shown";}).length||total);
+  var recog=anon<Math.max(3,Math.round(shownTotal*0.2));
   var cs={pending:false,originA:a,originB:b,total:total,anon:anon,linked:linked,score:Fc.score,grade:Fc.grade,
     single:single,singleGrade:singleGrade,singleColor:paBandFor(singleGrade).band,crossColor:paBandFor(Fc.grade).band,delta:Fc.score-single,
     pct:total?Math.round(anon/total*100):0,answer:recog?"Yes":"No",
@@ -2282,7 +2284,7 @@ function paRenderView(R){
   h+='</div>';
   if(PAV.tileFilter){var _tl=((tiles.filter(function(t){return t[3]===PAV.tileFilter;})[0])||["",""])[0];
     h+='<div class="pa-mono" style="margin-top:10px;font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:9px;flex-wrap:wrap;">Showing <b style="color:var(--text-2);">'+paEsc(_tl.toLowerCase())+'</b> only. <button data-pa="tile" data-filter="'+PAV.tileFilter+'" style="background:transparent;border:1px solid var(--line-strong);border-radius:7px;padding:3px 9px;font:inherit;color:var(--text-2);cursor:pointer;">Show all</button></div>';}
-  else{h+='<div class="pa-mono" style="margin-top:9px;font-size:11px;color:var(--text-3);">Tap a card to show only those surfaces below.</div>';}
+  else{h+='<div class="pa-mono" style="margin-top:9px;font-size:11px;color:var(--text-3);">Counts are categories, not readings. Tap a card to show only those surfaces below.</div>';}
   var rowsList=PAV.tileFilter?main.filter(function(g){return paTileMatch(g,PAV.tileFilter);}):main;
   h+='<div class="pa-rows">';
   var prevKey=null;
@@ -2387,7 +2389,7 @@ function paExportBar(){
 /* - redaction: default-deny on everything shared --------- */
 function paRedactVal(k,v){
   v=String(v==null?"":v);
-  if(/\bip\b|address|candidate|hash|fingerprint/i.test(String(k)))return "[redacted]";
+  if(/\bip\b|address|candidate|hash|fingerprint|concurrency|\bcores?\b|devicememory|device memory|maxtouch|max touch|pixelratio|pixel ratio|timezoneoffset|timezone offset|anisotrop/i.test(String(k)))return "[redacted]";
   if(v==="")return v;
   if(/^(true|false|yes|no|none|absent|present|n\/a|null|undefined|enabled|disabled|granted|denied|prompt|default|supported|unsupported|available|downloadable|unavailable|running|suspended|match|pass|fail|clean|ok|probably|maybe)$/i.test(v))return v;
   if(/^-?\d{1,7}(\.\d{1,3})?\s*(ms|hz|px|dppx|db|bit|bits)?$/i.test(v))return v;
@@ -2422,6 +2424,7 @@ function paRenderRaw(R,order){
   });
   h+='</div></div>';
   var ch=R.coherence||{checks:{},detail:{}},keys=Object.keys(ch.checks||{});
+  (ch.rows||[]).forEach(function(r){var k=r&&r[0];if(k&&!(k in ch.checks)){ch.checks[k]=(r[1]&&r[1][1])==="ok";if(r[1]&&r[1][1]!=="ok"&&r[1][0])ch.detail[k]=r[1][0];keys.push(k);}});
   var passN=keys.filter(function(k){return ch.checks[k];}).length,failN=keys.length-passN;
   h+='<div style="flex:1 1 300px;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;box-shadow:var(--card-shadow);padding:15px 18px;">';
   h+='<div style="display:flex;align-items:center;gap:10px;"><span class="pa-mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);">Coherence &amp; consistency</span>';
@@ -2451,7 +2454,7 @@ function paRenderRaw(R,order){
       var ok=!!ch.checks[k];
       h+='<div class="pa-cohk'+(ok?"":" f")+'"><span class="ci" style="color:'+(ok?"var(--green)":"var(--red)")+';">'+(ok?"✓":"✕")+'</span>';
       h+='<span class="cn" style="color:'+(ok?"var(--text-2)":"var(--text)")+';">'+paEsc(k);
-      if(!ok)h+='<span class="pa-mono" style="display:block;font-size:12px;color:var(--red);margin-top:3px;word-break:break-word;line-height:1.45;">'+paEsc(String(ch.detail[k]||"fail").slice(0,240))+'</span>';
+      if(!ok)h+='<span class="pa-mono" style="display:block;font-size:12px;color:var(--red);margin-top:3px;word-break:break-word;line-height:1.45;">'+paEsc((PAV.redact?paRedactVal(k,String(ch.detail[k]||"fail")):String(ch.detail[k]||"fail")).slice(0,240))+'</span>';
       h+='</span></div>';
     });
   });
@@ -2517,7 +2520,7 @@ function paSave(kind){
     version:K.version,
     fingerprint:red?"[redacted]":K.fingerprint,stableHash:red?"[redacted]":K.stableHash,
     crossBrowser:red?"[redacted]":K.crossBrowser,strategy:K.strategy,
-    whoYouAre:K.whoYouAre,findability:trimF(F),findabilityCross:(function(){var x=trimF(Fc);if(x)delete x.rows;return x;})(),
+    whoYouAre:red?"[redacted]":K.whoYouAre,findability:trimF(F),findabilityCross:(function(){var x=trimF(Fc);if(x)delete x.rows;return x;})(),
     coherence:red?"[redacted]":K.coherence,leaks:red?"[redacted]":K.leaks,
     realm:red?"[redacted]":K.realm,worker:red?"[redacted]":K.worker,sharedWorker:red?"[redacted]":K.sharedWorker,uaHigh:red?"[redacted]":K.uaHigh,
     partitioning:K.partitioning,categories:cats};
@@ -2685,7 +2688,6 @@ async function runKit(){
       [_cb.exposed+" of "+_cb.total+" hardware and OS anchors exposed (GPU, fonts, screen, cores, timezone); unlike browser-specific readings these follow you into a DIFFERENT browser on the same machine"+(_cb.exposed?" - signature "+_cb.hash:""),
        _cb.exposed>=Math.ceil(_cb.total/2)?"no":(_cb.exposed?"mid":"ok")]]);}
 
-  R.categories=Object.keys(C).reduce(function(a,k){a[k]={hash:C[k].hash,rows:C[k].rows};return a;},{});
 
 /* - phase 5: coherence rows for the raw view ------------- */
   var cohRows=[];var cohPass=0,cohTot=0;Object.keys(R.coherence.checks).forEach(function(k){cohTot++;var v=R.coherence.checks[k];if(v)cohPass++;cohRows.push([k,[v?"pass":(R.coherence.detail[k]||"fail"), v?"ok":"no"]]);});
@@ -2721,7 +2723,7 @@ async function runKit(){
   } else {
     realmRow("SharedWorker realm neutralized (blocked/errored, no SharedWorker fingerprint to leak)", true, ""+shw.err);
   }
-  C["Coherence / Lie Detection"]={rows:cohRows,hash:fnv(j(R.coherence.checks)),note:"A defense is only good if the spoof is undetectable to an adversarial lie-detector. Native toString + no leaked .prototype + Reflect.ownKeys==[length,name], props on the prototype, screen≥window, audio getChannelData==copyFromChannel (no one-path farble), and BOTH the dedicated-Worker and SharedWorker scopes' hardwareConcurrency/deviceMemory/userAgent/timezone/WebGL-renderer matching the top frame must hold. A page-only hook that misses either worker scope leaks real hardware there = the classic extension catch."};
+  C["Coherence / Lie Detection"]={rows:cohRows,handHash:true,hash:fnv(j(R.coherence.checks)),note:"A defense is only good if the spoof is undetectable to an adversarial lie-detector. Native toString + no leaked .prototype + Reflect.ownKeys==[length,name], props on the prototype, screen≥window, audio getChannelData==copyFromChannel (no one-path farble), and BOTH the dedicated-Worker and SharedWorker scopes' hardwareConcurrency/deviceMemory/userAgent/timezone/WebGL-renderer matching the top frame must hold. A page-only hook that misses either worker scope leaks real hardware there = the classic extension catch."};
 
 /* - phase 6: network and extension rows ------------------ */
   var lk=R.leaks.webrtc||{};var lkRows=[["WebRTC candidate IPs",(lk.ips||[]).join(", ")||"none"],["private/local IP leaked",[((lk.privateIPs||[]).length?("YES: "+lk.privateIPs.join(",")):"none"),(lk.privateIPs||[]).length?"no":"ok"]],["mDNS candidates",(lk.mdns||[]).length]];
@@ -2734,7 +2736,7 @@ async function runKit(){
   if(R.headers){Object.keys(R.headers).forEach(function(h){if(h!=="__order"&&R.headers[h]!=null)lkRows.push(["header: "+h,String(R.headers[h]).slice(0,90)]);});
     if(R.headers.__order)lkRows.push(["request header order (h1)",R.headers.__order.filter(function(h){return h.indexOf(":")<0;}).join(", ")]);}
   else lkRows.push(["HTTP headers","(serve with serve.py to echo request headers)"]);
-  C["Network Leaks & Headers"]={rows:lkRows,hash:fnv(j({priv:(lk.privateIPs||[]).length,mdns:(lk.mdns||[]).length})),note:"WebRTC must not expose a private IP. Hash covers leak facts only (private-IP count, mDNS count) - raw mDNS hostnames are random per session by design, so they are shown but not hashed. TLS JA3/JA4 + HTTP/2 are network-layer (not JS-reachable) - noted below. Extension enumeration moved to its own Extension Detection panel."};
+  C["Network Leaks & Headers"]={rows:lkRows,handHash:true,hash:fnv(j({priv:(lk.privateIPs||[]).length,mdns:(lk.mdns||[]).length})),note:"WebRTC must not expose a private IP. Hash covers leak facts only (private-IP count, mDNS count) - raw mDNS hostnames are random per session by design, so they are shown but not hashed. TLS JA3/JA4 + HTTP/2 are network-layer (not JS-reachable) - noted below. Extension enumeration moved to its own Extension Detection panel."};
 
   var extStackLeak=(function(){var st="";try{throw new Error("p");}catch(e){st=e.stack||"";}return /chrome-extension:\/\/|moz-extension:\/\//i.test(st);})();
   var extNodes=0;try{extNodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;}catch(e){}
@@ -2747,10 +2749,11 @@ async function runKit(){
     ["is the tested extension itself enumerable here?",[es.detectable?"YES - a static WAR path exposed it":"not enumerable (use_dynamic_url, or none installed)",es.detectable?"no":"ok"]],
     ["extension inferred from a patched API (behavioural, not enumeration)",(function(){var a=(R.whoYouAre||[]).filter(function(f){return f.kind==="addon";});return a.length?["FOUND: "+a.map(function(f){return f.what+" - "+f.evidence;}).join("; "),"info"]:["none revealed itself through a patched API","info"];})()]
   ];
-  C["Extension Detection"]={rows:extRows,hash:fnv(j({stack:extStackLeak,nodes:extNodes,det:!!es.detectable})),note:"Can a site tell WHICH extensions you run - including this privacy tool itself? Three vectors. (1) SELF-LEAK: a chrome-extension:// URL surfacing in an Error.stack, or an injected <script>/<link> node, names the extension outright - a well-built tool leaks neither. (2) ENUMERATION: image-loading each extension's declared static web_accessible_resource, the standard extension-enumeration technique. A hit proves presence; a miss is inconclusive, because a correct MV3 extension sets use_dynamic_url so its per-session resource URL is unguessable and it stays invisible here (that is the goal, not a gap). Note the hard limit: an extension can hide only ITS OWN resources this way - it cannot suppress OTHER extensions' static WARs, so a low count reflects what is installed, not active blocking. Probed set is popular + positive-only: a stale path is a silent miss, never a false positive. (3) BEHAVIOURAL: the last row cross-references the identity engine - an extension that never exposes a resource can still betray itself by patching a JS API (Privacy Badger overriding navigator.doNotTrack, JShelter zeroing native arities). That inference is informational context here, kept out of the enumeration count."};
+  C["Extension Detection"]={rows:extRows,handHash:true,hash:fnv(j({stack:extStackLeak,nodes:extNodes,det:!!es.detectable})),note:"Can a site tell WHICH extensions you run - including this privacy tool itself? Three vectors. (1) SELF-LEAK: a chrome-extension:// URL surfacing in an Error.stack, or an injected <script>/<link> node, names the extension outright - a well-built tool leaks neither. (2) ENUMERATION: image-loading each extension's declared static web_accessible_resource, the standard extension-enumeration technique. A hit proves presence; a miss is inconclusive, because a correct MV3 extension sets use_dynamic_url so its per-session resource URL is unguessable and it stays invisible here (that is the goal, not a gap). Note the hard limit: an extension can hide only ITS OWN resources this way - it cannot suppress OTHER extensions' static WARs, so a low count reflects what is installed, not active blocking. Probed set is popular + positive-only: a stale path is a silent miss, never a false positive. (3) BEHAVIOURAL: the last row cross-references the identity engine - an extension that never exposes a resource can still betray itself by patching a JS API (Privacy Badger overriding navigator.doNotTrack, JShelter zeroing native arities). That inference is informational context here, kept out of the enumeration count."};
 
-  R.categories=Object.keys(C).reduce(function(a,k){a[k]={hash:C[k].hash,rows:C[k].rows};return a;},{});
+  R.categories=Object.keys(C).reduce(function(a,k){a[k]={hash:C[k].handHash?C[k].hash:catHash(C[k].rows),rows:C[k].rows};return a;},{});
   R.coherenceScore={pass:cohPass,total:cohTot};
+  R.coherence.rows=cohRows;
   R.leakSummary={privateIP:(lk.privateIPs||[]).length,mdns:(lk.mdns||[]).length,extDetectable:!!(R.leaks.ext&&R.leaks.ext.detectable)};
   window.__KIT=R;window.__KIT_DONE=true;
 

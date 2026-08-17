@@ -1,11 +1,11 @@
-# Methodology 0.9.0-beta
+# Methodology 0.9.1-beta
 
 The score is how much of what this tool checks your browser hides, weighted by how identifying each reading is. It is not an estimate of how rare you are: that needs a population of real fingerprints, and nothing here has one. Every number in the formula below is recomputable by hand from the report the tool prints. The measurements are not: those are observations, and they carry their date and versions.
 
 ## Three states
 
 - **shown**: your real value
-- **blended**: credited three ways and no others: the catalog records that browser family as reporting one value for every user, or the value differed between two reads in the same page, or the code recognised a specific mask it looks for (a blanked or noisy canvas, an unavailable render, a letterboxed window or screen, a zeroed taskbar, an empty voice list, a blocked `local()` font probe)
+- **blended**: credited three ways and no others: the catalog records that browser family as reporting one value for every user, or the value differed between two reads in the same page, or the code recognised a specific mask it looks for (a blanked or noisy canvas, a letterboxed window or screen, an empty voice list, a blocked `local()` font probe)
 - **refused**: blank, blocked, or an error
 
 Only shown counts against you. Rarity is never assumed: a value is not credited for looking unusual.
@@ -62,7 +62,7 @@ Absolute values still move. LibreWolf reads 48 as shipped, 58 under equal weight
 
 So the ordering is supported. A particular absolute score is not, being one weighting, one machine, one date.
 
-There is also a ceiling. Seven readings have no uniform value recorded for any browser family, so a browser that returns a real value for one of them cannot be credited for it: element geometry, MathML render size, text metrics, font measurement, media codecs, rendered sound and device details. They sit in five categories, so showing all seven caps the score at 70. Tor and Mullvad hide everything else and refuse only device details, which puts them at 74. Grade A needs a browser that refuses readings no shipping browser refuses, and nothing here reaches it. B is reached only with an opt-in on: Tor and Mullvad read 78 with the WebRTC test enabled, because it adds a category they refuse outright.
+There is also a ceiling. Ten readings have no uniform value recorded for any browser family, so a browser that returns a real value for one of them cannot be credited for it: element geometry, MathML render size, text metrics, font measurement, media codecs, rendered sound, 3D rendered image, WebGPU adapter, WebGPU limits and device details. They sit in six categories, so answering all ten caps the score at 64. Tor and Mullvad hide everything else and refuse four of the ten, which puts them at 74. Grade A needs a browser that refuses readings no shipping browser refuses, and nothing here reaches it. B is reached only with an opt-in on: Tor and Mullvad read 78 with the WebRTC test enabled, because it adds a category they refuse outright.
 
 ## Cross-site
 
@@ -84,7 +84,7 @@ Device memory is excluded: only Chromium reports it, so including it would give 
 
 On by default. Values on screen and in saved files are masked; the shape of the result survives, so the arithmetic stays checkable. The score is identical either way.
 
-Default-deny: only recognised-harmless values pass, meaning status words and plain numbers. Everything else is replaced, including every hash: a hash of a fingerprint is the fingerprint. With Redact on, the saved file's name carries the score rather than the fingerprint, and the fingerprint, stable hash and cross-browser identity fields are masked too.
+Default-deny: only recognised-harmless values pass, meaning status words and plain numbers that identify nothing. Readings that narrow a machine down are masked by key regardless of shape: CPU cores, device memory, touch points, display scaling, timezone offset and anisotropy. Everything else is replaced, including every hash: a hash of a fingerprint is the fingerprint. With Redact on, the saved file's name carries the score rather than the fingerprint, and the fingerprint, stable hash and cross-browser identity fields are masked too.
 
 ## Reference measurements
 
@@ -148,7 +148,7 @@ Three separate things move a score, and they should not be blurred together.
 - Of the six readings Tor still shows, four have no target at all: element geometry, MathML render size, text metrics and font measurement. The other two do. `MediaCapabilities` and `AudioContext` both exist as targets, but they cover `mediaCapabilities.decodingInfo` and the audio graph rather than the `MediaSource.isTypeSupported` list and the rendered-output check this scores, so those two readings are scored as shown against a browser that does normalize a neighbouring API.
 - WebGPU is scored through two readings, the adapter identity and the adapter limits, and both sit in the GPU category alongside the WebGL readings because they have the same cause. They change no single-site score in the table: Tor, Mullvad and LibreWolf refuse WebGPU outright, and the browsers that answer it already show canvas. They do lower Brave's cross-site figure, because Brave farbles its canvas per site and does not farble WebGPU, so the GPU stays linkable across origins. The rest of what the collector reads there, the feature set, the texture-format matrix and the compute timings, stays in the raw view.
 - Rendered sound and 3D rendered image score the rendered output itself. They used to score only whether the render happened, which meant a browser altering its audio on every read still looked exposed, since "it worked" is constant.
-- The two-read check that detects a per-read randomizer reaches only the readings taken live. Fifteen are pulled from rows the collectors already computed, so a second call returns them unchanged and they can never be credited for varying. Canvas is covered separately by drawing twice. This under-credits rather than over-credits.
+- The two-read check that detects a per-read randomizer reaches only the readings taken live. Seventeen are pulled from rows the collectors already computed, so a second call returns them unchanged and they can never be credited for varying. Canvas is covered separately by drawing twice. This under-credits rather than over-credits.
 - **A refused reading is credited as protection, and nothing distinguishes a browser withholding a value from this tool's own probe failing.** It fails in the flattering direction. It has happened: an extension scan that found nothing was scored as protection and every published number was three points too high. The mitigation is a test layer that breaks each probe deliberately and asserts a broken one never scores as shown.
 - Weighting a category by its heaviest reading is still a judgment. Dropping the category weighting entirely and summing every reading moves Tor 74 to 77 and LibreWolf 48 to 58 without changing the order; it is kept because otherwise the GPU category, which this tool probes seven times, would outweigh Window, which it probes once.
 - For a per-session farbler the single-site number says little: Brave reads 5 on one page and 21 to 34 between two real domains. Runs sharing a browser launch share a farbling seed, so every run above is a fresh launch. The CLI launches a fresh browser per run and reports both figures; it serves `127.0.0.1` and `localhost` from one handler, so its cross-site number carries the loopback floor described below rather than the figure in the table.

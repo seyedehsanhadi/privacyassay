@@ -11,7 +11,7 @@ with it.
 
 Two things the test suite enforces, worth knowing before a pull request:
 
-- `index.html` carries section markers and no other comments. The reason behind a fix belongs in the
+- `index.html` carries the licence header and section markers, and no other comments. The reason behind a fix belongs in the
   test that pins it.
 - Any number stated in prose is checked against the code that produces it, so changing a value in one
   place fails the build in the other.

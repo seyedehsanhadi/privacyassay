@@ -35,7 +35,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 | | |
 |---|---|
-| **Size** | one HTML file, 277 KB |
+| **Size** | one HTML file, 278 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
 | **Status** | beta; the scoring model is settled, the published numbers are measured on two real domains |
 
@@ -66,7 +66,7 @@ One machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.
 | Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
 | Edge | 151.0.4129.59 | 0 | 0 | nothing hidden under any setting |
 
-Every browser ran on a fresh profile with nothing changed from its defaults, so each figure is that browser as it ships; Brave's Shields are at their defaults. Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
+Every browser ran on a fresh profile with nothing changed from its defaults, so each figure is that browser as it ships; Brave's Shields are at their defaults. Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure and its three runs. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
 **Brave's 5 is not a verdict on Brave, and the table would mislead you if you read it as one.** This column is one visit to one site, and Brave's defence is not built to operate inside one visit: it re-seeds per session and keys per site, so its values hold still while you are on a page and it reads as exposed. Between two real domains it scores **21 to 34**, the only column where it separates from Chrome. Every other browser's cross-site figure equals its single-site score.
 
@@ -84,7 +84,7 @@ Three checks (request-header echo, two-origin cross-site, supercookies) need a r
 python serve.py
 ```
 
-Serves `http://localhost:8000`, loopback only, and pairs it with `127.0.0.1` as the second origin.
+Serves `http://127.0.0.1:8000`, loopback only, and pairs it with `localhost` as the second origin, which needs `localhost` to resolve to the address it binds.
 
 Hosting it yourself works the same way for everything except those two-origin checks, which need a second host that answers back. [DEPLOY.md](DEPLOY.md) has the four steps. Until the two origins name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
 

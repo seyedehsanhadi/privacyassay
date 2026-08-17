@@ -30,7 +30,7 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 100,
-      "description": "Share of the scored surfaces the browser hides. Higher is more private."
+      "description": "Share of what this tool checks that the browser hides, weighted by how identifying each reading is. Higher is more private."
     },
     "grade": {
       "type": "string",

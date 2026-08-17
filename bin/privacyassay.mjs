@@ -167,11 +167,12 @@ async function runOnce(browser, port) {
             // two producers cannot drift and the CLI does not depend on a render helper being global.
             var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
             var anon=(Fc.changedAcrossOrigins||[]).length;
+            var shownTotal=(Fc.shownCount!=null)?Fc.shownCount:((Fc.rows||[]).filter(function(r){return r&&r.state==="shown";}).length||total);
             return {score:Fc.score,grade:Fc.grade,signalsChanged:anon,signalsCompared:total,
-              recognizedOnSecondSite:anon<Math.max(3,Math.round(total*0.2))};
+              recognizedOnSecondSite:anon<Math.max(3,Math.round(shownTotal*0.2))};
           }catch(e){return null;}})(),
           crossSiteNote:(K.crossFailed&&K.crossFailed!=="measuring")?String(K.crossFailed):null,
-          randomizer:(function(){try{return typeof paIsRand==="function"?!!paIsRand(K):false;}catch(e){return false;}})(),
+          randomizer:(function(){try{return typeof window.__paIsRand==="function"?!!window.__paIsRand(K):null;}catch(e){return null;}})(),
           full:${FULL ? "true" : "false"}?{findability:F,fingerprint:K.fingerprint,stableHash:K.stableHash,crossBrowser:K.crossBrowser,coherence:K.coherence,categories:K.categories}:null});})()`);
       const parsed = JSON.parse(data || "{}");
       if (parsed.score == null) throw new Error("audit produced no score");

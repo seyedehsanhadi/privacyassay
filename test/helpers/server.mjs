@@ -9,7 +9,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const INDEX = path.join(HERE, "..", "..", "index.html");
 
 export async function startServer() {
-  const server = http.createServer((req, res) => {
+  const handler = (req, res) => {
     const u = req.url.split("?")[0];
     if (u === "/" || u === "/index.html") {
       res.writeHead(200, { "Content-Type": "text/html" });
@@ -24,7 +24,14 @@ export async function startServer() {
     }
     res.writeHead(200);
     res.end("");
-  });
+  };
+  const server = http.createServer(handler);
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
-  return { port: server.address().port, close: () => server.close() };
+  const port = server.address().port;
+  // Which address "localhost" resolves to is the resolver's choice. On a machine that answers ::1
+  // first, a server bound only to 127.0.0.1 refuses the companion origin and the cross-site probe
+  // reads as not measurable. bin/privacyassay.mjs already guards this; the harness now matches.
+  let server6 = http.createServer(handler);
+  await new Promise((r) => { server6.once("error", () => { server6 = null; r(); }); server6.listen(port, "::1", r); });
+  return { port, close: () => { server.close(); if (server6) try { server6.close(); } catch {} } };
 }

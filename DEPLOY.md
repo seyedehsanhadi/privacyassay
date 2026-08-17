@@ -18,12 +18,13 @@ var PA_HOME="https://your-domain.example/";
 `PA_HOME` redirects a direct visit to the companion back to the main site. Both ship set to this
 project's own pair, so a copy you host yourself has to change them or it gets no cross-site result:
 the companion answers only to the `PA_HOME` it was built with, and a reply addressed elsewhere is
-dropped by the browser. A page served from loopback or opened from disk ignores both values and
-pairs with loopback instead, so a local copy never contacts either host.
+dropped by the browser. A page served from loopback ignores both values and pairs with loopback
+instead; opened from disk it pairs with nothing at all. Either way a local copy never contacts
+either host.
 
 4. Add **both** origins to the `Content-Security-Policy` meta tag. Skipping this fails silently: the shipped policy allows `'self'`, loopback and this project's own
 two origins, so a companion of yours that is not named there never loads and the cross-site result
-reads as unmeasured rather than as an error. Only `frame-src` and `child-src` name the companion origin. Every probe URL is relative, so it stays same-origin inside whichever page runs it.
+reads as unmeasured rather than as an error. Only `frame-src` and `child-src` name the companion origin. Every probe URL is relative apart from the STUN server the opt-in WebRTC check contacts, so the rest stays same-origin inside whichever page runs it.
 
 The two copies must stay byte-identical. Point both hosts at the same file. `.gitattributes` pins line endings so a checkout cannot rewrite them and break the match or a published hash.
 

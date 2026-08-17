@@ -1,6 +1,6 @@
 # Security
 
-Privacyassay runs entirely in your browser. As shipped it requests no host but the one serving it; configuring a companion origin (see DEPLOY.md) adds that origin and no other. The one claim worth attacking is that the report never leaves your machine.
+Privacyassay runs entirely in your browser. As published it frames one companion origin, this project's own second host, and nothing else; a copy you host yourself requests no host but the one serving it until you set your own pair (see DEPLOY.md), which adds that origin and no other. The one claim worth attacking is that the report never leaves your machine.
 
 ## Reporting a vulnerability
 
