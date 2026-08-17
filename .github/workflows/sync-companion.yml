@@ -1,0 +1,56 @@
+name: sync companion
+
+# The two-origin cross-site test frames the companion origin and compares its readings against
+# this one. If the two serve different builds the comparison is between two different catalogues,
+# so index.html must stay byte-identical on both. This pushes it on every change.
+
+on:
+  push:
+    branches: [main]
+    paths: ["index.html"]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push index.html to the companion origin
+        env:
+          TOKEN: ${{ secrets.COMPANION_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "COMPANION_TOKEN is not set; nothing to do." >&2
+            echo "Create a fine-grained PAT with Contents: read and write on" >&2
+            echo "privacyassay/privacyassay.github.io and add it as the COMPANION_TOKEN secret." >&2
+            exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/privacyassay/privacyassay.github.io.git" companion
+          cp index.html companion/index.html
+          cd companion
+          if git diff --quiet -- index.html; then
+            echo "companion already byte-identical; nothing to push."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "sync index.html from ${GITHUB_SHA::7}"
+          git push origin main
+
+      - name: Verify both origins serve the same file
+        run: |
+          sleep 90
+          for i in $(seq 1 10); do
+            a=$(curl -fsSL --max-time 30 https://privacyassay.com/index.html | sha256sum | cut -d' ' -f1)
+            b=$(curl -fsSL --max-time 30 https://privacyassay.github.io/index.html | sha256sum | cut -d' ' -f1)
+            if [ "$a" = "$b" ]; then
+              echo "both origins serve $a"
+              exit 0
+            fi
+            echo "attempt $i: still differ, waiting for Pages"
+            sleep 45
+          done
+          echo "the two origins did not converge; check both Pages builds" >&2
+          exit 1
