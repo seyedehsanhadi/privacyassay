@@ -15,6 +15,6 @@ New live captures are versioned separately from historical results. Incomplete r
 
 `calibration.mjs` and `sensitivity.mjs` analyze the historical 0.9.1-beta captures. Those figures are not validated browser rankings for 0.9.2. Preserve historical captures; do not silently mix methodology versions.
 
-Regenerate the published scoring-weight figures with `node bench/figures.mjs`; `--check` verifies they match the current catalog. These figures do not rank browsers.
+The README browser charts and screenshot preserve the historical presentation and measurements, labeled separately from 0.9.2. Replace their values only with new comparable browser measurements; keep their layout and styling.
 
-Run `node bench/render-assets.mjs` with Chrome installed to refresh the redacted example screenshot and social card. Inspect both images before publishing.
+Run `node bench/figures.mjs` to update the social-card SVG (`--check` verifies its version), then `node bench/render-assets.mjs` with Chrome installed to render the PNG. These commands do not overwrite the README charts or screenshot.

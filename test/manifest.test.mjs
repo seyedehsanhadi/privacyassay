@@ -28,7 +28,16 @@ test("manifest: the no-dependencies claim on the README badge is still true", ()
 
 test("manifest: entry page remains a standalone document",()=>{const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");assert.match(html,/<!doctype html>/i);assert.equal(/<script[^>]+src=/.test(html),false);});
 
-test("historical charts are not presented as current rankings",()=>{const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");assert.match(readme,/not comparable/i);assert.match(readme,/0.9.1-beta/);assert.match(readme,/generated from the current catalog/);});
+test("historical browser charts retain their presentation and methodology label",()=>{
+  const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");
+  assert.match(readme,/not comparable/i);assert.match(readme,/Historical figures \(0.9.1-beta\)/);
+  for(const theme of ["light","dark"]){
+    const svg=fs.readFileSync(path.join(ROOT,`chart-${theme}.svg`),"utf8");
+    assert.match(svg,/viewBox="0 0 756 324"/);
+    for(const browser of ["Tor Browser","Mullvad Browser","LibreWolf","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
+    assert.equal((svg.match(/<rect /g)||[]).length,7);
+  }
+});
 
 test("historical captures remain distinct from the current methodology",()=>{const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");assert.match(readme,/0.9.1-beta/);assert.match(readme,/0.9.2/);assert.match(readme,/not comparable/i);});
 
@@ -281,7 +290,7 @@ test("index.html: every inline script parses", () => {
   assert.equal(data.url, "https://privacyassay.com/");
 });
 
-test("figures: published charts match the current catalog",()=>{execFileSync(process.execPath,[path.join(ROOT,"bench/figures.mjs"),"--check"],{cwd:ROOT});});
+test("figures: social card matches the current version",()=>{execFileSync(process.execPath,[path.join(ROOT,"bench/figures.mjs"),"--check"],{cwd:ROOT});});
 
 test("cli: median report keeps completion and bounds from the same run", () => {
   const start = CLI.indexOf("  const out = FULL ?");
