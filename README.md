@@ -1,56 +1,154 @@
-# Privacyassay
+<div align="center">
 
-An open-source browser fingerprint diagnostic. One HTML file, no build or dependencies. Measurements and scoring run in your browser; your fingerprint is not uploaded.
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg">
+    <img src="logo-light.svg" width="392" alt="Privacyassay">
+  </picture>
+</h1>
 
-[Run the test](https://privacyassay.com/) · [Methodology](methodology.html) · [Technical method](METHODOLOGY.md)
+**One HTML file that shows what a website can read about your browser and how much of it is exposed.**
+Everything runs on your machine; the fingerprint is never uploaded.
 
-## What it measures
+[![CI](https://github.com/seyedehsanhadi/privacyassay/actions/workflows/ci.yml/badge.svg)](https://github.com/seyedehsanhadi/privacyassay/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/seyedehsanhadi/privacyassay?color=blue)](package.json)
+[![License](https://img.shields.io/github/license/seyedehsanhadi/privacyassay?color=blue)](LICENSE)
+[![Dependencies](https://img.shields.io/badge/dependencies-none-blue)](package.json)
 
-Canvas, WebGL, WebGPU, audio, fonts, layout, device details and selected leak checks. The raw report includes browser/API capability information. WebRTC and cross-site storage are optional and off by default. Redaction is on by default.
+### [Open it at privacyassay.com](https://privacyassay.com)
 
-Version **0.9.2** distinguishes measured results from unknowns. Failed measurements receive no privacy credit. Incomplete runs display grade **I**, measurement coverage and a lower-bound score; CLI thresholds reject them. Browser-family guesses and common values do not earn masking credit.
+[Results](#results) &middot; [Run it](#run-it) &middot; [Methodology](methodology.html) &middot; [Reviewing this](#reviewing-this) &middot; [Limits](#what-it-cannot-do)
 
-A high score is not proof of anonymity. This is not a complete tracker-blocking, AI privacy, network or browser security assessment. Read the methodology before comparing runs.
+</div>
 
-## Run locally
+![Privacyassay 0.9.2: a redacted local browser fingerprint report](screenshot.png)
 
-Open index.html and press Run, or serve the directory:
+<div align="center"><sub>A real redacted local run of 0.9.2, both opt-ins off, 2026-09-05. The local pair is 127.0.0.1 and localhost; the hosted pair is privacyassay.com and privacyassay.github.io, separate registrable domains. This example is not a browser ranking. Your own result will differ.</sub></div>
 
-```sh
-python serve.py
-```
+---
 
-Use http://127.0.0.1:8000. Local cross-site checks pair 127.0.0.1 with localhost, which is not equivalent to two registered domains. The hosted pair is privacyassay.com and privacyassay.github.io. A companion window opens from the Run click; blocked windows produce an unmeasured comparison.
+- **One file, no build, no dependencies.** Open it, or host it anywhere static.
+- **A formula you can recompute by hand** from the report it prints.
+- **Says what it cannot measure** as loudly as what it can.
+- **No fingerprint is uploaded.** Every reading is taken and scored in the browser. Redact is on by default; inspect any report before posting it.
+- **Runs in CI** and fails a build below a threshold you set.
 
-## CLI and checks
+| | |
+|---|---|
+| **Size** | one HTML file, 282 KB |
+| **Needs** | a current browser; Node 22+ and Chromium for the CLI; compatibility requires testing |
+| **Status** | 0.9.2; unknown readings earn no protection credit; historical scores below use the previous methodology |
 
-Requires Node 22+ and a Chromium-family browser. Set PRIVACYASSAY_BROWSER for a custom binary.
+Each reading is an observable value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or a completed optional test with no exposed value (**refused**), or a missing, invalid, failed or timed-out measurement (**unknown**). The score is the weighted share classified as blended or refused. Unknown readings stay in the denominator and receive no protection credit; incomplete runs display grade **I**, coverage and score bounds. Browser names and common values do not establish masking. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
-```sh
-node bin/privacyassay.mjs
-node bin/privacyassay.mjs --min-score 40
-npm test
-npm run test:browser
-npm run test:stress
-```
+Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
-The CLI launches a fresh profile per run. Reports identify the methodology version and completion state. Summary exports use privacyassay-summary/1.1.
+A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
 
-## Scoring weights
+A copy you run yourself contacts neither of those hosts: the second origin is resolved local-first, so a file opened from disk skips the comparison, while a loopback copy pairs with loopback and reaches neither public host. On the hosted copy the second origin is fetched like any page, so it sees the request the way any site you visit does. It is sent no reading; it measures in your browser and answers over `postMessage`.
+
+## Results
+
+**Historical results (0.9.1-beta): not comparable with 0.9.2.** The table and observations below are retained from the previous README for context, not as current browser ratings. They have not been revalidated under the corrected scoring model. The earlier default-profile claim was inaccurate: the documented Mullvad run moved bundled NoScript aside, so these results must not be represented as untouched defaults. Current harnesses preserve bundled extensions.
+
+The previous README reported one machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.com` against `privacyassay.github.io`. Two runs per setting, a fresh browser launch each, and every cell returned the same score on both. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" alt="Current category weights, generated from the scoring catalog; not browser rankings.">
+  <img src="chart-light.svg" width="756" alt="Current category weights, generated from the scoring catalog; not browser rankings">
 </picture>
 
-The chart is generated from the current catalog with `node bench/figures.mjs`. It shows judgment-based weights, not measured entropy or browser recommendations. The base denominator is 21; adding every optional category makes it 30.
+The chart is generated from the current catalog with `node bench/figures.mjs`. It shows judgment-based scoring weights for 0.9.2, not the historical table below. The base denominator is 21; all optional categories bring it to 30.
 
-[Example report screenshot](screenshot.png) shows one redacted local run, not a browser ranking.
+| Browser | Version | Historical score | Historical range | Reported reason |
+|---|---|---:|---:|---|
+| Tor Browser | 140.13.0 | 74 | 74-78 | the WebRTC test adds a category it refuses outright; loopback figure, see below |
+| Mullvad Browser | 140.13.0 | 74 | 74-78 | same |
+| LibreWolf | 152.0.6-1 | 48 | 42-55 | loses on WebRTC, gains on supercookies |
+| Firefox | 153.0.1 | 9 | 8-20 | partitions storage well, which only counts when you ask for it |
+| Brave | 151.1.93.129 | 5 | 5-17 | flat within a visit by design; its cookie blocking only shows between real domains |
+| Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
+| Edge | 151.0.4129.59 | 0 | 0 | nothing hidden under any setting |
 
-## Results and contributions
+The earlier harness used fresh profiles, but the modified Mullvad configuration means the table does not establish untouched-default behavior. The earlier README reported Brave's Shields at their defaults. Every row was reported on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure and its three runs. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
 
-The older 0.9.1-beta captures remain in [bench/captures](bench/captures) as historical data. They are **not comparable** with 0.9.2 scores, and are not a current browser ranking. [Benchmark instructions](bench/README.md) describe new measurements, including Vivaldi configuration. Default and modified profiles must be labeled separately.
+**Brave's historical 5 is not a verdict on Brave, and the table would mislead you if you read it as one.** This historical column is one visit to one site, and Brave's defence is not built to operate inside one visit: it re-seeds per session and keys per site, so its values hold still while you are on a page and it reads as exposed. The earlier capture reported **21 to 34** between two real domains, the only column where it separates from Chrome. Every other browser's cross-site figure equals its single-site score.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) and [DEPLOY.md](DEPLOY.md). Share minimal reproductions with browser version and settings; keep raw fingerprints out of public issues.
+The historical loopback table differed in one place. `bench/captures/matrix.json` holds the `localhost` against `127.0.0.1` run, which can be recomputed with its matching historical methodology, not the current scorer. Every cell agrees except Brave with supercookies on: 5 there, 17 here. Brave carries cookies across the loopback pair but blocks them between two real domains, and that single row is the whole storage category. The order does not change: at 17 Brave still sits below Firefox at 20.
 
-Apache-2.0. See [LICENSE](LICENSE).
+> The earlier README reported the same score on both runs of each setting. These historical ranges describe different opt-in settings, which change the denominator: **two scores taken under different settings or methodology versions cannot be compared as equivalent**.
+
+[Benchmark instructions](bench/README.md) describe new measurements and include Vivaldi configuration. Incomplete runs are excluded from score arrays; no current seven-browser ranking is claimed.
+
+## Run it
+
+Open `index.html` and press Run.
+
+Three checks (request-header echo, two-origin cross-site, supercookies) need a real origin:
+
+```bash
+python serve.py
+```
+
+Serves `http://127.0.0.1:8000`, loopback only, and pairs it with `localhost` as the second origin, which needs `localhost` to resolve to the address it binds.
+
+Hosting it yourself works the same way for everything except those two-origin checks, which need a second host that answers back. [DEPLOY.md](DEPLOY.md) has the four steps. Until the two origins name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure. The comparison opens a top-level companion window from the Run click in every browser; a blocked popup or mismatched build leaves it unmeasured.
+
+## In CI
+
+```bash
+node bin/privacyassay.mjs                 # print the result as JSON
+node bin/privacyassay.mjs --min-score 40  # and fail below a threshold
+```
+
+Headless, fresh browser per run so a farbling browser cannot re-use one seed. It serves `127.0.0.1` and `localhost` from one handler, so it reports the two-origin cross-site figure as well; `--no-cross` skips it. Needs Node 22+ and a Chromium-family browser. Set `PRIVACYASSAY_BROWSER` for a custom browser binary. Set the threshold against the browser CI runs: a stock Chromium scores near zero. Incomplete runs fail `--min-score` regardless of their lower-bound score. Summary exports use `privacyassay-summary/1.1`; multiple-run fields describe the selected median run, and any incomplete run fails the threshold.
+
+## Reviewing this
+
+The whole tool is `index.html`, one file. Sections are marked `/* TITLE ==== */` and subsections `/* - detail ---- */`, so both levels scan as their own column down the file. Regression tests record the behavior each fix must preserve. What decides a score:
+
+| What | Where |
+|---|---|
+| The scored catalog and its weights | `PRIORS` |
+| Reading to shown / blended / refused / unknown | `findability` |
+| The two-origin comparison | `findabilityCross` |
+| What a shared report may contain | `paRedactVal` |
+
+```bash
+npm test              # scoring arithmetic, classifier regressions, catalog consistency, docs against code
+npm run test:browser  # a real browser, including deliberate probe sabotage
+npm run test:stress   # repeated runs, re-entrancy, viewport extremes
+```
+
+A confirmed refused reading receives credit, but a broken probe remains unknown and earns none. The browser suite deliberately breaks probe surfaces and checks that failures never become shown values or protection credit.
+
+## What it cannot do
+
+- **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity.
+- **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
+- **See behaviour.** Mouse, typing and scroll are not measured.
+- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The historical table above mixed hosted measurements with Tor loopback results. `bench/live.mjs` drives installed browsers; loopback diagnostic harnesses are not equivalent to the hosted pair.
+- **Audit all AI or browser privacy settings.** AI API availability cannot reveal Firefox AI Controls, assistant settings, cloud processing or retention. Browser telemetry, comprehensive tracker blocking and bounce tracking are outside this score.
+- **Guarantee compatibility with every browser.** Each browser, platform and configuration needs testing; missing or failed measurements remain unknown.
+
+A high score means many weighted readings were masked, varied or unavailable in this experiment, not that you are anonymous.
+
+## Prior art
+
+Browser fingerprinting has been measured in public for years, and this tool is not the first to do it.
+
+[EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than seven. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
+
+What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and a stated refusal to guess at anything it could not measure.
+
+## Contributing
+
+The most useful thing you can send is a browser this scores wrongly, and there is a form for it under New issue. Disagreeing with the method is just as welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the two conventions the test suite enforces.
+
+## Security
+
+[SECURITY.md](SECURITY.md) has what is in scope and how to report privately.
+
+## License
+
+Apache-2.0, &copy; Seyed Ehsan Hadi. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
