@@ -1,6 +1,6 @@
 {
   "name": "privacyassay",
-  "version": "0.9.1-beta",
+  "version": "0.9.2",
   "description": "One HTML file that shows what a website can read about your browser, and scores how much of it your browser hides. Runs on-device, uploads nothing.",
   "type": "module",
   "bin": {
@@ -13,6 +13,7 @@
     "serve.py",
     "schema.json",
     "METHODOLOGY.md",
+    "methodology.html",
     "README.md",
     "NOTICE"
   ],

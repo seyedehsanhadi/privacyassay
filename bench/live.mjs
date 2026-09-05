@@ -17,7 +17,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn, execSync } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
 const OUT = path.join(HERE, "captures");
@@ -40,49 +40,22 @@ function profileFor() {
     'user_pref("browser.shell.checkDefaultBrowser", false);',
     'user_pref("browser.aboutwelcome.enabled", false);',
     'user_pref("datareporting.policy.firstRunURL", "");',
-    'user_pref("extensions.torlauncher.start_tor", false);',
-    'user_pref("network.proxy.type", 0);',
-    'user_pref("toolkit.telemetry.enabled", false);',
-    'user_pref("datareporting.policy.dataSubmissionEnabled", false);',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
-    'user_pref("dom.disable_open_during_load", false);',
-    'user_pref("dom.block_multiple_popups", false);',
-    'user_pref("dom.popup_allowed_events", "click keydown load");',
-    'user_pref("app.update.auto", false);',
   ].join("\n"));
   return d;
 }
 
-// Same reason as postback.mjs: Tor and Mullvad bundle NoScript, it intermittently blocks script
-// loading, and it is not a fingerprinting defence. Moved aside for the run and restored on the way
-// out, including on throw. This must travel with any published Tor or Mullvad number.
-const NOSCRIPT_ID = "{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi";
-const noscriptPaths = (key) => {
-  if (key !== "tor" && key !== "mullvad") return [];
-  const dir = path.dirname(MANIFEST[key].path);
-  const out = [];
-  for (const r of [dir, path.dirname(dir)])
-    for (const rel of [["distribution", "extensions"], ["TorBrowser", "Data", "Browser", "profile.default", "extensions"]]) {
-      const q = path.join(r, ...rel, NOSCRIPT_ID);
-      if (fs.existsSync(q) || fs.existsSync(q + ".live-off")) out.push(q);
-    }
-  return out;
-};
-const setNoscript = (key, on) => {
-  let n = 0;
-  for (const q of noscriptPaths(key)) {
-    const off = q + ".live-off";
-    try {
-      if (!on && fs.existsSync(q)) { fs.renameSync(q, off); n++; }
-      else if (on && fs.existsSync(off)) { fs.renameSync(off, q); n++; }
-    } catch {}
+function stopBrowser(proc,binary,profile){
+  if(process.platform==="win32"){
+    const quote=v=>"'"+String(v).replaceAll("'","''")+"'";
+    try{execFileSync("powershell",["-NoProfile","-Command", "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "+quote(path.basename(binary))+" -and $_.CommandLine -and $_.CommandLine.Contains("+quote(profile)+") } | ForEach-Object { & taskkill /F /PID $_.ProcessId /T | Out-Null }"],{stdio:"ignore",timeout:20000});}catch{}
   }
-  return n;
-};
+  try{proc.kill();}catch{}
+}
 
 const READ_KIT = `JSON.stringify((function(){
   var K = window.__KIT || {}, F = K.findability || {}, C = K.findabilityCross || null;
-  return { score: F.score, grade: F.grade,
+  return { unknown: (F.rows||[]).filter(function(r){return r.state==="unknown";}).map(function(r){return r.label;}), version: K.version, complete: F.complete, coverage: F.coverage, score: F.score, grade: F.grade, crossComplete: C ? C.complete : false,
     cross: C ? C.score : null,
     changed: C ? (C.changedAcrossOrigins || []).length : null,
     partitioning: !!K.partitioning,
@@ -101,10 +74,12 @@ async function runChromium(key) {
   const proc = spawn(MANIFEST[key].path,
     ["--no-first-run", "--no-default-browser-check", "--remote-debugging-port=0", `--user-data-dir=${udd}`, URL_],
     { stdio: "ignore" });
+  let ws;
+  try {
   const portFile = path.join(udd, "DevToolsActivePort");
   let port = null;
   for (let i = 0; i < 160 && !port; i++) {
-    if (fs.existsSync(portFile)) { const l = fs.readFileSync(portFile, "utf8").split("\n"); if (l[0]) port = l[0].trim(); }
+    try { const l=fs.readFileSync(portFile,"utf8").split("\n");if(/^\d+$/.test(l[0]))port=l[0].trim(); } catch(e) { if(!["ENOENT","EBUSY","EACCES"].includes(e.code))throw e; }
     if (!port) await sleep(250);
   }
   if (!port) throw new Error("browser did not expose a debugging port");
@@ -113,38 +88,38 @@ async function runChromium(key) {
     try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page" && t.webSocketDebuggerUrl); } catch {}
     if (!target) await sleep(300);
   }
-  const ws = new WebSocket(target.webSocketDebuggerUrl);
+  if (!target) throw new Error("no page target");
+  ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((r) => { ws.onopen = r; });
   let id = 0; const pend = new Map();
   ws.onmessage = (e) => { const m = JSON.parse(e.data); if (pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } };
   const cmd = (method, params = {}) => new Promise((res) => { const i = ++id; pend.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
   await cmd("Runtime.enable");
   const ev = async (x) => (await cmd("Runtime.evaluate", { expression: x, returnByValue: true, awaitPromise: true, userGesture: true }))?.result?.result?.value;
-  try {
     let ready = false;
-    for (let i = 0; i < 200; i++) { await sleep(300); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`)) { ready = true; break; } }
+    for (let deadline=Date.now()+60000; Date.now()<deadline;) { await sleep(300); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
     await ev(`document.getElementById("runBtn").click();"go"`);
-    for (let i = 0; i < 200; i++) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
+    for (let deadline=Date.now()+120000; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
     await sleep(CROSS_BUDGET_MS);
     return JSON.parse(await ev(READ_KIT) || "{}");
   } finally {
     try { ws.close(); } catch {}
-    try { proc.kill(); } catch {}
+    stopBrowser(proc,MANIFEST[key].path,udd);
     await sleep(1200);
     try { fs.rmSync(udd, { recursive: true, force: true }); } catch {}
   }
 }
 
 async function runGecko(key) {
-  try { execSync(`taskkill /F /IM ${path.basename(MANIFEST[key].path)} /T`, { stdio: "ignore" }); } catch {}
-  await sleep(1500);
   const profile = profileFor();
   const port = 9400 + Math.floor(Math.random() * 300);
   const proc = spawn(MANIFEST[key].path,
     ["-no-remote", "-profile", profile, "--remote-debugging-port=" + port, "--width=1600", "--height=1100", URL_],
     { stdio: ["ignore", "pipe", "pipe"] });
+  let ws;
+  try {
   let stderr = "";
   proc.stderr.on("data", (d) => { stderr += d.toString(); });
   proc.stdout.on("data", (d) => { stderr += d.toString(); });
@@ -155,16 +130,15 @@ async function runGecko(key) {
     if (m) wsUrl = /\/session/.test(m[0]) ? m[0] : m[0].replace(/\/$/, "") + "/session";
     else if (i > 8) wsUrl = `ws://127.0.0.1:${port}/session`;
   }
-  const ws = new WebSocket(wsUrl);
-  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error("BiDi socket refused")); });
+  ws = new WebSocket(wsUrl);
+  await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error("BiDi socket refused: " + stderr.slice(-350))); });
   let id = 0; const pend = new Map();
-  ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { const { res, rej } = pend.get(m.id); pend.delete(m.id); m.error ? rej(new Error(m.error)) : res(m.result); } };
+  ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { const { res, rej, timer } = pend.get(m.id); pend.delete(m.id);clearTimeout(timer); m.error ? rej(new Error(m.error)) : res(m.result); } };
   const cmd = (method, params = {}) => new Promise((res, rej) => {
     const i = ++id; pend.set(i, { res, rej });
     ws.send(JSON.stringify({ id: i, method, params }));
-    setTimeout(() => { if (pend.has(i)) { pend.delete(i); rej(new Error(method + " timed out")); } }, 120000);
+    pend.get(i).timer=setTimeout(() => { if (pend.has(i)) { pend.delete(i); rej(new Error(method + " timed out")); } }, 10000);
   });
-  try {
     await cmd("session.new", { capabilities: { alwaysMatch: {} } });
     const tree = await cmd("browsingContext.getTree", {});
     const hit = tree.contexts.find((c) => c.url && c.url.startsWith(new URL(URL_).origin));
@@ -177,17 +151,16 @@ async function runGecko(key) {
       return r.result?.value;
     };
     let ready = false;
-    for (let i = 0; i < 200; i++) { await sleep(500); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
+    for (let deadline=Date.now()+90000; Date.now()<deadline;) { await sleep(500); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
     await ev(`document.getElementById("runBtn").click();"go"`);
-    for (let i = 0; i < 200; i++) { await sleep(1000); if (await ev("!!window.__KIT_DONE").catch(() => false)) break; }
+    for (let deadline=Date.now()+120000; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE").catch(() => false)) break; }
     await sleep(CROSS_BUDGET_MS);
     return JSON.parse(await ev(READ_KIT) || "{}");
   } finally {
     try { ws.close(); } catch {}
-    try { proc.kill(); } catch {}
-    try { execSync(`taskkill /F /IM ${path.basename(MANIFEST[key].path)} /T`, { stdio: "ignore" }); } catch {}
+    stopBrowser(proc,MANIFEST[key].path,profile);
     await sleep(1000);
     try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
   }
@@ -197,29 +170,29 @@ const report = [];
 for (const key of BROWSERS) {
   const entry = MANIFEST[key];
   if (!entry || !entry.path || !fs.existsSync(entry.path)) { console.log(`skip ${key}: not in captures/browsers.json or not installed`); continue; }
-  const moved = setNoscript(key, false);
-  const scores = [], crosses = [], errors = [];
-  try {
-    for (let r = 0; r < RUNS; r++) {
+
+  const scores = [], crosses = [], errors = [], samples = [];
+  for (let r = 0; r < RUNS; r++) {
       try {
         const out = entry.engine === "gecko" ? await runGecko(key) : await runChromium(key);
-        if (typeof out.score === "number") scores.push(out.score); else errors.push("no score");
-        if (typeof out.cross === "number") crosses.push(out.cross);
+        samples.push(out);
+        if(out.version!=="0.9.2")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
+        if (out.complete && typeof out.score === "number") scores.push(out.score); else errors.push("incomplete measurement");
+        if (out.crossComplete && typeof out.cross === "number") crosses.push(out.cross);
         else errors.push(out.crossFailed ? String(out.crossFailed).slice(0, 60) : "cross not measurable");
-      } catch (e) { errors.push(e.message.slice(0, 80)); }
+      } catch (e) { errors.push(e.message.slice(0, 400)); }
     }
-  } finally { if (moved) setNoscript(key, true); }
   const row = {
     browser: key, url: URL_, optins: { storage: STORE, webrtc: RTC }, runs: RUNS,
     scores, cross: crosses, stable: scores.length > 1 && new Set(scores).size === 1,
-    noscriptMovedAside: moved > 0, errors,
+    version: "0.9.2", profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
   };
   report.push(row);
   console.log(`${key.padEnd(11)} score ${JSON.stringify(scores).padEnd(12)} cross ${JSON.stringify(crosses).padEnd(12)}${errors.length ? "  " + errors[0] : ""}`);
 }
 
 const tag = `${STORE ? "-store" : ""}${RTC ? "-rtc" : ""}`;
-const file = path.join(OUT, `live${tag}.json`);
+const file = path.join(OUT, `live-0.9.2${tag}.json`);
 // Merge rather than overwrite: running one browser at a time is the normal way to work through a
 // long matrix, and a plain write would silently discard every earlier row.
 let prior = [];

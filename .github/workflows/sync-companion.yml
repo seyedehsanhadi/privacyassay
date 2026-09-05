@@ -1,13 +1,13 @@
 name: sync companion
 
-# The two-origin cross-site test frames the companion origin and compares its readings against
+# The two-origin cross-site test opens the companion origin and compares its readings against
 # this one. If the two serve different builds the comparison is between two different catalogues,
 # so index.html must stay byte-identical on both. This pushes it on every change.
 
 on:
   push:
     branches: [main]
-    paths: ["index.html"]
+    paths: ["index.html", "methodology.html", "METHODOLOGY.md"]
   workflow_dispatch:
 
 jobs:
@@ -27,29 +27,30 @@ jobs:
             exit 1
           fi
           git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/privacyassay/privacyassay.github.io.git" companion
-          cp index.html companion/index.html
+          cp index.html methodology.html METHODOLOGY.md companion/
           cd companion
-          if git diff --quiet -- index.html; then
+          git add index.html methodology.html METHODOLOGY.md
+          if git diff --cached --quiet; then
             echo "companion already byte-identical; nothing to push."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
           git commit -m "sync index.html from ${GITHUB_SHA::7}"
           git push origin main
 
       - name: Verify both origins serve the same file
         run: |
+          expected=$(sha256sum index.html | cut -d' ' -f1)
           sleep 90
           for i in $(seq 1 10); do
             a=$(curl -fsSL --max-time 30 https://privacyassay.com/index.html | sha256sum | cut -d' ' -f1)
             b=$(curl -fsSL --max-time 30 https://privacyassay.github.io/index.html | sha256sum | cut -d' ' -f1)
-            if [ "$a" = "$b" ]; then
+            if [ "$a" = "$expected" ] && [ "$b" = "$expected" ]; then
               echo "both origins serve $a"
               exit 0
             fi
-            echo "attempt $i: still differ, waiting for Pages"
+            echo "attempt $i: release not yet served by both origins, waiting for Pages"
             sleep 45
           done
           echo "the two origins did not converge; check both Pages builds" >&2

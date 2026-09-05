@@ -27,7 +27,7 @@ for (const b of BROWSERS) {
     try { r = await capturePostback(b, { runs: RUNS, webrtc: s.webrtc, store: s.store, tag: s.tag }); }
     catch (e) { r = { scores: [], runs: [], errors: ["threw: " + e.message], serverHits: [] }; }
     const runs = r.runs || [];
-    const scores = (r.scores && r.scores.length) ? r.scores : runs.map((x) => x.score);
+    const scores = (r.scores && r.scores.length) ? r.scores : runs.filter((x) => x.complete).map((x) => x.score);
     const rows = runs.length && runs[0].rows ? runs[0].rows.length : null;
     const hits = r.serverHits || [];
     const rec = {
@@ -35,7 +35,7 @@ for (const b of BROWSERS) {
       scores, min: scores.length ? Math.min(...scores) : null, max: scores.length ? Math.max(...scores) : null,
       stable: scores.length ? scores.every((x) => x === scores[0]) : null,
       rows,
-      cross: runs.map((x) => x.cross),
+      cross: runs.map((x) => x.crossGrade!=="I"?x.cross:null),
       crossFailed: runs.map((x) => (x.crossFailed ? String(x.crossFailed).slice(0, 46) : null)).filter(Boolean),
       changed: runs.map((x) => (x.changedAcrossOrigins || []).length),
       errors: r.errors || [],
@@ -55,5 +55,5 @@ for (const b of BROWSERS) {
       `${rec.errors.length ? "ERRORS: " + rec.errors.join("; ") : ""}`);
   }
 }
-fs.writeFileSync(path.join(OUT, "matrix.json"), JSON.stringify(report, null, 2));
-console.log("\nwrote baseline/matrix.json  (" + report.length + " captures)");
+fs.writeFileSync(path.join(OUT, "matrix-0.9.2.json"), JSON.stringify(report, null, 2));
+console.log("\nwrote captures/matrix-0.9.2.json  (" + report.length + " captures)");

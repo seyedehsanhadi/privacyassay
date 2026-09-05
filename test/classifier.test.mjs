@@ -38,7 +38,7 @@ test("family: with no detection the user agent alone decides, and no family cred
   assert.equal(paFamilyKey("", "Mozilla/5.0 (Windows NT 10.0) Chrome/150.0.0.0 Safari/537.36"), "chromium");
   assert.equal(paFamilyKey("", "Mozilla/5.0 (Windows NT 10.0) Edg/150.0.0.0"), "chromium");
   assert.equal(paFamilyKey("", ""), "other");
-  assert.deepEqual(PRIORS.browsers.firefox.implies, { deviceMemory: ["undefined"] },
+  assert.equal(PRIORS.browsers.firefox.implies, undefined,
     "a Tor run that loses its detection lands here, so this entry must not carry tor-build credits");
 });
 
@@ -68,55 +68,19 @@ test("mask: canvas noise-per-read and uniform-masked blend, any other canvas val
 // itself. They used to score paHashClass's present/unavailable, so the reading answered whether
 // audio WORKS rather than what it sounds like: a browser randomizing its audio per read showed a
 // constant "present" and read as exposed, which is exactly the strategy Brave uses.
-test("render readings score the output, not whether the render happened", () => {
-  for (const k of ["webglRenderClass", "audioRenderClass"]) {
-    assert.equal(stateOf({ [k]: "3f2a11bc" }, "other", k), "shown", `${k}: a real hash is a value handed over`);
-    assert.equal(stateOf({ [k]: "ERR" }, "other", k), "refused", `${k}: a failed render is refused`);
-    assert.equal(stateOf({ [k]: "unavailable" }, "other", k), "refused", `${k}: an absent API is refused`);
-    assert.equal(stateOf({ [k]: "" }, "other", k), "refused", `${k}: nothing read is refused`);
-    assert.equal(stateOf({ [k]: "3f2a11bc", _noisy: { [k]: 1 } }, "other", k), "blended",
-      `${k}: a render that differs between two reads cannot follow you`);
-  }
-});
+test("render failures remain unknown; measured changes blend",()=>{for(const k of ["webglRenderClass","audioRenderClass"]){assert.equal(stateOf({[k]:"abcdef01"},"other",k),"shown");for(const v of ["ERR","ERR:TypeError","unavailable",""])assert.equal(stateOf({[k]:v},"other",k),"unknown");assert.equal(stateOf({[k]:"unsupported"},"other",k),"refused");assert.equal(stateOf({[k]:"abcdef01",_noisy:{[k]:1}},"other",k),"blended");}});
 
-test("mask: a letterboxed size blends only for a family whose build letterboxes", () => {
-  const lb = { screenClass: "1000x700", innerSize: "1000x700" };
-  const boxed = Object.keys(PRIORS.browsers).filter((k) => PRIORS.browsers[k].letterboxes);
-  assert.ok(boxed.length, "no family declares letterboxes, so this credit is unreachable");
-  for (const fam of boxed) {
-    assert.equal(stateOf(lb, fam, "screenClass"), "blended", `${fam} should credit a letterboxed screen`);
-    assert.equal(stateOf(lb, fam, "innerSize"), "blended", `${fam} should credit a letterboxed window`);
-  }
-  assert.equal(stateOf(lb, "other", "screenClass"), "shown", "a browser that does not letterbox gets no credit");
-  assert.equal(stateOf({ screenClass: "1536x864", innerSize: "1536x864" }, boxed[0], "screenClass"), "shown",
-    "an off-grid size is not a letterbox even in a family that letterboxes");
-});
+test("a grid-aligned window does not prove letterboxing",()=>{for(const fam of Object.keys(PRIORS.browsers)){assert.equal(stateOf({innerSize:"1000x700"},fam,"innerSize"),"shown");assert.equal(stateOf({screenClass:"1000x700"},fam,"screenClass"),"shown");}});
 
-test("mask: availFrame masked blends only where the family is known to mask it", () => {
-  assert.equal(stateOf({ availFrame: "masked" }, "brave", "availFrame"), "blended");
-  assert.equal(stateOf({ availFrame: "masked" }, "tor-build", "availFrame"), "blended");
-  assert.equal(stateOf({ availFrame: "masked" }, "other", "availFrame"), "shown",
-    "an auto-hide taskbar, a tiling WM or a phone is not a defence");
-  assert.equal(stateOf({ availFrame: "0x48" }, "other", "availFrame"), "shown");
-});
+test("zero taskbar geometry does not earn brand-based credit",()=>{for(const fam of Object.keys(PRIORS.browsers))assert.equal(stateOf({availFrame:"masked"},fam,"availFrame"),"shown");});
 
-test("mask: zero voices blends, a real voice count does not", () => {
-  assert.equal(stateOf({ speechVoices: "0 (none)" }, "other", "speechVoices"), "blended");
-  assert.equal(stateOf({ speechVoices: "22 voices" }, "other", "speechVoices"), "shown");
-});
+test("empty voice inventory does not prove masking",()=>{assert.equal(stateOf({speechVoices:"0 (ERR)"},"other","speechVoices"),"unknown");assert.equal(stateOf({speechVoices:"22 voices"},"other","speechVoices"),"shown");});
 
-test("mask: a blocked local() font probe blends the font list it was read with", () => {
-  assert.equal(stateOf({ fontSet: "9c1f8f43", fontLocalBlocked: "blocked" }, "other", "fontSet"), "blended");
-  assert.equal(stateOf({ fontSet: "9c1f8f43", fontLocalBlocked: "protected" }, "other", "fontSet"), "blended");
-  assert.equal(stateOf({ fontSet: "9c1f8f43", fontLocalBlocked: "" }, "other", "fontSet"), "shown");
-});
+test("local-font failure cannot override independent enumeration",()=>{for(const fontLocalBlocked of ["blocked","protected",""])assert.equal(stateOf({fontSet:"9c1f8f43",fontLocalBlocked},"other","fontSet"),"shown");});
 
 // ---- the refused branch: the tool's headline behaviour ----
 
-test("refused: an error or unavailable string is refused, never shown", () => {
-  for (const v of ["ERR", "ERR:SecurityError", "n/a", "unavailable", "blocked", "absent"])
-    assert.equal(stateOf({ timezone: v }, "other", "timezone"), "refused", `${v} must not read as a value`);
-});
+test("unknown and confirmed unavailable outcomes are distinct",()=>{for(const v of ["ERR","ERR:SecurityError","n/a","unavailable","absent",""])assert.equal(stateOf({timezone:v},"other","timezone"),"unknown");for(const v of ["unsupported","blocked","blocked:SecurityError"])assert.equal(stateOf({timezone:v},"other","timezone"),"refused");});
 
 test("refused: a value that merely starts with those letters is still shown", () => {
   assert.equal(stateOf({ timezone: "Europe/Berlin" }, "other", "timezone"), "shown");
@@ -140,24 +104,7 @@ test("noisy: a noCrossDiff surface is never credited for differing, because a wi
 
 // ---- PRIORS.implies: the constants that produce Tor's and LibreWolf's scores ----
 
-test("implies: the documented uniform values are the ones the classifier credits", () => {
-  const expect = [
-    ["firefox-rfp", "timezone", "Atlantic/Reykjavik"],
-    ["firefox-rfp", "cores", "4"],
-    ["firefox-rfp", "audioRate", "44100"],
-    ["firefox-rfp", "colorDepth", "24"],
-    ["firefox-rfp", "webglVendor", "Mozilla"],
-    ["tor-build", "timezone", "Atlantic/Reykjavik"],
-    ["tor-build", "cores", "8"],
-  ];
-  for (const [fam, key, value] of expect) {
-    const imp = PRIORS.browsers[fam] && PRIORS.browsers[fam].implies;
-    assert.ok(imp && imp[key], `${fam}.implies.${key} is gone; every ${fam} user is now scored as exposed there`);
-    assert.ok(imp[key].map(String).includes(value),
-      `${fam}.implies.${key} no longer lists ${value}, so a real ${fam} reading would score shown`);
-    assert.equal(stateOf({ [key]: value }, fam, key), "blended");
-  }
-});
+test("common constants remain observable regardless of inferred browser",()=>{for(const fam of Object.keys(PRIORS.browsers))for(const [key,value] of [["timezone","Atlantic/Reykjavik"],["cores",4],["colorDepth",24],["webglVendor","Mozilla"]])assert.equal(stateOf({[key]:value},fam,key),"shown");});
 
 test("implies: a family's uniform value blends only for that family", () => {
   assert.equal(stateOf({ timezone: "Atlantic/Reykjavik" }, "chromium", "timezone"), "shown");
@@ -179,18 +126,7 @@ test("implies: a credit is never given for a value every working browser reports
   assert.deepEqual(bad, [], "this value does not distinguish a protected browser from an unprotected one");
 });
 
-test("implies: every implied value is a string the classifier can actually match", () => {
-  const bad = [];
-  for (const fam of Object.keys(PRIORS.browsers)) {
-    const imp = PRIORS.browsers[fam].implies || {};
-    for (const k of Object.keys(imp)) {
-      if (!SURFACE[k]) { bad.push(`${fam}.implies.${k} names no surface`); continue; }
-      for (const v of imp[k])
-        if (stateOf({ [k]: v }, fam, k) !== "blended") bad.push(`${fam}.implies.${k} = ${v} does not blend`);
-    }
-  }
-  assert.deepEqual(bad, []);
-});
+test("missing values cannot acquire credit from browser metadata",()=>{for(const fam of Object.keys(PRIORS.browsers))assert.equal(stateOf({deviceMemory:"undefined"},fam,"deviceMemory"),"unknown");});
 
 // ---- the two-origin comparison ----
 
@@ -216,8 +152,8 @@ test("webgpu: both readings are scored, sit in the GPU category, and refuse when
     assert.ok(s, `${k} is not a scored reading`);
     assert.equal(s.group, "gpu", `${k} must share the GPU category, or one GPU is counted twice`);
     assert.equal(s.tier, 2);
-    assert.equal(stateOf({ [k]: "ERR" }, "other", k), "refused");
-    assert.equal(stateOf({ [k]: "" }, "other", k), "refused");
+    assert.equal(stateOf({ [k]: "ERR" }, "other", k), "unknown");
+    assert.equal(stateOf({ [k]: "" }, "other", k), "unknown");
     assert.equal(stateOf({ [k]: "a6c73a99" }, "other", k), "shown");
   }
   const gpu = PRIORS.surfaces.filter((s) => s.group === "gpu");
@@ -258,37 +194,7 @@ test("working: every category in the breakdown has a display name", () => {
 // A reading with no uniform value in any family can only be credited by being refused, so the
 // readings that have none set a hard cap on the score. METHODOLOGY states that cap; if a credit
 // is added or dropped without updating it, the published ceiling silently becomes wrong.
-test("ceiling: the readings with no uniform value in any family cap the score where the document says", () => {
-  const NAMED = ["element geometry (subpixel)", "MathML render size", "text metrics", "font measurement",
-    "media codecs", "rendered sound", "device details (client hints)"];
-  const byLabel = Object.fromEntries(PRIORS.surfaces.map((s) => [s.label, s]));
-  const credited = new Set();
-  for (const f of Object.keys(PRIORS.browsers))
-    for (const k of Object.keys(PRIORS.browsers[f].implies || {})) credited.add(k);
-
-  for (const label of NAMED) {
-    const s = byLabel[label];
-    assert.ok(s, `${label} is named in METHODOLOGY but is not a reading`);
-    assert.ok(!credited.has(s.k), `${label} now has a uniform value somewhere, so the documented ceiling is stale`);
-  }
-
-  // Run the real scorer rather than re-deriving the formula here: a test that recomputes the
-  // arithmetic its own way keeps passing when the scorer changes underneath it.
-  const observed = {};
-  for (const s of PRIORS.surfaces) {
-    if (s.optional) continue;
-    observed[s.k] = NAMED.includes(s.label) ? "a_real_value" : undefined; // undefined reads as refused
-  }
-  const F = findability(observed, "other");
-  const shown = F.rows.filter((r) => r.state === "shown").map((r) => r.label).sort();
-  assert.deepEqual(shown, [...NAMED].sort(), "only the seven uncreditable readings should be shown here");
-  assert.equal(F.score, 70, "the documented ceiling for a browser that answers all seven and hides everything else");
-
-  const total = Object.values(PRIORS.surfaces.filter((s) => !s.optional)
-    .reduce((a, s) => (a[s.group] = Math.max(a[s.group] || 0, s.tier), a), {}))
-    .reduce((a, b) => a + b, 0);
-  assert.equal(total, 21, "the non-optional denominator the document states");
-});
+test("only confirmed outcomes can reach the score ceiling",()=>{const o={};for(const s of PRIORS.surfaces)if(!s.optional)o[s.k]="unsupported";assert.equal(findability(o,"other").score,100);delete o.fontSet;const f=findability(o,"other");assert.equal(f.grade,"I");assert.ok(f.score<100);assert.equal(f.upperBound,100);});
 
 // ---- the row shape the methodology promises ----
 

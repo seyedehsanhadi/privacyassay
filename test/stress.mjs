@@ -39,8 +39,8 @@ const RERUN = `
 async function repeatedRuns(port, n) {
   const page = await launch({ port });
   try {
-    const raw = await page.ev(RERUN.replace("ARG_N", String(n)));
-    const runs = JSON.parse(raw);
+    const runs = [];
+    for (let i=0;i<n;i++) runs.push(...JSON.parse(await page.ev(RERUN.replace("ARG_N", "1"))));
     const scores = runs.map((r) => r.score);
     const allDone = runs.every((r) => r.done);
     const stable = scores.every((s) => s === scores[0] && s !== null);

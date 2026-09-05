@@ -23,14 +23,7 @@ test("priors: surface labels are unique, because findability rows are looked up 
   assert.deepEqual(dupes, [], "two surfaces sharing a label make one of them unreachable by label lookup");
 });
 
-test("priors: every implies key names a real surface", () => {
-  const keys = new Set(PRIORS.surfaces.map((s) => s.k));
-  const bad = [];
-  for (const [fam, br] of Object.entries(PRIORS.browsers))
-    for (const k of Object.keys(br.implies || {}))
-      if (!keys.has(k)) bad.push(`${fam}.${k}`);
-  assert.deepEqual(bad, [], "an implies entry for a nonexistent surface can never fire and silently does nothing");
-});
+
 
 test("priors: every hashKey names a real surface key or a key observeVectors produces", () => {
   const keys = new Set(PRIORS.surfaces.map((s) => s.k));
@@ -39,12 +32,7 @@ test("priors: every hashKey names a real surface key or a key observeVectors pro
   assert.deepEqual(bad.map((s) => `${s.k}->${s.hashKey}`), []);
 });
 
-test("priors: every browser family that implies a value cites a source", () => {
-  const bad = [];
-  for (const [fam, br] of Object.entries(PRIORS.browsers))
-    if (br.implies && Object.keys(br.implies).length && !br.verified) bad.push(fam);
-  assert.deepEqual(bad, [], "an implies entry is a claim about every user of a browser and must cite where it came from");
-});
+
 
 test("priors: version is a semver string, prerelease tag allowed", () => {
   // A beta has to be expressible as a version, so a prerelease suffix is legal.
@@ -60,3 +48,5 @@ test("priors: group weights sum to the documented totals", () => {
   assert.equal(all, 30, `METHODOLOGY.md states thirteen categories summing to 30, computed ${all}`);
   assert.equal(nonOptional, 21, `METHODOLOGY.md states the non-optional ten sum to 21, computed ${nonOptional}`);
 });
+
+test("priors: browser metadata contains labels only",()=>{for(const b of Object.values(PRIORS.browsers))assert.deepEqual(Object.keys(b),["label"]);});

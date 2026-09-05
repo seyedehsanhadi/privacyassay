@@ -82,8 +82,4 @@ test("the browser-test server binds the same pair the CLI does", () => {
 
 // B8. The doc undercounted the surfaces that cannot show per-read noise, because two of them
 // reach paRow through a helper the guard test's regex could not see.
-test("the methodology states the real number of row-backed surfaces", () => {
-  const md = readFileSync(new URL("../METHODOLOGY.md", import.meta.url), "utf8");
-  assert.ok(!/Fifteen are pulled from rows/i.test(md), "the count of fifteen is wrong");
-  assert.ok(/Seventeen are pulled from rows/i.test(md), "seventeen is the measured count");
-});
+test("methodology describes fresh repeated collection and its limits",()=>{const md=readFileSync(new URL("../METHODOLOGY.md",import.meta.url),"utf8");assert.match(md,/repeat/i);assert.match(md,/session/i);assert.doesNotMatch(md,/Seventeen are pulled from rows/i);});

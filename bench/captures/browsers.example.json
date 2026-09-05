@@ -1,4 +1,8 @@
 {
+  "vivaldi": {
+    "engine": "chromium",
+    "path": "SET THIS TO YOUR OWN vivaldi BINARY"
+  },
   "chrome": {
     "engine": "chromium",
     "path": "SET THIS TO YOUR OWN chrome BINARY"

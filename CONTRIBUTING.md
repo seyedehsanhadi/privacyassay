@@ -6,8 +6,7 @@ and what the browser actually returns, and there is a form for that under
 
 Disagreeing with the method is just as welcome, in a normal issue. The weights are judgment rather
 than measured entropy, and [`bench/`](bench/) recomputes the calibration and the sensitivity analysis
-from saved captures with no browser and no network, so you can check the reasoning before you argue
-with it.
+from historical captures. Those older results do not validate current browser rankings.
 
 Two things the test suite enforces, worth knowing before a pull request:
 

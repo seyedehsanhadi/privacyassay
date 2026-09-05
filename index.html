@@ -7,6 +7,7 @@
 -->
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob: data:; child-src 'self' blob: data: http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; frame-src 'self' http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; base-uri 'none'; form-action 'none'">
 <script>
 
@@ -17,7 +18,6 @@
   try{var g=document.createElement("canvas").getContext("webgl");var d=g&&g.getExtension("WEBGL_debug_renderer_info");o.gpu=d?(""+g.getParameter(d.UNMASKED_RENDERER_WEBGL)).slice(0,32):"";}catch(e){o.gpu="";}
   window.__earlyRead=o;}catch(e){}})();
 </script>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacyassay - browser fingerprint &amp; leak audit</title>
 <meta name="description" content="See what a website can read about your browser, and how much of it your browser hides. Runs entirely on the page; your fingerprint is never uploaded.">
@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures how identifiable this browser is and how much of that it hides, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.1-beta","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.2","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -448,7 +448,7 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
       <label class="pa-optin"><input type="checkbox" id="redactOptin" checked> <span class="pa-lg">Hide your raw values on screen and in any file you save, so screenshots and shared reports stay safe. On by default; turn it off to reveal your own values. The score is the same either way.</span><span class="pa-sm">Redact values</span></label>
     </div>
     <div class="pa-card-links" id="paCardLinks">
-      <a class="pa-linkbtn" href="METHODOLOGY.md" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8M8 9h1.5"></path></svg>Methodology</a>
+      <a class="pa-linkbtn" href="methodology.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8M8 9h1.5"></path></svg>Methodology</a>
       <a class="pa-linkbtn" href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.7.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"></path></svg>GitHub</a>
       <span class="pa-mono pa-cardver pa-vernum"></span>
     </div>
@@ -456,14 +456,17 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 </div>
 <header class="pa-top" id="paBar">
   <div class="pa-top-in" id="paBarRow"></div>
-  <div class="pa-bar-ver" id="paBarVer"><span class="pa-mono pa-ver"><span class="pa-vernum"></span> &#183; <a href="METHODOLOGY.md" target="_blank" rel="noopener">method</a> &#183; <a href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener">source</a></span></div>
+  <div class="pa-bar-ver" id="paBarVer"><span class="pa-mono pa-ver"><span class="pa-vernum"></span> &#183; <a href="methodology.html" target="_blank" rel="noopener">method</a> &#183; <a href="https://github.com/seyedehsanhadi/privacyassay" target="_blank" rel="noopener">source</a></span></div>
 </header>
 <details class="pa-how">
   <summary class="pa-mono">How the score works</summary>
   <div class="pa-how-body">
-    <p>Each reading is your real value (<b>shown</b>), a value everyone on your browser shares (<b>blended</b>), or nothing (<b>refused</b>). Only shown readings help a tracker.</p>
+    <p>Each reading is classified as exposed (<b>shown</b>), observed masked or changing (<b>blended</b>), or unavailable (<b>refused</b>). These classifications are evidence from this test, not proof that a tracker cannot link you.</p>
     <p>The score is the share of what this tool checks that stays hidden, weighted by how identifying each reading is. It does not estimate how rare you are. A strong reading still shown is named next to the grade.</p>
-    <p>A high score means the fingerprint is hidden, not that you are untrackable: your IP and TLS are sent before any script. Blended is credited only for values a browser is documented to share. Method and working in <a href="METHODOLOGY.md" target="_blank" rel="noopener">METHODOLOGY.md</a>.</p>
+    <p>A high score summarizes this experiment. Unknown or failed readings receive no protection credit. An incomplete result has grade I, measurement coverage and a lower-bound score. Method and working in <a href="methodology.html" target="_blank" rel="noopener">METHODOLOGY.md</a>.</p>
+    <h2>Browser privacy test coverage</h2>
+    <p>Privacyassay checks canvas, WebGL, WebGPU, audio, fonts, layout, device details and other browser fingerprint surfaces. It compares a second site when available; WebRTC public-IP and cross-site storage tests are optional. Results depend on the browser, operating system, settings and tests that finish.</p>
+    <p>This is not a complete privacy or security assessment. It does not test tracker blocking, browser telemetry, AI assistants' data handling, DNS or TLS fingerprinting, or resistance to every tracking technique. AI API availability does not reveal whether Firefox AI features or another browser's assistant are enabled. Unsupported and unmeasured features must not be read as proof of safety.</p>
   </div>
 </details>
 <main>
@@ -494,7 +497,8 @@ function probe(fn){try{var v=fn();return v===undefined?"undefined":v;}catch(e){r
 function present(g){try{return typeof g!=="undefined"&&g!==null;}catch(e){return false;}}
 function j(v){try{return typeof v==="string"?v:JSON.stringify(v);}catch(e){return String(v);}}
 
-var C={};
+var C={},PA_UACH=null;
+function paDeadline(fn,ms){return new Promise(function(resolve,reject){var timer=setTimeout(function(){reject(new Error("timeout"));},ms);Promise.resolve().then(fn).then(function(v){clearTimeout(timer);resolve(v);},function(e){clearTimeout(timer);reject(e);});});}
 
 var VOLROW=/\btiming\b|now\(\) sample|now\(\) resolution|pipeline compile|mapAsync|battery level\/charging|refresh rate|stack depth|AudioContext state|AudioContext outputLatency|^connection\.|^onLine$|screenX \/ screenY|chrome \(outer-inner\)|^innerWidth x innerHeight$|^outerWidth x outerHeight$|^FontFace local\(\)|^SpeechSynthesis voices$/i;
 function catHash(rows){return fnv(rows.filter(function(r){return !VOLROW.test(String(r[0]));}).map(function(r){return r[0]+"="+j(r[1]);}).sort().join("|"));}
@@ -588,16 +592,16 @@ function collectAudioSync(){
 }
 function collectAudioAsync(){
   return new Promise(function(res){
-    var out={hash:"n/a"};
+    var out={hash:"ERR:timeout"},done=false,timer=setTimeout(function(){finish();},2500);
+    function finish(error){if(done)return;done=true;clearTimeout(timer);if(error)out.hash="ERR:"+(error.name||"Error");res(out);}
     try{
       var OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
-      var ac=new OAC(1,5000,44100);var osc=ac.createOscillator();osc.type="triangle";osc.frequency.value=10000;
-      var comp=ac.createDynamicsCompressor();comp.threshold.value=-50;comp.knee.value=40;comp.ratio.value=12;comp.attack.value=0;comp.release.value=.25;
+      if(!OAC){out.hash="unsupported";finish();return;}
+      var ac=new OAC(1,5000,44100),osc=ac.createOscillator(),comp=ac.createDynamicsCompressor();
+      osc.type="triangle";osc.frequency.value=10000;comp.threshold.value=-50;comp.knee.value=40;comp.ratio.value=12;comp.attack.value=0;comp.release.value=.25;
       osc.connect(comp);comp.connect(ac.destination);osc.start(0);
-      ac.startRendering().then(function(buf){var ch=buf.getChannelData(0);var s=0,mx=-1e9,mn=1e9,nz=0;for(var i=0;i<ch.length;i++){var v=ch[i];s+=Math.abs(v);if(v>mx)mx=v;if(v<mn)mn=v;if(v!==0)nz++;}out.hash=fnv(s.toString());out.sum=s;out.range=mx.toFixed(8)+" / "+mn.toFixed(8);out.nonZero=nz+" of "+ch.length;out.samples=[ch[2500],ch[3000],ch[4000],ch[4500],ch[4999]].map(function(x){return (x||0).toFixed(8);}).join(", ");out.bufHash=fnv(Array.prototype.slice.call(ch,4000,4200).map(function(x){return x.toFixed(9);}).join(","));try{out.reduction=comp.reduction;}catch(e){}done();}).catch(done);
-    }catch(e){done();}
-    var d=false;function done(){if(d)return;d=true;res(out);}
-    setTimeout(done,2500);
+      ac.startRendering().then(function(buf){if(done)return;try{var ch=buf.getChannelData(0);if(!ch||ch.length!==5000||!Array.prototype.every.call(ch,Number.isFinite))throw new Error("invalid audio buffer");out.hash=fnvBytes(new Uint8Array(ch.buffer,ch.byteOffset,ch.byteLength));out.reduction=comp.reduction;finish();}catch(e){finish(e);}},finish);
+    }catch(e){finish(e);}
   });
 }
 
@@ -962,14 +966,15 @@ function collectWebGPU(){
     var rows=[];
     var gpu=null;try{gpu=navigator.gpu;}catch(e){rows.push(["WebGPU (navigator.gpu)",["ERR","ok"]]);res(cat("WebGPU",rows,"Compute-shader output and adapter limits, unaffected by canvas randomization."));return;}
     if(!gpu){rows.push(["WebGPU (navigator.gpu)",["unavailable / disabled","ok"]]);res(cat("WebGPU",rows,"Compute-shader output and adapter limits, unaffected by canvas randomization."));return;}
-    var done=false;function fin(){if(done)return;done=true;res(cat("WebGPU",rows,"GPU vendor, architecture and adapter limits, plus compute-shader timing."));}
+    var done=false;function fin(){if(done)return;done=true;res(cat("WebGPU",rows.slice(),"GPU vendor, architecture and adapter limits, plus compute-shader timing."));}
     setTimeout(fin,3000);
     try{rows.push(["preferredCanvasFormat (OS-correlated)",navigator.gpu.getPreferredCanvasFormat?navigator.gpu.getPreferredCanvasFormat():"n/a"]);}catch(e){}
     try{var wgf=[];if(navigator.gpu.wgslLanguageFeatures)navigator.gpu.wgslLanguageFeatures.forEach(function(x){wgf.push(x);});rows.push(["wgslLanguageFeatures ("+wgf.length+")",fnv(wgf.sort().join(","))]);}catch(e){}
     try{navigator.gpu.requestAdapter().then(function(ad){
+      if(done)return;
       if(!ad){rows.push(["GPUAdapter",["null (blocked)","ok"]]);fin();return;}
-      var pushInfo=function(info){info=info||{};rows.push(["adapter vendor",info.vendor||"(empty)"]);rows.push(["adapter architecture",info.architecture||"(empty)"]);rows.push(["adapter device",info.device||"(empty)"]);rows.push(["adapter description",info.description||"(empty)"]);
-        try{var lv=[];for(var k in ad.limits)lv.push(k+":"+ad.limits[k]);rows.push(["GPUAdapter.limits ("+lv.length+")",fnv(lv.join("|"))]);}catch(e){}
+      var pushInfo=function(info){if(done)return;info=info||{};rows.push(["adapter vendor",info.vendor||"(empty)"]);rows.push(["adapter architecture",info.architecture||"(empty)"]);rows.push(["adapter device",info.device||"(empty)"]);rows.push(["adapter description",info.description||"(empty)"]);
+        try{var lv=[];for(var k in ad.limits)lv.push(k+":"+ad.limits[k]);rows.push(["GPUAdapter.limits ("+lv.length+")",fnvParts(lv.sort())]);}catch(e){}
         try{rows.push(["adapter.isFallbackAdapter",("isFallbackAdapter"in ad)?String(ad.isFallbackAdapter):"absent"]);}catch(e){}
         try{var smn=ad.limits&&ad.limits.subgroupMinSize,smx=ad.limits&&ad.limits.subgroupMaxSize;
           rows.push(["subgroup size range (GPU execution-unit width)",(smn||smx)?(smn+" - "+smx):"absent"]);}catch(e){}
@@ -984,6 +989,7 @@ function collectWebGPU(){
 
         try{
           ad.requestDevice().then(function(dev){
+            if(done){dev.destroy();return;}
             try{
               var mod=dev.createShaderModule({code:"@compute @workgroup_size(1) fn main(){}"});var t0=performance.now();
               try{dev.createComputePipelineAsync({layout:"auto",compute:{module:mod,entryPoint:"main"}}).then(function(){rows.push(["compute pipeline compile (async, GPU)",(performance.now()-t0).toFixed(3)+" ms"]);}).catch(function(){});}catch(e){}
@@ -1006,19 +1012,8 @@ function collectWebGPU(){
 }
 
 function collectAI(){
-  return new Promise(function(res){
-    var rows=[],done=false;
-    function fin(){if(done)return;done=true;res(cat("Built-in AI APIs",rows,"On-device AI availability, which reflects the device hardware class."));}
-    setTimeout(fin,3500);
-    rows.push(["window.ai (legacy object)",[present(window.ai)?"present":"absent",present(window.ai)?"mid":"ok"]]);
-    var probes=[["LanguageModel (Prompt)",window.LanguageModel,null],["Translator",window.Translator,{sourceLanguage:"en",targetLanguage:"es"}],["LanguageDetector",window.LanguageDetector,null],["Summarizer",window.Summarizer,null],["Writer",window.Writer,null],["Rewriter",window.Rewriter,null],["Proofreader (origin trial)",window.Proofreader,null]];
-    var pend=probes.length;function step(){if(--pend<=0)fin();}
-    probes.forEach(function(p){
-      var name=p[0],ctor=p[1],opts=p[2];
-      if(!ctor||typeof ctor.availability!=="function"){rows.push([name,[ctor?"present":"absent",ctor?"mid":"ok"]]);step();return;}
-      try{(opts?ctor.availability(opts):ctor.availability()).then(function(a){var exposed=(a==="available"||a==="downloadable"||a==="downloading"||a==="readily"||a==="after-download");rows.push([name+" availability",[String(a),exposed?"no":"ok"]]);step();}).catch(function(){rows.push([name+" availability",["err","mid"]]);step();});}catch(e){rows.push([name,["err","mid"]]);step();}
-    });
-  });
+  var probes=[["LanguageModel (Prompt)","LanguageModel"],["Translator","Translator",{sourceLanguage:"en",targetLanguage:"es"}],["LanguageDetector","LanguageDetector"],["Summarizer","Summarizer"],["Writer","Writer"],["Rewriter","Rewriter"],["Proofreader","Proofreader"]];
+  return Promise.all(probes.map(function(p){return paDeadline(function(){var api=window[p[1]];if(!api)return "unsupported";if(typeof api.availability!=="function")return "present; availability not exposed";return api.availability(p[2]);},3500).then(function(v){return [p[0]+" availability",[String(v),"mid"]];},function(e){return [p[0]+" availability",[e&&e.message==="timeout"?"timeout":"ERR:"+(e&&e.name||"Error"),"mid"]];});})).then(function(rows){return cat("Built-in AI APIs",rows,"Web API availability only. Browser assistants, Firefox AI settings, cloud processing and retention are not measured.");});
 }
 
 function collectDeviceAccess(){
@@ -1173,11 +1168,11 @@ function collectLeaks2026(){
   try{
     function cvh(){var c=document.createElement("canvas");c.width=180;c.height=40;var x=c.getContext("2d");if(!x)return 0;x.textBaseline="top";x.font="14px Arial";x.fillStyle="#f60";x.fillRect(0,0,90,20);x.fillStyle="#069";x.fillText("leak-probe",2,2);var d=x.getImageData(0,0,180,40).data;var h=2166136261;for(var i=0;i<d.length;i+=5){h=(h^d[i])>>>0;h=Math.imul(h,16777619)>>>0;}return h;}
     var h1=cvh(),h2=cvh(),h3=cvh();var perRead=!(h1===h2&&h2===h3);
-    rows.push(["canvas per-read noise variance",[perRead?"PER-READ RANDOM - averageable = weak/defeatable defense":"stable per read (per-session-seeded or uniform = strong)",perRead?"no":"ok"]]);
+    rows.push(["canvas per-read noise variance",[perRead?"changed across three reads; resistance to averaging not tested":"stable across three reads; protection and cross-session linkability not determined","mid"]]);
   }catch(e){rows.push(["canvas per-read variance","ERR"]);}
   rows.push(["ResourceTiming cross-origin surface",present(window.PerformanceResourceTiming)]);
-  rows.push(["bfcache navigation-timing oracle primitive",present(window.PerformanceNavigationTiming)]);
-  rows.push(["CompressionStream ratio side-channel (ZipChannel/CRIME)",present(window.CompressionStream)]);
+  rows.push(["Navigation timing API (capability only)",present(window.PerformanceNavigationTiming)]);
+  rows.push(["CompressionStream API (capability only)",present(window.CompressionStream)]);
   rows.push(["crossOriginIsolated (SharedArrayBuffer)",[String(!!window.crossOriginIsolated),"ok"]]);
   return cat("Cross-Origin Leaks",rows,"Canvas per-read variance and the presence of side-channel APIs.");
 }
@@ -1208,13 +1203,13 @@ function paStoreEach(mode,tok){
   var got={},refused=[],unsup=[],stalled=[],jobs=[];
   function J(k,okf,fn){
     var ok=false;
-    try{ok=okf();}catch(e){if(mode==="w")refused.push(k);return;}
+    try{ok=okf();}catch(e){if(mode==="w")stalled.push(k);return;}
     if(!ok){if(mode==="w")unsup.push(k);return;}
     jobs.push(new Promise(function(done){
       var settled=false;
       var t=setTimeout(function(){if(settled)return;settled=true;if(mode==="w")stalled.push(k);done();},PA_STORE_JOB_MS);
-      Promise.resolve().then(fn).then(function(v){if(settled)return;settled=true;clearTimeout(t);if(mode==="w"){got[k]=1;}else if(v)got[k]=String(v);done();},
-        function(e){if(settled)return;settled=true;clearTimeout(t);if(mode==="w")(e&&e.paUnsupported?unsup:refused).push(k);done();});
+      Promise.resolve().then(fn).then(function(v){if(settled)return;settled=true;clearTimeout(t);if(mode==="w"){got[k]=1;}else got[k]=v==null?"":String(v);done();},
+        function(e){if(settled)return;settled=true;clearTimeout(t);if(mode==="w")(e&&e.paUnsupported?unsup:e&&/^(SecurityError|NotAllowedError)$/.test(e.name)?refused:stalled).push(k);done();});
     }));}
   function NOSRV(){var e=new Error("unsupported");e.paUnsupported=1;return e;}
   J("cookie (document.cookie)",function(){return typeof document.cookie==="string";},function(){
@@ -1281,8 +1276,8 @@ function paPartitionWrite(tok){
     f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";
     var resolved=false,gone=false;
     function drop(){if(gone)return;gone=true;window.removeEventListener("message",onM);try{document.body.removeChild(f);}catch(x){}}
-    function clear(){try{if(f.contentWindow)f.contentWindow.postMessage({paClear:tok},pOrigin);}catch(x){}setTimeout(drop,1500);}
-    function onM(e){if(!e.data||e.origin!==pOrigin)return;
+    function clear(){try{if(f.contentWindow)f.contentWindow.postMessage({paClear:tok,paToken:tok,paVersion:PRIORS.version},pOrigin);}catch(x){}setTimeout(drop,1500);}
+    function onM(e){if(!paMessageMatches(e,pOrigin,tok,[f.contentWindow]))return;
       if(e.data.paStoreTok===tok&&!resolved){resolved=true;res({tok:tok,wrote:e.data.wrote||{},origin:oh,clear:clear});}
       else if(e.data.paStoreCleared===tok)drop();}
     window.addEventListener("message",onM);
@@ -1378,42 +1373,17 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.1-beta", dated:"2026-08-03",
-  scale:{
-    hundred:"nothing we check is readable here, so nothing on our list can pick you out. It does not mean you are unfindable anywhere.",
-    zero:"your browser hands over enough that a tracker can point straight at you.",
-    meaning:"the score is how much of what could identify you your browser hides, weighted by how much each reading gives you away, in our judgment. A tracker needs one strong stable reading to follow you, or several weaker ones together.",
-    tiers:"we rate each reading strong, medium or weak by how much it narrows you down. Strong readings are near-unique on their own, such as canvas, installed fonts and window size; weak ones are a small hint, such as CPU cores or colour depth. These ratings are our judgment, not a measurement.",
-    states:"each reading is SHOWN (your real value, helps a tracker), REFUSED (blank or error, helps nobody), or BLENDED (the value every user of this browser shares, so it does not single you out)."
-  },
+  version:"0.9.2", dated:"2026-09-05",
 
-/* - browser families and the values each reports uni ----- */
-  browsers:{
-    "chromium":   {label:"Chromium family (Chrome, Edge, Opera and relatives)", implies:{}},
-    "webkit":     {label:"Safari or another WebKit engine",
-                   implies:{cores:[4,8], deviceMemory:["undefined"]},
-                   verified:"WebKit source clamps hardwareConcurrency to 4 or 8, and never implemented deviceMemory"},
-    "firefox":    {label:"Firefox, defaults", implies:{deviceMemory:["undefined"]},
-                   verified:"Firefox source has no deviceMemory"},
-    "brave":      {label:"Brave",
-                   implies:{screenClass:["1280x800","1366x768","1440x900","1680x1050","1920x1080","2560x1440","3840x2160"],
-                            availFrame:["masked"]},
-                   verified:"Brave snaps the reported screen to one of seven fixed sizes and forces the usable area"},
-    "firefox-rfp":{label:"Firefox with resistFingerprinting (LibreWolf, or Firefox with the pref on)",
-                   implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
-                            devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
-                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
-                            availFrame:["masked"]},
-                   verified:"these resistFingerprinting values were checked against Firefox source and confirmed by"},
-    "tor-build":  {label:"Tor Browser or Mullvad Browser", letterboxes:true,
-                   implies:{cores:[4,8], deviceMemory:["undefined"], timezone:["Atlantic/Reykjavik"], colorDepth:[24],
-                            devicePixelRatio:[2], maxTouchPoints:[10,0,5], webglVendor:["Mozilla"], audioRate:[44100],
-                            languages:["en-US"], platform:["Win32","MacIntel","Linux x86_64","Linux armv81"],
-                            svgMetrics:["498cb0ef"], webglExt:["6c491bc1"], webglParams:["a95247b0"],
-                            availFrame:["masked"]},
-                   verified:"everything the resistFingerprinting family carries, plus three measured hashes that"},
-    "other":      {label:"another engine", implies:{}}
-  },
+
+/* - browser labels (informational only) ------------------ */
+  browsers:{"chromium":{"label":"Chromium family (Chrome, Edge, Opera and relatives)"},
+    "webkit":{"label":"Safari or another WebKit engine"},
+    "firefox":{"label":"Firefox, defaults"},
+    "brave":{"label":"Brave"},
+    "firefox-rfp":{"label":"Firefox with resistFingerprinting (LibreWolf, or Firefox with the pref on)"},
+    "tor-build":{"label":"Tor Browser or Mullvad Browser"},
+    "other":{"label":"another engine"}},
 
 /* - the scored readings: key, category, weight, label ---- */
   surfaces:[
@@ -1473,7 +1443,7 @@ var PRIORS={
      verified:"rated weak because whole countries share a zone, and more telling the smaller yours is"},
     {k:"deviceMemory", group:"hardware", tier:1, label:"device memory",
      verified:"rated weak because Chromium reports only five possible values on desktop, 2 through 32"},
-    {k:"webrtcIP", group:"network", tier:3, optional:true, label:"WebRTC IP leak", okLabel:"no public IP exposed (off, blocked, or masked)",
+    {k:"webrtcIP", group:"network", tier:3, optional:true, label:"WebRTC IP leak", okLabel:"no public IP observed in the completed test",
      verified:"WebRTC can hand a page your real public IP, straight past a VPN, before any tunnel"},
     {k:"extEnum", group:"extensions", tier:3, optional:true, label:"extensions enumerable", okLabel:"none detected",
      verified:"whether a site can tell which extensions you run"},
@@ -1540,10 +1510,10 @@ function paCanvasClass(){
 /* - read every scored surface into one flat object ------- */
 function observeVectors(){
   
-  var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return d;}};
+  var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return "ERR:"+(e&&e.name||"Error");}};
   var W=function(needle){var v=paRow("WebGPU",needle);
     return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
-  return {
+  var out={
     cores:P(function(){return navigator.hardwareConcurrency;},""),
     deviceMemory:P(function(){return String(navigator.deviceMemory);},""),
     timezone:P(function(){return Intl.DateTimeFormat().resolvedOptions().timeZone;},""),
@@ -1554,7 +1524,7 @@ function observeVectors(){
     languages:P(function(){return (navigator.languages||[])[0]||navigator.language||"";},""),
     webglVendor:P(function(){var g=document.createElement("canvas").getContext("webgl");if(!g)return "";
       var d=g.getExtension("WEBGL_debug_renderer_info");
-      var v=String(d?g.getParameter(d.UNMASKED_VENDOR_WEBGL):g.getParameter(g.VENDOR));glDone(g);return v;},""),
+      var v=String(d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER));glDone(g);return v;},""),
     audioRate:P(function(){var A=window.AudioContext||window.webkitAudioContext;if(!A)return "";
       var a=new A();var v=a.sampleRate;try{a.close();}catch(e){}return v;},""),
     canvasClass:paCanvasClass(),
@@ -1585,96 +1555,91 @@ function observeVectors(){
     webglParams:paRow("Active Rendering & GPU","webgl params"),
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
     codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
-    webgpuAdapter:fnvParts([W("adapter vendor"),W("adapter architecture"),W("adapter device")]),
-    webgpuLimits:W("gpuadapter.limits")
+    webgpuAdapter:fnvParts([W("adapter vendor"),W("adapter architecture"),W("adapter device"),W("adapter description")]),
+    webgpuLimits:W("gpuadapter.limits"),
+    uaCh:P(function(){var u=PA_UACH;if(!u)return "unsupported";if(u.__paStatus)return u.__paStatus;var v=[u.model,u.platformVersion,u.architecture,u.bitness,u.uaFullVersion,u.fullVersionList&&JSON.stringify(u.fullVersionList),u.wow64,u.formFactors&&JSON.stringify(u.formFactors)].filter(function(x){return x!==undefined&&x!==null&&String(x)!=="";});return v.length?v.join(" | "):"ERR:empty-client-hints";},"")
   };
+  [["deviceMemory",function(){return "deviceMemory" in navigator;}],["webgpuAdapter",function(){return "gpu" in navigator;}],["webgpuLimits",function(){return "gpu" in navigator;}],["speechVoices",function(){return "speechSynthesis" in window;}],["codecSupport",function(){return "MediaSource" in window;}],["audioRenderClass",function(){return !!(window.OfflineAudioContext||window.webkitOfflineAudioContext);}],["audioRate",function(){return !!(window.AudioContext||window.webkitAudioContext);}]].forEach(function(p){try{if(!p[1]())out[p[0]]="unsupported";}catch(e){out[p[0]]="ERR:availability";}});
+  return out;
+}
+
+function repeatVectors(){
+  var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs"].forEach(function(k){saved[k]=C[k];});
+  return Promise.resolve().then(function(){
+    [[collectGPU,"Active Rendering & GPU"],[collectFonts,"Font Enumeration"],[collectCSS,"CSS & Rendering"],[collectAudioSync,"Audio & Media Codecs"]].forEach(function(p){try{p[0]();}catch(e){cat(p[1],[["collector error","ERR"]]);}});
+    return paDeadline(collectAudioAsync,3500).catch(function(){return {hash:"ERR:repeat-timeout"};});
+  }).then(function(audio){
+    C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
+    try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"ERR:voices-not-ready"]);}catch(e){}
+    var second=observeVectors(),a=findability(first,"other"),b=findability(second,"other"),noisy={};
+    PRIORS.surfaces.forEach(function(s){if(s.optional||s.noCrossDiff)return;var ar=a.rows.find(function(r){return r.label===s.label;}),br=b.rows.find(function(r){return r.label===s.label;});if(br&&br.state==="unknown"){first[s.k]="ERR:repeat-incomplete";return;}if(ar&&br&&ar.state==="shown"&&br.state==="shown"&&String(first[s.k])!==String(second[s.k]))noisy[s.k]=1;});
+    first._noisy=noisy;return first;
+  }).finally(function(){Object.keys(saved).forEach(function(k){if(saved[k])C[k]=saved[k];else delete C[k];});});
 }
 
 /* - classify each reading, then score by category sh ----- */
 var TIERWORD={3:"strong",2:"medium",1:"weak"};
 function findability(observed,familyKey){
-  var br=PRIORS.browsers[familyKey]||PRIORS.browsers.other;
-  var rows=[],groupShownTier={},groupTotalTier={},groupSum={},groupHid={};
+  observed=observed||{};
+  var rows=[],groupShownTier={},groupTotalTier={},groupSum={},groupHid={},groupUnknown={};
   PRIORS.surfaces.forEach(function(s){
     var v=observed[s.k],state,tier=0,why;
     if(s.optional&&(v===undefined||v===null))return;
-    var imp=br.implies&&br.implies[s.k];
-    var blendedByBrowser=imp&&imp.map(String).indexOf(String(v))>=0;
-    if((v===undefined||v===null||String(v)===""||String(v)==="undefined")&&!blendedByBrowser){
-      state="refused";why="your browser returned nothing here, so a tracker learns nothing";
-    }else{
-      v=String(v);
-      
-      var masked=(s.k==="canvasClass"&&(v==="noise-per-read"||v==="uniform-masked"))||
-                 ((s.k==="screenClass"||s.k==="innerSize")&&br.letterboxes&&paIsLB(v))||
-                 (s.k==="speechVoices"&&/^0[\s(]/.test(v))||
-                 (s.k==="fontSet"&&/blocked|protected/i.test(String(observed.fontLocalBlocked||"")));
-      var noisy=!!(observed._noisy&&observed._noisy[s.k]&&!s.noCrossDiff);
-      if(noisy){state="blended";why="this value changes on every read, so it cannot be used to follow you between visits";}
-      else if(masked){state="blended";why="your browser masks this so it cannot be used to follow you between visits";}
-      else if(/^ERR(:|$)/i.test(v)||/^(n\/a|unavailable|blocked|absent)/i.test(v)){state="refused";why="this reading is not available in your browser";}
-      else if(blendedByBrowser){state="blended";why="every user of this browser reports this same value, so it does not single you out";}
-      else{state="shown";tier=paTier(s);why="your browser hands over its real value";}
-    }
-    var _it=paTier(s);
-    groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,_it);
-    groupSum[s.group]=(groupSum[s.group]||0)+_it;
-    if(state!=="shown")groupHid[s.group]=(groupHid[s.group]||0)+_it;
+    var text=String(v==null?"":v);
+    var unknown=v==null||(typeof v!=="string"&&typeof v!=="number")||text===""||/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|0 \(ERR\))$/i.test(text);
+    var refused=/^(unsupported|blocked(?::(?:SecurityError|NotAllowedError))?)$/.test(text)||
+      (s.k==="webrtcIP"&&text==="not-exposed")||(s.k==="storageCarry"&&text==="not-carried");
+    if(unknown){state="unknown";why="The measurement did not establish a result; no protection credit is awarded.";}
+    else if(refused){state="refused";why="This API is unsupported, explicitly denied, or the completed test returned no exposed value.";}
+    else if((s.k==="canvasClass"&&(text==="noise-per-read"||text==="uniform-masked"))||
+      (!s.noCrossDiff&&observed._noisy&&observed._noisy[s.k])||
+      (!s.noCrossDiff&&observed._crossChanged&&observed._crossChanged[s.k])){
+      state="blended";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
+    }else{state="shown";tier=paTier(s);why="An observable value was returned; uniformity across users is not established by this test.";}
+    var w=paTier(s);
+    groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,w);
+    groupSum[s.group]=(groupSum[s.group]||0)+w;
+    if(state==="refused"||state==="blended")groupHid[s.group]=(groupHid[s.group]||0)+w;
+    if(state==="unknown")groupUnknown[s.group]=(groupUnknown[s.group]||0)+w;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-    rows.push({label:s.label,value:String(v),group:s.group,weight:_it,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
+    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
-  var groups=Object.keys(groupShownTier);
-  var high=groups.filter(function(g){return groupShownTier[g]>=3;});
-  var med=groups.filter(function(g){return groupShownTier[g]===2;});
-  var low=groups.filter(function(g){return groupShownTier[g]===1;});
-  
-  var totW=0,hidW=0;
-  Object.keys(groupTotalTier).forEach(function(g){
-    totW+=groupTotalTier[g];
-    hidW+=groupTotalTier[g]*((groupHid[g]||0)/(groupSum[g]||1));});
-  var score=totW>0?Math.round(100*hidW/totW):100;
-  var grade=score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F";
-  var exposedStrong=[];rows.forEach(function(r){if(r.state==="shown"&&r.tier>=3)exposedStrong.push(r.label);});
-  var topShown="",topTier=0;rows.forEach(function(r){if(r.state==="shown"&&r.tier>topTier){topTier=r.tier;topShown=r.label;}});
-  var nShown=rows.filter(function(r){return r.state==="shown";}).length;
-  var verdict;
-  if(!nShown)verdict="Nothing we check singles you out here.";
-  else verdict="You hide "+score+"% of what this tool checks for"+(topShown?". Biggest leak: "+topShown:"")+
-    (exposedStrong.length?". Still exposed: "+exposedStrong.slice(0,3).join(", ")+(exposedStrong.length>3?" and "+(exposedStrong.length-3)+" more":""):"")+".";
+  var groups=Object.keys(groupShownTier),totW=0,hidW=0,unknownW=0;
   var categories=Object.keys(groupTotalTier).map(function(g){
-    var w=groupTotalTier[g],sum=groupSum[g]||0,hid=groupHid[g]||0;
-    return {id:g,weight:w,weightInside:sum,hiddenInside:hid,earned:w*(sum?hid/sum:0)};
+    var w=groupTotalTier[g],sum=groupSum[g],hid=groupHid[g]||0,u=groupUnknown[g]||0;
+    totW+=w;hidW+=w*hid/sum;unknownW+=w*u/sum;
+    return {id:g,weight:w,weightInside:sum,hiddenInside:hid,unknownInside:u,earned:w*hid/sum};
   }).sort(function(a,b){return (b.weight-a.weight)||(b.earned-a.earned);});
-  return {score:score, grade:grade, hiddenPct:score,
-    checks:{total:rows.length, held:rows.length-nShown, exposed:nShown},
-    strongest:topShown, exposedStrong:exposedStrong,
-    exposedGroups:{high:high,medium:med,low:low}, shownCount:nShown,
-    categories:categories, totalWeight:totW, earnedWeight:hidW,
-    rows:rows, browser:familyKey, verdict:verdict, version:PRIORS.version};
+  var score=totW?Math.round(100*hidW/totW):0;
+  var unknown=rows.filter(function(r){return r.state==="unknown";}).length,complete=rows.length>0&&unknown===0;
+  var grade=complete?(score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F"):"I";
+  var shown=rows.filter(function(r){return r.state==="shown";}),strong=shown.filter(function(r){return r.tier>=3;}).map(function(r){return r.label;});
+  var top=shown.slice().sort(function(a,b){return b.tier-a.tier;})[0];
+  return {score:score,grade:grade,complete:complete,upperBound:totW?Math.round(100*(hidW+unknownW)/totW):100,hiddenPct:score,
+    coverage:rows.length?Math.round(100*(rows.length-unknown)/rows.length):0,
+    checks:{total:rows.length,held:rows.length-shown.length-unknown,exposed:shown.length,unknown:unknown},
+    strongest:top?top.label:"",exposedStrong:strong,shownCount:shown.length,
+    exposedGroups:{high:groups.filter(function(g){return groupShownTier[g]>=3;}),medium:groups.filter(function(g){return groupShownTier[g]===2;}),low:groups.filter(function(g){return groupShownTier[g]===1;})},
+    categories:categories,totalWeight:totW,earnedWeight:hidW,rows:rows,browser:familyKey,
+    verdict:complete?(score+"% of the weighted readings were masked, varied or unavailable in this experiment."):("Incomplete: "+unknown+" readings are unknown. "+score+" is a lower bound; no privacy grade is assigned."),version:PRIORS.version};
 }
 
 /* - same catalog on a second origin, merged -------------- */
 function findabilityCross(obsA,obsB,familyKey){
-  var single=findability(obsA,familyKey),shownSet={};
-  (single.rows||[]).forEach(function(r){if(r.state==="shown")shownSet[r.label]=1;});
-
-  var merged={};for(var _k in obsA){if(Object.prototype.hasOwnProperty.call(obsA,_k))merged[_k]=obsA[_k];}
-  var changed=[];
-  var dead=function(x){x=String(x==null?"":x);
-    return x===""||x==="undefined"||/^ERR(:|$)/i.test(x)||/^(n\/a|unavailable|blocked|absent)/i.test(x);};
+  var single=findability(obsA,familyKey),second=findability(obsB||{},familyKey),merged={},changed=[],compared=[];
+  Object.keys(obsA||{}).forEach(function(k){merged[k]=obsA[k];});merged._crossChanged={};
   PRIORS.surfaces.forEach(function(s){
-
-    if(s.noCrossDiff)return;
-    var a=obsA[s.k],diff=false;
-    if(s.hashKey){var ha=obsA[s.hashKey],hb=obsB&&obsB[s.hashKey];
-      if(!dead(ha)&&!dead(hb)&&String(ha)!==String(hb))diff=true;}
-    var b=obsB?obsB[s.k]:undefined;
-    if(!diff&&!dead(b)&&String(a)!==String(b))diff=true;
-    if(diff&&shownSet[s.label]){merged[s.k]="";if(s.hashKey)merged[s.hashKey]="";changed.push(s.label);}
+    if(s.noCrossDiff||s.optional)return;
+    var a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
+    if(!a||!b||a.state==="unknown"||b.state==="unknown"){merged[s.k]="ERR:comparison-incomplete";return;}
+    if(a.state!=="shown"||b.state!=="shown")return;
+    compared.push(s.label);
+    var key=s.hashKey||s.k,va=obsA[key],vb=obsB[key];
+    if(va!=null&&vb!=null&&String(va)!==""&&String(vb)!==""&&!/^(ERR|unsupported|blocked|unavailable|n\/a|undefined)/i.test(String(va))&&!/^(ERR|unsupported|blocked|unavailable|n\/a|undefined)/i.test(String(vb))&&String(va)!==String(vb)){
+      merged._crossChanged[s.k]=true;changed.push(s.label);
+    }
   });
-  var F=findability(merged,familyKey);
-  F.changedAcrossOrigins=changed;
-  return F;
+  var out=findability(merged,familyKey);out.changedAcrossOrigins=changed;out.comparedAcrossOrigins=compared;return out;
 }
 
 /* BROWSER IDENTIFICATION - name the browser from its defenses ============ */
@@ -1942,36 +1907,25 @@ function coherence(H){
 /* LEAK PROBES - WebRTC, extension enumeration, realms, workers =========== */
 function webrtc(){
   return new Promise(function(res){
-    var ips=[];try{var pc=new RTCPeerConnection(PAV.webrtcStun?{iceServers:[{urls:"stun:stun.l.google.com:19302"}]}:{iceServers:[]});pc.createDataChannel("x");
-      pc.onicecandidate=function(e){if(!e.candidate){fin();return;}var f=(e.candidate.candidate||"").split(" ");var found=[];if(f.length>=5)found.push(f[4]);var ri=f.indexOf("raddr");if(ri>=0&&f[ri+1])found.push(f[ri+1]);found.forEach(function(x){if(x&&x!=="0.0.0.0"&&ips.indexOf(x)<0)ips.push(x);});};
-      pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).catch(fin);setTimeout(fin,3000);
-    }catch(e){res({ips:[],err:""+e});return;}
-    var d=false;function fin(){if(d)return;d=true;try{pc.onicecandidate=null;pc.close();}catch(e){}var ips2=ips.slice();var mdns=ips2.filter(function(i){return /\.local$/i.test(i);});var real=ips2.filter(function(i){return !/\.local$/i.test(i);});var priv=real.filter(function(i){return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|127\.|fe80:|f[cd])/i.test(i);});var pub=real.filter(function(i){return priv.indexOf(i)<0;});res({ips:ips2,privateIPs:priv,mdns:mdns,publicIPs:pub});}
+    var pc=null,done=false,ips=[],timer=null;
+    function finish(status,error){if(done)return;done=true;clearTimeout(timer);try{if(pc){pc.onicecandidate=null;pc.onicegatheringstatechange=null;pc.close();}}catch(e){}
+      var mdns=ips.filter(function(x){return /\.local$/i.test(x);}),real=ips.filter(function(x){return !/\.local$/i.test(x);});
+      var priv=real.filter(function(x){return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|127\.|fe[89ab][0-9a-f]:|f[cd][0-9a-f]{2}:|::1$|::$)/i.test(x);});
+      res({status:status,err:error||null,ips:ips.slice(),privateIPs:priv,mdns:mdns,publicIPs:real.filter(function(x){return priv.indexOf(x)<0;})});
+    }
+    try{
+      if(typeof RTCPeerConnection!=="function"){finish("unsupported");return;}
+      pc=new RTCPeerConnection(PAV.webrtcStun?{iceServers:[{urls:"stun:stun.l.google.com:19302"}]}:{iceServers:[]});pc.createDataChannel("x");
+      pc.onicecandidate=function(e){if(!e.candidate){finish("complete");return;}var fields=(e.candidate.candidate||"").split(" "),values=[fields[4]],r=fields.indexOf("raddr");if(r>=0)values.push(fields[r+1]);values.forEach(function(x){if(x&&x!=="0.0.0.0"&&x!=="::"&&ips.indexOf(x)<0)ips.push(x);});};
+      pc.onicegatheringstatechange=function(){if(pc.iceGatheringState==="complete")finish("complete");};
+      timer=setTimeout(function(){finish("timeout");},5000);
+      pc.createOffer().then(function(o){if(!done)return pc.setLocalDescription(o);}).catch(function(e){finish("error",e&&e.name||"Error");});
+    }catch(e){finish(e&&/^(SecurityError|NotAllowedError)$/.test(e.name)?"blocked":"error",e&&e.name||"Error");}
   });
 }
 
 /* - extension enumeration -------------------------------- */
-function extScan(){
-  return new Promise(function(res){
-
-    var LIST=[
-      ["uBlock Origin","cjpalhdlnbpafiamejdnhcphjbkeiagm","img/icon_128.png"],
-      ["AdBlock","gighmmpiobklfepjocnamgkkbiglidom","icons/icon128.png"],
-      ["AdGuard","bgnkhhnnamicmpeenaelnjfhikgbkllg","assets/icons/green/128.png"],
-      ["Adblock Plus","cfhdojbkjhnklbpkdaibdccddilifddb","icons/abp-32.png"],
-      ["Ghostery","mlomiejdfkolichcflejclcbmpeaniij","app/images/ghostery_icon.png"],
-      ["Dark Reader","eimadpbcbfnmbkopoojfekhnkhdbieeh","icons/dr128.png"],
-      ["Honey","bmnlcjabgnpnenekpadlanbbkooimhnj","static/images/icon128.png"],
-      ["MetaMask","nkbihfbeogaeaoehlefnkodbefgpgknn","images/icon-128.png"],
-      ["Grammarly","kbfnbcaeplbcioakkpcpgfkobkghlhen","app/assets/img/logo.png"],
-      ["LastPass","hdokiejnpimakedhajhdlcegeplioahd","images/lp-header-logo.png"]
-    ];
-    var found=[],pend=LIST.length,d=false,imgs=[];
-    function fin(){if(d)return;d=true;imgs.forEach(function(im){im.onload=im.onerror=null;});res({detectable:found.length>0,found:found.slice(),tested:LIST.length,inconclusive:true});}
-    LIST.forEach(function(x){var im=new Image();imgs.push(im);im.onload=function(){found.push(x[0]);if(--pend<=0)fin();};im.onerror=function(){if(--pend<=0)fin();};im.src="chrome-extension://"+x[1]+"/"+x[2];});
-    setTimeout(fin,2500);
-  });
-}
+function extScan(){return Promise.resolve({detectable:false,found:[],tested:0,inconclusive:true,reason:"Resource enumeration is not measured under this page's CSP. Only positive page-visible extension evidence is reported."});}
 function realmCheck(){
   return new Promise(function(res){
     try{var f=document.createElement("iframe");f.style.cssText="position:absolute;left:-9999px";f.srcdoc="<!doctype html><body>";document.body.appendChild(f);
@@ -2002,16 +1956,11 @@ function sharedWorkerCheck(){
 
 /* - client hints, awaited -------------------------------- */
 function highEntropy(){
-  return new Promise(function(res){
-    if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues){res(null);return;}
-    try{navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"]).then(res).catch(function(){res(null);});}
-    catch(e){res(null);}
-  });
+  return paDeadline(function(){if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues)return null;return Promise.resolve(navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"])).then(function(v){return v&&typeof v==="object"&&!Array.isArray(v)?v:{__paStatus:"ERR:empty-client-hints"};});},3500).catch(function(e){return {__paStatus:"ERR:"+(e&&e.message==="timeout"?"timeout":e&&e.name||"Error")};});
 }
 function headers(){
-  return new Promise(function(res){if(!/^https?:$/.test(location.protocol))return res(null);
-    try{fetch("/__headers",{cache:"no-store"}).then(function(r){return r.json();}).then(res).catch(function(){res(null);});}
-    catch(e){res(null);}});
+  if(!/^https?:$/.test(location.protocol))return Promise.resolve(null);
+  return paDeadline(function(){return fetch("/__headers",{cache:"no-store",signal:AbortSignal.timeout(3500)}).then(function(r){if(!r.ok)throw new Error("headers unavailable");return r.json();});},4000).catch(function(){return null;});
 }
 
 /* RENDER HELPERS - escaping, carets, band colours, group rollup ========== */
@@ -2024,6 +1973,7 @@ var PAV={open:{},acc:{},full:{},maskedOpen:false,redact:true,webrtcStun:false,st
 var PASM={
   shown:{color:"var(--red)",bg:"var(--red-bg)",word:"handed over",icon:"✕"},
   blended:{color:"var(--amber)",bg:"var(--amber-bg)",word:"masked",icon:"~"},
+  unknown:{color:"var(--text-3)",bg:"var(--hover)",word:"not measured",icon:"?"},
   refused:{color:"var(--green)",bg:"var(--green-bg)",word:"not readable",icon:"✓"}
 };
 
@@ -2031,7 +1981,7 @@ var PASM={
 function paCalcPanel(F){
   var cats=F.categories||[];if(!cats.length||!F.totalWeight)return "";
   var open=!!PAV.calcOpen,earned=(F.earnedWeight||0).toFixed(2);
-  var eq='100 &#215; <b>'+earned+'</b> &#247; <b>'+F.totalWeight+'</b> = <b>'+F.score+'</b>';
+  var eq=(F.complete===false?'lower bound: ':'')+'100 &#215; <b>'+earned+'</b> &#247; <b>'+F.totalWeight+'</b> = <b>'+F.score+'</b>';
   var h='<div class="pa-calc'+(open?" on":"")+'">';
   h+='<button class="pa-hov" data-pa="calc" aria-expanded="'+(open?"true":"false")+'">';
   h+='<svg class="cv" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>';
@@ -2048,7 +1998,7 @@ function paCalcPanel(F){
       h+='<span class="eg-t">'+paEsc(PAGRP[ex.id]||ex.id)+' is worth <b>'+ex.weight+'</b> and holds <b>'+ex.weightInside+'</b> points of weight. You hide <b>'+ex.hiddenInside+'</b> of them, so it pays <span class="pa-mono">'+ex.weight+' &#215; '+ex.hiddenInside+'/'+ex.weightInside+' = '+ex.earned.toFixed(2)+'</span>.</span></div>';
     }
     h+='<div class="pa-calc-tot pa-mono">'+cats.length+' categories, <b>'+F.totalWeight+'</b> points. Yours pay <b>'+earned+'</b>.<span class="fin">100 &#215; '+earned+' &#247; '+F.totalWeight+' = '+F.score+'</span></div>';
-    h+='<div class="pa-calc-key">Which readings each category holds is in the list below. Every weight and state is in <span class="pa-mono">__KIT.findability</span>; the method is in <a href="METHODOLOGY.md" target="_blank" rel="noopener">METHODOLOGY.md</a>.</div>';
+    h+='<div class="pa-calc-key">Which readings each category holds is in the list below. Every weight and state is in <span class="pa-mono">__KIT.findability</span>; the method is in <a href="methodology.html" target="_blank" rel="noopener">METHODOLOGY.md</a>.</div>';
     h+='</div>';
   }
   return h+'</div>';
@@ -2067,6 +2017,7 @@ var PADIG=[["01110","10001","10011","10101","11001","10001","01110"],["00100","0
 var PATIER={};
 function paTierMap(){if(!PATIER.__b){PRIORS.surfaces.forEach(function(s){PATIER[s.label]=s.tier||2;});PATIER.__b=1;}return PATIER;}
 function paBandFor(g){
+  if(g==="I")return {band:"var(--text-3)",glyph:"square"};
   if(g==="A")return {band:"var(--gradeA)",glyph:"circle"};
   if(g==="B")return {band:"var(--gradeB)",glyph:"circle"};
   if(g==="C")return {band:"var(--gradeC)",glyph:"square"};
@@ -2074,7 +2025,7 @@ function paBandFor(g){
   return {band:"var(--gradeF)",glyph:"triangle"};
 }
 
-function paTileMatch(g,f){return f==="shown"?g.state==="shown":f==="strong"?(g.state==="shown"&&g.weight>=3):f==="blended"?g.state==="blended":f==="refused"?g.state==="refused":true;}
+function paTileMatch(g,f){return f==="shown"?g.state==="shown":f==="strong"?(g.state==="shown"&&g.weight>=3):f==="blended"?g.state==="blended":f==="refused"?g.state==="refused":f==="unknown"?g.state==="unknown":true;}
 
 /* - roll readings up into categories for display --------- */
 function paGroupsFrom(F){
@@ -2082,18 +2033,18 @@ function paGroupsFrom(F){
   var T=paTierMap(),by={};
   (F.rows||[]).forEach(function(r){(by[r.group]=by[r.group]||[]).push(r);});
   return Object.keys(by).map(function(g){
-    var rows=by[g],shown=[],blended=[],refused=[],weight=0;
+    var rows=by[g],shown=[],blended=[],refused=[],unknown=[],weight=0;
     rows.forEach(function(r){
       var it=T[r.label]||2;if(it>weight)weight=it;
-      if(r.state==="shown")shown.push(r);else if(r.state==="blended")blended.push(r);else refused.push(r);
+      if(r.state==="shown")shown.push(r);else if(r.state==="blended")blended.push(r);else if(r.state==="refused")refused.push(r);else unknown.push(r);
     });
-    var state=shown.length?"shown":(blended.length?"blended":"refused");
-    var rep=shown.length?shown.slice().sort(function(a,b){return (b.tier||0)-(a.tier||0);})[0]:rows[0];
+    var state=unknown.length?"unknown":shown.length?"shown":(blended.length?"blended":"refused");
+    var rep=unknown.length?unknown[0]:shown.length?shown.slice().sort(function(a,b){return (b.tier||0)-(a.tier||0);})[0]:rows[0];
     var val=(rep.state!=="shown"&&rep.okLabel)?rep.okLabel:String(rep.value||"");
     if(rep.state!=="shown"&&!rep.okLabel)val=(state==="blended"?"masked: reported a value shared by every user of this browser":"not readable: your browser returned nothing here");
     return {id:g,reading:PAGRP[g]||g,weight:weight,state:state,rows:rows,
-      exposedLabel:state==="blended"?(rows.length+" masked"):(shown.length+" of "+rows.length+" exposed"),
-      value:val,valueFull:rep.state==="shown"?String(rep.value||""):"",why:rep.why||""};
+      exposedLabel:state==="unknown"?(shown.length+" exposed, "+unknown.length+" not measured"):state==="blended"?(rows.length+" masked"):(shown.length+" of "+rows.length+" exposed"),
+      value:state==="unknown"?"Measurement incomplete":val,valueFull:rep.state==="shown"?String(rep.value||""):"",why:rep.why||""};
   });
 }
 
@@ -2101,7 +2052,7 @@ function paGroupsFrom(F){
 var PAMONO="font-family:ui-monospace,Menlo,Consolas,monospace;";
 var PASTRAT={
   uniformity:["Uniformity","every user of this browser is meant to look the same, so you hide in that crowd"],
-  randomization:["Randomization","values are altered per site and per session, so they cannot be matched up later"],
+  randomization:["Randomization","observed values change; this does not establish anonymity or prevent correlation"],
   mixed:["Mixed","some readings are made uniform and others are altered"],
   exposed:["No strategy","readings are handed over as they are"]};
 function paAxisPair(R,F,cs){
@@ -2152,21 +2103,19 @@ function paCrossData(R){
   if(R.crossFailed==="measuring"||R.crossMeasuring)return {pending:true,measuring:true,originA:a,originB:b,partitionBlocked:pb};
   if(R.crossFailed)return {failed:true,reason:R.crossFailed,skipRand:!!R.crossSkippedRandomizer,canMeasure:!!R.crossCanMeasure,originA:a,originB:b,partitionBlocked:pb};
   if(!Fc)return comp?{pending:true,originA:a,originB:b,partitionBlocked:pb}:{unavailable:true,originA:a,originB:b,partitionBlocked:pb};
-  var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
+  var total=(Fc.comparedAcrossOrigins||[]).length;
   var anon=(Fc.changedAcrossOrigins||[]).length;
   var linked=Math.max(0,total-anon);
   var single=(R.findability&&R.findability.score),singleGrade=(R.findability&&R.findability.grade)||Fc.grade;
   if(single==null){single=Fc.score;}
   
   var shownTotal=(Fc.shownCount!=null)?Fc.shownCount:((Fc.rows||[]).filter(function(r){return r&&r.state==="shown";}).length||total);
-  var recog=anon<Math.max(3,Math.round(shownTotal*0.2));
+  var recog=null;
   var cs={pending:false,originA:a,originB:b,total:total,anon:anon,linked:linked,score:Fc.score,grade:Fc.grade,
     single:single,singleGrade:singleGrade,singleColor:paBandFor(singleGrade).band,crossColor:paBandFor(Fc.grade).band,delta:Fc.score-single,
-    pct:total?Math.round(anon/total*100):0,answer:recog?"Yes":"No",
-    tone:recog?"var(--red)":"var(--green)",bg:recog?"var(--red-bg)":"var(--green-bg)",
-    result:recog
-      ? ("Enough stayed identical on both sites that a tracker present on each could link the visits to one person. "+anon+" of "+total+" signals changed; the rest matched.")
-      : ("Your fingerprint changed enough between the two sites that linking the visits is unreliable. "+anon+" of "+total+" signals differed.")};
+    pct:total?Math.round(anon/total*100):0,answer:Fc.complete===false?"Incomplete":!total?"No comparison":anon?"Changed":"Matched",
+    tone:"var(--text-2)",bg:"var(--hover)",
+    result:anon+" of "+total+" comparable readings differed. This experiment does not determine whether a tracker can recognize you."};
   var p=R.partitioning;
   if(pb)cs.partitionBlocked=pb;
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
@@ -2189,25 +2138,23 @@ function paRenderView(R){
   if(sa)sa.textContent="scanned "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   var score=F.score,grade=F.grade||"F",bg=paBandFor(grade),color=bg.band;
   var rand=paIsRand(R),cs=paCrossData(R);
-  var sentence=rand
-    ? ("Your browser shuffles its fingerprint per site. On one page it looks like "+score+"; its real protection is cross-site, measured below.")
-    : ((grade==="A"||grade==="B")?"Your browser is hard to identify. It gives away little that can follow you."
-      :grade==="C"?"Your browser is partly exposed. A tracker has a few clear ways to recognize you."
-      :"Your browser is easy to identify. It hands over enough to be followed across sites.");
+  var sentence=F.verdict;
   var strongN=(F.exposedStrong||[]).length;
   var supporting=(F.strongest?("Biggest tell: "+F.strongest+". "):"")+
     (strongN?(strongN===1?"One strong surface is still exposed.":strongN+" strong surfaces are still exposed."):"Nothing strong is exposed.")+
     (cs.pending?" The cross-site check is still running, its result appears below in a moment.":"");
+  if(F.complete===false)supporting=(F.checks.total-F.checks.unknown)+" of "+F.checks.total+" readings measured ("+F.coverage+"%). Hidden-weight range: "+F.score+"–"+F.upperBound+"%. Re-run to complete the missing measurements.";
   var groups=paGroupsFrom(F);
   var shown=groups.filter(function(g){return g.state==="shown";}).sort(function(a,b){return b.weight-a.weight;});
   var refused=groups.filter(function(g){return g.state==="refused";}).sort(function(a,b){return b.weight-a.weight;});
   var blended=groups.filter(function(g){return g.state==="blended";}).sort(function(a,b){return b.weight-a.weight;});
-  var main=shown.concat(blended).concat(refused),maxW=1;
+  var unknown=groups.filter(function(g){return g.state==="unknown";});
+  var main=unknown.concat(shown).concat(blended).concat(refused),maxW=1;
   main.forEach(function(g){if(g.weight>maxW)maxW=g.weight;});
   var tiles=[["Handed over",shown.length,shown.length?"var(--red)":"var(--muted)","shown"],
     ["Strong leaks",shown.filter(function(g){return g.weight>=3;}).length,shown.some(function(g){return g.weight>=3;})?"var(--red)":"var(--muted)","strong"],
     ["Masked",blended.length,blended.length?"var(--amber)":"var(--muted)","blended"],
-    ["Not readable",refused.length,refused.length?"var(--green)":"var(--muted)","refused"]];
+    ["Not readable",refused.length,refused.length?"var(--green)":"var(--muted)","refused"],["Not measured",unknown.length,"var(--text-3)","unknown"]];
   var mono="font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace";
   var card="background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);";
   var h='';
@@ -2223,7 +2170,7 @@ function paRenderView(R){
   h+=bg.glyph==="circle"?'<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" style="fill:'+color+';"></circle></svg>'
     :bg.glyph==="square"?'<svg width="11" height="11" viewBox="0 0 11 11"><rect width="11" height="11" style="fill:'+color+';"></rect></svg>'
     :'<svg width="13" height="11" viewBox="0 0 13 11"><path d="M6.5 0 L13 11 L0 11 Z" style="fill:'+color+';"></path></svg>';
-  h+='<span class="pa-mono" style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;">grade <span style="color:'+color+';">'+grade+'</span></span>';
+  h+='<span class="pa-mono" style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;">grade <span style="color:'+color+';">'+(grade==="I"?"incomplete":grade)+'</span></span>';
   h+='</div></div>';
   h+='<div class="pa-vtext">';
   h+='<div class="pa-mono" style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;">Verdict</div>';
@@ -2234,7 +2181,7 @@ function paRenderView(R){
   h+=paAxisPair(R,F,cs)+'</div></div>';
   h+='<div style="flex:1 1 340px;min-width:300px;display:flex;"><div style="flex:1;display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);padding:20px 22px;">';
   h+='<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;"><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><circle cx="9" cy="9" r="7" stroke-width="1.6" style="stroke:var(--text-3);"></circle><circle cx="21" cy="9" r="7" stroke-width="1.6" style="stroke:var(--accent);"></circle></svg>';
-  h+='<span style="font-size:15px;font-weight:650;color:var(--text);">Recognized on a second site?</span>';
+  h+='<span style="font-size:15px;font-weight:650;color:var(--text);">What changed on the second site?</span>';
   h+='<span style="margin-left:auto;padding:4px 11px;border-radius:999px;background:'+((cs.pending||cs.unavailable||cs.failed)?"var(--hover)":cs.bg)+';color:'+((cs.pending||cs.unavailable||cs.failed)?"var(--text-2)":cs.tone)+';font-size:12px;font-weight:700;white-space:nowrap;">'+(cs.pending?"Checking…":cs.unavailable?"http only":cs.failed?(cs.skipRand?"randomizes":"no response"):cs.answer)+'</span></div>';
   h+='<div class="pa-mono" style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;"><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">'+paEsc(cs.originA)+'</span><span style="color:var(--text-3);">&#8596;</span><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">'+paEsc(cs.originB)+'</span></div>';
   if(cs.pending){
@@ -2262,15 +2209,15 @@ function paRenderView(R){
   h+='</div></div>';
   var xb=R.crossBrowser;
   if(xb){
-    var xbYes=xb.exposed>=Math.ceil((xb.total||1)/2),xbTone=xb.exposed===0?"var(--green)":xbYes?"var(--gradeF)":"var(--amber)",xbBadge=xb.exposed===0?"No":xbYes?"Yes":"Partly";
+    var xbTone="var(--text-2)",xbBadge="Not tested";
     h+='<div style="flex:1 1 320px;min-width:290px;display:flex;"><div style="flex:1;display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow);padding:20px 22px;">';
     h+='<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;"><svg width="30" height="18" viewBox="0 0 30 18" fill="none"><rect x="2" y="3" width="15" height="12" rx="2.5" stroke-width="1.6" style="stroke:var(--text-3);"></rect><rect x="13" y="4" width="15" height="12" rx="2.5" stroke-width="1.6" style="stroke:var(--accent);fill:var(--panel-2);"></rect></svg>';
-    h+='<span style="font-size:15px;font-weight:650;color:var(--text);">Recognized in another browser?</span>';
+    h+='<span style="font-size:15px;font-weight:650;color:var(--text);">Cross-browser correlation</span>';
     h+='<span style="margin-left:auto;padding:4px 11px;border-radius:999px;background:var(--hover);color:'+xbTone+';font-size:12px;font-weight:700;white-space:nowrap;">'+xbBadge+'</span></div>';
     h+='<div class="pa-mono" style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;"><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">this browser</span><span style="color:var(--text-3);">&#8596;</span><span style="padding:4px 10px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--text-2);">another browser, same machine</span></div>';
     h+='<div style="margin-top:16px;display:flex;align-items:stretch;gap:10px;"><div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Hardware anchors exposed</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+xbTone+';letter-spacing:-.02em;">'+xb.exposed+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/'+xb.total+'</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+xbTone+';margin-top:2px;">'+(xb.exposed?(PAV.redact?"signature redacted":"signature "+paEsc(xb.hash)):"no signature to take")+'</div></div></div>';
-    h+='<div style="margin-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+(xbYes?"GPU, fonts, screen and other hardware readings are exposed, so this machine stays recognizable even in a different browser.":xb.exposed?"Some hardware readings still leak, so another browser on this machine is partly linkable.":"The hardware layer is masked, so switching browsers breaks the link.")+'</div>';
-    h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Follows you across browsers:</b> '+(xb.anchors&&xb.anchors.length?xb.anchors.map(paEsc).join(", "):"nothing exposed")+'. Hardware and OS signals, separate from the per-site test on the left.</div>';
+    h+='<div style="margin-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+"These hardware and OS readings may aid correlation. No second browser was measured, so cross-browser recognition is not established."+'</div>';
+    h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Observable candidates:</b> '+(xb.anchors&&xb.anchors.length?xb.anchors.map(paEsc).join(", "):"nothing exposed")+'. Hardware and OS signals, separate from the per-site test on the left.</div>';
     h+='</div></div>';
   }
   h+='</div>';
@@ -2310,7 +2257,7 @@ function paRenderView(R){
       h+='<div class="pa-ev">';
       g.rows.forEach(function(r,ri){
         var rm=PASM[r.state]||PASM.refused;
-        var rv=(r.state!=="shown"&&r.okLabel)?r.okLabel:String(r.value==null?"":r.value);
+        var rv=((r.state==="refused"||r.state==="blended")&&r.okLabel)?r.okLabel:String(r.value==null?"":r.value);
         if(!rv)rv=r.state==="blended"?"reported a shared value":"nothing returned";
         if(PAV.redact)rv="•••••••••";
         h+='<div class="pa-rdg"'+(ri?' style="border-top:1px solid var(--line-soft);"':'')+'>'
@@ -2486,19 +2433,19 @@ function paSave(kind){
   var K=window.__KIT;if(!K||!K.findability)return;
   var F=K.findability,Fc=K.findabilityCross,cs=paCrossData(K),rand=paIsRand(K),groups=paGroupsFrom(F);
   var who=paIdentity(K);
-  var verdict=rand?"Per-site randomizer":(F.grade==="A"||F.grade==="B")?"Hard to identify":F.grade==="C"?"Partly exposed":"Easy to identify";
+  var verdict=F.verdict;
   if(kind==="summary"){
     paDownload("privacyassay-summary-"+(PAV.redact?("score"+F.score):(K.fingerprint||"report"))+".json",{
-      schema:"privacyassay-summary/1.0",generated:new Date().toISOString(),
-      browser:who,verdict:verdict,score:F.score,grade:F.grade,randomizer:rand,
-      crossSite:Fc?{score:Fc.score,grade:Fc.grade,signalsChanged:cs.anon,signalsCompared:cs.total,recognizedOnSecondSite:cs.answer==="Yes"}:null,
+      schema:"privacyassay-summary/1.1",generated:new Date().toISOString(),
+      browser:who,version:PRIORS.version,verdict:verdict,score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,upperBound:F.upperBound,randomizer:rand,
+      crossSite:Fc?{score:Fc.score,grade:Fc.grade,complete:Fc.complete,signalsChanged:cs.anon,signalsCompared:cs.total,recognizedOnSecondSite:null}:null,
       cappedBy:F.strongest||null,topLeaks:(F.exposedStrong||[]),
-      handedOver:groups.filter(function(g){return g.state==="shown";}).sort(function(a,b){return b.weight-a.weight;})
+      handedOver:groups.filter(function(g){return g.rows.some(function(r){return r.state==="shown";});}).sort(function(a,b){return b.weight-a.weight;})
         .map(function(g){return {surface:g.reading,weight:g.weight,exposed:g.exposedLabel};}),
-      counts:{readingsHidden:F.checks.held,readingsTotal:F.checks.total,strongLeaks:(F.exposedStrong||[]).length,
+      counts:{unknown:F.checks.unknown,readingsHidden:F.checks.held,readingsTotal:F.checks.total,strongLeaks:(F.exposedStrong||[]).length,
         masked:(F.rows||[]).filter(function(r){return r.state==="blended";}).length,
         notReadable:(F.rows||[]).filter(function(r){return r.state==="refused";}).length},
-      note:"Score is the share of what this tool checks that this browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. It measures how identifiable you are, not how well a bot is hidden. Full method in METHODOLOGY.md."
+      note:"Score is the share of what this tool checks that this browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. It summarizes observed exposure, not the probability of identification. Full method in METHODOLOGY.md."
     });return;
   }
   var red=PAV.redact;
@@ -2513,9 +2460,9 @@ function paSave(kind){
       var v=r[1];if(!red)return r;
       var k0=String(r[0]).replace(/ = [\s\S]*$/," = [redacted]");
       return [k0,Array.isArray(v)?[paRedactVal(r[0],v[0]),v[1]]:paRedactVal(r[0],v)];})};});
-  var out={schema:"privacyassay-full/1.0",
+  var out={schema:"privacyassay-full/1.1",
     summary:{generated:new Date().toISOString(),browser:who,verdict:verdict,
-      score:F.score,grade:F.grade,randomizer:rand,crossSiteScore:Fc?Fc.score:null,crossSiteGrade:Fc?Fc.grade:null,
+      score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,upperBound:F.upperBound,randomizer:rand,crossSiteScore:Fc?Fc.score:null,crossSiteGrade:Fc?Fc.grade:null,
       biggestLeak:F.strongest||null,strongLeaks:(F.exposedStrong||[]),redacted:red,
       note:"Provenance text for each reading is not repeated here; it is static per version and lives in METHODOLOGY.md."},
     version:K.version,
@@ -2547,7 +2494,7 @@ document.addEventListener("click",function(e){
 
 /* RUN PIPELINE - collect, analyse, assemble the report object ============ */
 async function runKit(){
-  window.__KIT_DONE=false;
+  window.__KIT_DONE=false;window.__KIT=null;window.__paObsB=null;window.__paApplyCross=null;window.__paApplyPartition=null;
   PAV.lastScore=null;PAV.disp=0;
   var BEACON=/pabeacon/.test(location.hash)||/pabeacon/.test(location.search);
   C={};
@@ -2559,7 +2506,7 @@ async function runKit(){
   [collectGPU,collectAudioSync,collectFonts,collectNavigator,collectUAData,collectScreen,collectTZ,collectCSS,collectEngine,collectPlugins,collectFeatures,collectTiming,collectStorageSync,collectDisplayCaps,collectWebRTCCaps,collectWeb3,collectSensors,collectSandbox,collectInstrumentation,collectBot,collectLeaks2026].forEach(function(f){try{f();}catch(e){}});
 
 /* - phase 2: awaited collectors, each isolated from ------ */
-  var _pTry=function(f){return Promise.resolve().then(f).catch(function(){return null;});};
+  var _pTry=function(f){return paDeadline(f,5000).catch(function(){return null;});};
   await _pTry(collectWebGPU);
   await _pTry(collectAI);
   await _pTry(collectDeviceAccess);
@@ -2572,9 +2519,9 @@ async function runKit(){
     var sbr=C["Sensors & Battery"].rows;for(var bi=0;bi<sbr.length;bi++){if(sbr[bi][0]==="navigator.getBattery"){sbr[bi][1]=["present"+(batId?"":" (neutral - reports a non-identifying value)"),batId?"mid":"ok"];break;}}
     C["Sensors & Battery"].hash=catHash(C["Sensors & Battery"].rows);}
   var hz=await _pTry(refreshRate);if(hz&&C["Timing & Performance"]){C["Timing & Performance"].rows.push(["display refresh rate (rAF)",hz+" Hz"]);C["Timing & Performance"].hash=catHash(C["Timing & Performance"].rows);}
-  try{if(navigator.storage&&navigator.storage.estimate){var est=await navigator.storage.estimate();if(C["Storage & State"])C["Storage & State"].rows.push(["storage quota / usage (device class, live - not hashed)",Math.round((est.quota||0)/1048576)+"MB / "+Math.round((est.usage||0)/1048576)+"MB"]);}}catch(e){}
-  try{if(indexedDB.databases){var dbs=await indexedDB.databases();if(C["Storage & State"]){var dbn=(dbs||[]).map(function(x){return x.name;}).filter(function(n){return n&&n!=="pa_part"&&n.indexOf("pa_")!==0;});C["Storage & State"].rows.push(["IndexedDB databases (persisted re-id, survives localStorage clear)",[dbn.length?dbn.join(","):"none",dbn.length?"no":"ok"]]);}}}catch(e){}
-  try{var isGecko=false;try{isGecko=("mozInnerScreenX" in window);}catch(e){}if(isGecko&&indexedDB.databases&&indexedDB.open){var pn=["pa_z9","pa_a1","pa_m5","pa_b2","pa_q7","pa_c3"];await Promise.all(pn.map(function(n){return new Promise(function(r){try{var q=indexedDB.open(n);q.onsuccess=function(){try{q.result.close();}catch(e){}r();};q.onerror=function(){r();};q.onblocked=function(){r();};}catch(e){r();}});}));var mine=(await indexedDB.databases()).map(function(x){return x.name;}).filter(function(n){return pn.indexOf(n)>-1;});var srt=mine.slice().sort();var vuln=mine.length>=2&&JSON.stringify(mine)!==JSON.stringify(srt);var tgt=C["Cross-Origin Leaks"]||C["Storage & State"];if(tgt)tgt.rows.push(["IndexedDB databases() ordering",[mine.length<2?"inconclusive":vuln?"non-canonical order (older engines)":"canonical sorted order",vuln?"no":"ok"]]);pn.forEach(function(n){try{indexedDB.deleteDatabase(n);}catch(e){}});}}catch(e){}
+  try{if(navigator.storage&&navigator.storage.estimate){var est=await paDeadline(function(){return navigator.storage.estimate();},3500);if(C["Storage & State"])C["Storage & State"].rows.push(["storage quota / usage (device class, live - not hashed)",Math.round((est.quota||0)/1048576)+"MB / "+Math.round((est.usage||0)/1048576)+"MB"]);}}catch(e){}
+  try{if(indexedDB.databases){var dbs=await paDeadline(function(){return indexedDB.databases();},3500);if(C["Storage & State"]){var dbn=(dbs||[]).map(function(x){return x.name;}).filter(function(n){return n&&n!=="pa_part"&&n.indexOf("pa_")!==0;});C["Storage & State"].rows.push(["IndexedDB databases (persisted re-id, survives localStorage clear)",[dbn.length?dbn.join(","):"none",dbn.length?"no":"ok"]]);}}}catch(e){}
+  try{var isGecko=false;try{isGecko=("mozInnerScreenX" in window);}catch(e){}if(isGecko&&indexedDB.databases&&indexedDB.open){var pn=["pa_z9","pa_a1","pa_m5","pa_b2","pa_q7","pa_c3"];await paDeadline(function(){return Promise.all(pn.map(function(n){return new Promise(function(r){try{var q=indexedDB.open(n);q.onsuccess=function(){try{q.result.close();}catch(e){}r();};q.onerror=function(){r();};q.onblocked=function(){r();};}catch(e){r();}});}));},3500);var mine=(await paDeadline(function(){return indexedDB.databases();},3500)).map(function(x){return x.name;}).filter(function(n){return pn.indexOf(n)>-1;});var srt=mine.slice().sort();var vuln=mine.length>=2&&JSON.stringify(mine)!==JSON.stringify(srt);var tgt=C["Cross-Origin Leaks"]||C["Storage & State"];if(tgt)tgt.rows.push(["IndexedDB databases() ordering",[mine.length<2?"inconclusive":vuln?"non-canonical order (older engines)":"canonical sorted order",vuln?"no":"ok"]]);pn.forEach(function(n){try{indexedDB.deleteDatabase(n);}catch(e){}});}}catch(e){}
   var audio=(await _pTry(collectAudioAsync))||{hash:"ERR"};
   if(C["Audio & Media Codecs"]){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
@@ -2601,7 +2548,7 @@ async function runKit(){
       var ffTxt=ffGap.toFixed(1)+"ms (real="+ffProbe.realMs+"ms fake="+ffProbe.fakeMs+"ms, missing-slower "+(typeof sgn==="number"?Math.round(sgn*100):"?")+"%)"+((medDiff<5&&ffGap>=5)?" - gap is timer noise, installed vs missing medians equal = no usable font side-channel":"");
       C["Font Enumeration"].rows.push(["FontFace local() timing gap (median of "+ffProbe.samples+", found vs not-found)",[ffTxt,mark]]);
     } else if(/reject/i.test(ffProbe.realStatus||"")){
-      C["Font Enumeration"].rows.push(["FontFace local() blocked (when the engine rejects local() there is no timing side-channel to enumerate fonts)",["blocked - protected","ok"]]);
+      C["Font Enumeration"].rows.push(["FontFace local() unavailable (missing font or denied access; protection not established)",["inconclusive - local font unavailable","mid"]]);
     } else {
       C["Font Enumeration"].rows.push(["FontFace local() timing (inconclusive - probe timed out, no usable font side-channel measured)",["inconclusive","ok"]]);
     }
@@ -2609,17 +2556,18 @@ async function runKit(){
   }
   var _rv=function(cat,lab){var c=C[cat];if(!c)return"";var ll=lab.toLowerCase();for(var i=0;i<c.rows.length;i++){if(String(c.rows[i][0]).toLowerCase()===ll){var v=c.rows[i][1];return Array.isArray(v)?v[0]:v;}}return"";};
   var _lv={canvas:fnv(String(_rv("Active Rendering & GPU","canvas 2D toDataURL"))+"~"+String(_rv("Active Rendering & GPU","canvas getImageData px"))),webgl:String(_rv("Active Rendering & GPU","WebGL render hash")||""),audio:String(_rv("Audio & Media Codecs","AudioContext render hash")||""),rects:fnv(String(_rv("CSS & Rendering","getBoundingClientRect hash"))+"~"+String(_rv("CSS & Rendering","SVG getComputedTextLength+BBox"))),fonts:fnv(String(_rv("Font Enumeration","font list hash"))+"~"+String(_rv("Font Enumeration","measureText width")))};
+  PA_UACH=await highEntropy();
   if(BEACON){
     
     var _btm=/pabeacon=([a-z0-9]+)/i.exec(location.hash+location.search);
     var _st=null;try{_st=await Promise.race([paStoreEach("r",_btm?_btm[1]:""),new Promise(function(r){setTimeout(function(){r(null);},6000);})]);}catch(e){}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
+    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
-  R.uaHigh=await highEntropy();if(R.uaHigh)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
+  R.uaHigh=PA_UACH;if(R.uaHigh&&!R.uaHigh.__paStatus)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
   R.headers=await headers();
   R.leaks.webrtc=await webrtc();
   R.leaks.ext=await extScan();
@@ -2628,11 +2576,10 @@ async function runKit(){
   try{
     var _names=(R.whoYouAre||[]).map(function(f){return f.what;}).join(" | "),_ua=navigator.userAgent||"";
     var _fam=paFamilyKey(_names,_ua);
-    var _obs=observeVectors();
-    _obs._noisy=(function(){try{var b=observeVectors(),n={};for(var k in _obs){if(!Object.prototype.hasOwnProperty.call(_obs,k)||k==="_noisy")continue;var x=_obs[k],y=b[k];if(x!=null&&y!=null&&String(x)!==""&&String(x)!==String(y))n[k]=1;}return n;}catch(e){return {};}})();
-    _obs.webrtcIP=PAV.webrtcStun?((R.leaks.webrtc&&(R.leaks.webrtc.publicIPs||[]).length)?"exposed":""):null;
+    var _obs=await repeatVectors();
+    _obs.webrtcIP=PAV.webrtcStun?(R.leaks.webrtc.publicIPs.length?"exposed":R.leaks.webrtc.status==="complete"?"not-exposed":/^(unsupported|blocked)$/.test(R.leaks.webrtc.status)?R.leaks.webrtc.status:"ERR:"+R.leaks.webrtc.status):null;
+    _obs.storageCarry=PAV.storageTest?"ERR:not-run":undefined;
     _obs.extEnum=(function(){try{var es=R.leaks.ext||{};var nodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;var stk="";try{throw new Error("p");}catch(e){stk=e.stack||"";}return (es.detectable||nodes>0||/chrome-extension:\/\/|moz-extension:\/\//i.test(stk))?"exposed":undefined;}catch(e){return undefined;}})();
-    _obs.uaCh=(function(){var u=R.uaHigh;if(!u)return "";var parts=[u.model,u.platformVersion,u.architecture].filter(function(x){return x&&String(x).length;});return parts.length?parts.join(" | "):"";})();
     R.findability=findability(_obs,_fam);
     R.findability.observed=_obs;
     R.findability.familyKey=_fam;
@@ -2642,19 +2589,18 @@ async function runKit(){
   cat("Browser Identification",idRows,"What this browser actually is, worked out from its own defenses. Protection is a signature: the more distinctive the defense, the more precisely it names you.");
   if(R.findability){
     var F=R.findability,fRows=[];
-    var STATEWORD={shown:"SHOWN",refused:"refused",blended:"blended"};
+    var STATEWORD={shown:"SHOWN",refused:"refused",blended:"blended",unknown:"unknown"};
     fRows.push(["Readings your browser held",
-      F.checks.held+" of "+F.checks.total+" readings gave nothing away. The other "+F.checks.exposed+
-      " handed over your real value."]);
+      F.checks.held+" masked, varied or unavailable; "+F.checks.exposed+" observable; "+F.checks.unknown+" unknown, out of "+F.checks.total+" readings."]);
     fRows.push(["Protection score",
-      "You hide "+F.score+"% of what this tool checks for (grade "+F.grade+")."+
+      F.verdict+
       (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")]);
     F.rows.forEach(function(r){
       var tag=r.state==="shown"?(STATEWORD.shown+" ("+(TIERWORD[r.tier]||"")+" clue)"):STATEWORD[r.state];
       var dispVal=(r.state!=="shown"&&r.okLabel)?r.okLabel:String(r.value).slice(0,40);
       fRows.push([r.label+" = "+dispVal,
         [tag+". "+r.why,
-         r.state==="shown"?(r.tier>=3?"no":"mid"):"ok"]]);
+         r.state==="shown"?(r.tier>=3?"no":"mid"):r.state==="unknown"?"mid":"ok"]]);
     });
     cat("How findable you are",fRows,
       "The whole check, in the open. Each reading is rated strong, medium or weak by how much it gives you away, in our judgment. A tracker needs one strong stable clue to follow you, or several weaker ones together.");
@@ -2676,7 +2622,7 @@ async function runKit(){
       (navigator.languages&&navigator.languages[0])||navigator.language||"",vend];
     return fnv(parts.join("|"));
   }catch(e){return "ERR";}})();
-  if(C["Navigator Properties"])C["Navigator Properties"].rows.push(["loose fingerprint (coarse device signature, stable across per-site farbling and small changes)",R.looseHash]);
+  if(C["Navigator Properties"])C["Navigator Properties"].rows.push(["loose fingerprint (coarse device signature, stability not established)",R.looseHash]);
   R.crossBrowser=(function(){try{
     var F=R.findability;if(!F||!F.rows)return null;
     var HW={"GPU name":1,"installed fonts":1,"screen size":1,"CPU cores":1,"timezone":1,"colour depth":1,"platform":1};
@@ -2686,7 +2632,7 @@ async function runKit(){
   }catch(e){return null;}})();
   if(R.crossBrowser&&C["How findable you are"]){var _cb=R.crossBrowser;
     C["How findable you are"].rows.splice(2,0,["cross-browser identity",
-      [_cb.exposed+" of "+_cb.total+" hardware and OS anchors exposed (GPU, fonts, screen, cores, timezone); unlike browser-specific readings these follow you into a DIFFERENT browser on the same machine"+(_cb.exposed?" - signature "+_cb.hash:""),
+      [_cb.exposed+" of "+_cb.total+" hardware and OS anchors exposed (GPU, fonts, screen, cores, timezone); cross-browser stability and recognition have not been tested"+(_cb.exposed?" - signature "+_cb.hash:""),
        _cb.exposed>=Math.ceil(_cb.total/2)?"no":(_cb.exposed?"mid":"ok")]]);}
 
 
@@ -2702,7 +2648,7 @@ async function runKit(){
   var topUa=probe(function(){return navigator.userAgent;});
   var rf=R.realm||{};
   if(!rf.err)realmRow("iframe realm hw/tz matches top", rf.hw===topHw&&(""+rf.tz)===topTz, "iframe hw="+rf.hw+" tz="+rf.tz);
-  else realmRow("iframe realm neutralized (blocked/errored, no fingerprint to leak)", true, ""+rf.err);
+  else cohRows.push(["iframe realm unmeasured",[String(rf.err),"mid"]]);
   var wk=R.worker||{};
   if(!wk.err){
     realmRow("worker scope: hardwareConcurrency matches top", wk.hw===topHw, "worker="+wk.hw+" vs top="+topHw);
@@ -2711,7 +2657,7 @@ async function runKit(){
     realmRow("worker scope: timezone matches top", (""+wk.tzo)===topTz, "worker="+wk.tzo+" vs top="+topTz);
     realmRow("worker scope: WebGL renderer matches top", (topRend?(!wk.gpu||wk.gpu===topRend):(!wk.gpu||!realGpu(wk.gpu))), "worker="+String(wk.gpu||"").slice(0,28)+" vs top="+(topRend?topRend.slice(0,28):"(blocked on top - worker leaks the REAL GPU)"));
   } else {
-    realmRow("worker realm neutralized (blocked/errored, no worker fingerprint to leak)", true, ""+wk.err);
+    cohRows.push(["worker realm unmeasured",[String(wk.err),"mid"]]);
   }
 
   var shw=R.sharedWorker||{};
@@ -2722,14 +2668,14 @@ async function runKit(){
     realmRow("SharedWorker scope: timezone matches top", (""+shw.tzo)===topTz, "sharedworker="+shw.tzo+" vs top="+topTz);
     realmRow("SharedWorker scope: WebGL renderer matches top", (topRend?(!shw.gpu||shw.gpu===topRend):(!shw.gpu||!realGpu(shw.gpu))), "sharedworker="+String(shw.gpu||"").slice(0,28)+" vs top="+(topRend?topRend.slice(0,28):"(blocked on top - SharedWorker leaks the REAL GPU)"));
   } else {
-    realmRow("SharedWorker realm neutralized (blocked/errored, no SharedWorker fingerprint to leak)", true, ""+shw.err);
+    cohRows.push(["SharedWorker realm unmeasured",[String(shw.err),"mid"]]);
   }
   C["Coherence / Lie Detection"]={rows:cohRows,handHash:true,hash:fnv(j(R.coherence.checks)),note:"A defense is only good if the spoof is undetectable to an adversarial lie-detector. Native toString + no leaked .prototype + Reflect.ownKeys==[length,name], props on the prototype, screen≥window, audio getChannelData==copyFromChannel (no one-path farble), and BOTH the dedicated-Worker and SharedWorker scopes' hardwareConcurrency/deviceMemory/userAgent/timezone/WebGL-renderer matching the top frame must hold. A page-only hook that misses either worker scope leaks real hardware there = the classic extension catch."};
 
 /* - phase 6: network and extension rows ------------------ */
   var lk=R.leaks.webrtc||{};var lkRows=[["WebRTC candidate IPs",(lk.ips||[]).join(", ")||"none"],["private/local IP leaked",[((lk.privateIPs||[]).length?("YES: "+lk.privateIPs.join(",")):"none"),(lk.privateIPs||[]).length?"no":"ok"]],["mDNS candidates",(lk.mdns||[]).length]];
 
-  lkRows.push(["public IP exposed to JS via WebRTC (STUN srflx)",[((lk.publicIPs||[]).length?("YES: "+lk.publicIPs.join(",")+" - any script reads it, no server needed; a WebRTC guard closes this"):"none - WebRTC leaks no public IP to JS"),(lk.publicIPs||[]).length?"no":"ok"]]);
+  lkRows.push(["public IP exposed to JS via WebRTC (STUN srflx)",[((lk.publicIPs||[]).length?("YES: "+lk.publicIPs.join(",")+" - any script reads it, no server needed; a WebRTC guard closes this"):(lk.status==="complete"?"none observed in this completed test":"not established: "+(lk.status||"not run"))),(lk.publicIPs||[]).length?"no":lk.status==="complete"?"ok":"mid"]]);
   lkRows.push(["public IP in HTTP/TCP requests (separate path)",["your real IP still reaches every server you visit - not JS-hideable, needs VPN/Tor","info"]]);
   lkRows.push(["TLS JA3 / JA4 fingerprint",["wire-level, survives VPN, same for all Chrome-on-OS; not JS-reachable","info"]]);
   lkRows.push(["HTTP/2 SETTINGS + pseudo-header order",["stack-level; not JS-reachable","info"]]);
@@ -2742,15 +2688,15 @@ async function runKit(){
   var extStackLeak=(function(){var st="";try{throw new Error("p");}catch(e){st=e.stack||"";}return /chrome-extension:\/\/|moz-extension:\/\//i.test(st);})();
   var extNodes=0;try{extNodes=document.querySelectorAll('script[src^="chrome-extension://"],link[href^="chrome-extension://"],script[src^="moz-extension://"],link[href^="moz-extension://"]').length;}catch(e){}
   var es=R.leaks.ext||{};
-  var enumTxt=es.detectable?("DETECTED "+es.found.length+" of "+es.tested+": "+es.found.join(", ")):("0 of "+(es.tested||0)+" detected");
+  var enumTxt="not measured: resource enumeration is constrained by this page’s CSP";
   var extRows=[
     ["privacy tool leaks its origin in Error.stack",[extStackLeak?"LEAKED chrome-extension:// origin":"clean - no extension origin",extStackLeak?"no":"ok"]],
     ["page-enumerable chrome-extension:// script/link nodes",[extNodes?(extNodes+" node(s) - self-leak"):"none",extNodes?"no":"ok"]],
-    ["popular-extension enumeration (web_accessible_resources scan)",[enumTxt,es.detectable?"no":"ok"]],
-    ["is the tested extension itself enumerable here?",[es.detectable?"YES - a static WAR path exposed it":"not enumerable (use_dynamic_url, or none installed)",es.detectable?"no":"ok"]],
+    ["popular-extension enumeration (web_accessible_resources scan)",[enumTxt,"mid"]],
+    ["is the tested extension itself enumerable here?",["unknown: no resource-enumeration test completed","mid"]],
     ["extension inferred from a patched API (behavioural, not enumeration)",(function(){var a=(R.whoYouAre||[]).filter(function(f){return f.kind==="addon";});return a.length?["FOUND: "+a.map(function(f){return f.what+" - "+f.evidence;}).join("; "),"info"]:["none revealed itself through a patched API","info"];})()]
   ];
-  C["Extension Detection"]={rows:extRows,handHash:true,hash:fnv(j({stack:extStackLeak,nodes:extNodes,det:!!es.detectable})),note:"Can a site tell WHICH extensions you run - including this privacy tool itself? Three vectors. (1) SELF-LEAK: a chrome-extension:// URL surfacing in an Error.stack, or an injected <script>/<link> node, names the extension outright - a well-built tool leaks neither. (2) ENUMERATION: image-loading each extension's declared static web_accessible_resource, the standard extension-enumeration technique. A hit proves presence; a miss is inconclusive, because a correct MV3 extension sets use_dynamic_url so its per-session resource URL is unguessable and it stays invisible here (that is the goal, not a gap). Note the hard limit: an extension can hide only ITS OWN resources this way - it cannot suppress OTHER extensions' static WARs, so a low count reflects what is installed, not active blocking. Probed set is popular + positive-only: a stale path is a silent miss, never a false positive. (3) BEHAVIOURAL: the last row cross-references the identity engine - an extension that never exposes a resource can still betray itself by patching a JS API (Privacy Badger overriding navigator.doNotTrack, JShelter zeroing native arities). That inference is informational context here, kept out of the enumeration count."};
+  C["Extension Detection"]={rows:extRows,handHash:true,hash:fnv(j({stack:extStackLeak,nodes:extNodes,det:!!es.detectable})),note:"Positive page-visible extension URLs and behavioral hints are reported. Resource enumeration is not measured under this page’s CSP. Absence of evidence does not establish absence or protection."};
 
   R.categories=Object.keys(C).reduce(function(a,k){a[k]={hash:C[k].handHash?C[k].hash:catHash(C[k].rows),rows:C[k].rows};return a;},{});
   R.coherenceScore={pass:cohPass,total:cohTot};
@@ -2845,15 +2791,16 @@ async function runKit(){
     
     if(!w||!w.tok)return;
     var wrote=(w.wrote&&w.wrote.ok)||{},refused=(w.wrote&&w.wrote.refused)||[],unsup=(w.wrote&&w.wrote.unsupported)||[],read=readBack||{},names=Object.keys(wrote);
-    var leaked=[],held=[];
-    names.forEach(function(k){ (read[k]===w.tok?leaked:held).push(k); });
+    var leaked=[],held=[],unknown=(w.wrote&&w.wrote.stalled||[]).slice();
+    names.forEach(function(k){if(!Object.prototype.hasOwnProperty.call(read,k)){unknown.push(k);return;}(read[k]===w.tok?leaked:held).push(k);});
     var CACHE_MECH={"script cache":1,"stylesheet cache":1,"image cache":1,"prefetch cache":1,"iframe cache":1,"XHR cache":1,"HTTP cache":1};
     var leakedPersistent=leaked.filter(function(k){return !CACHE_MECH[k];});
-    var total=names.length+refused.length;
-    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup,tested:total,origin:w.origin};
+    var total=leaked.length+held.length+refused.length;
+    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup.concat(unknown),tested:total,origin:w.origin};
     try{
-      if(total&&R.findability&&R.findability.observed){
-        var sc=leakedPersistent.length?("carried: "+leakedPersistent.join(", ")):"";
+      if(R.findability&&R.findability.observed){
+        var completeStores=held.concat(refused).filter(function(k){return !CACHE_MECH[k];});
+        var sc=leakedPersistent.length?("carried: "+leakedPersistent.join(", ")):unknown.some(function(k){return !CACHE_MECH[k];})?"ERR:storage-incomplete":completeStores.length?"not-carried":"ERR:no-storage-control";
         R.findability.observed.storageCarry=sc;
         _rescore();
         if(window.__paObsB){window.__paObsB.storageCarry=sc;window.__paApplyCross(window.__paObsB);return;}
@@ -2864,10 +2811,12 @@ async function runKit(){
   var rep=document.getElementById("report");
   var order=["How findable you are","Browser Identification","Active Rendering & GPU","WebGPU","Audio & Media Codecs","Font Enumeration","Navigator Properties","User-Agent Client Hints (JS)","Screen & Display","Display Capabilities","Timezone & Locale","CSS & Rendering","JS Engine & Math","Plugins & MIME Types","Browser Feature Detection","Built-in AI APIs","WebRTC Capabilities","Web3 / Wallet","Timing & Performance","Storage & State","Device Access & Permissions","Media Codecs (WebCodecs/MSE)","Media Capabilities & DRM","Sensors & Battery","Modern Device & Capability APIs","Privacy Sandbox / Ad-Tracking","Bot / Headless / Automation","Instrumentation & Extension Leak","Extension Detection","Coherence / Lie Detection","Cross-Origin Leaks","Network Leaks & Headers"];
   paRenderRaw(R,order);
-  document.getElementById("foot").innerHTML="<b>Method.</b> Each reading is your real value (shown), the value everyone on your browser shares (blended), or nothing (refused). Each is rated strong, medium or weak by how much it gives you away; readings from the same hardware count once, and the score is the share of that weight your browser hides. A strong surface still shown is named beside the grade, because a tracker can follow you by one alone. Served locally, a second score keeps only what survives across two sites, and storage that carries across sites joins it. Full result in the console as __KIT.findability.";
+  document.getElementById("foot").innerHTML="<b>Method.</b> Shown values are observable; blended values were masked or varied; refused APIs were unavailable; unknown measurements receive no protection credit. Grade I means incomplete. The score summarizes this experiment, not anonymity. <a href=\"methodology.html\">Methodology</a>.";
 }
 
 /* CROSS-ORIGIN TEST + TOOLBAR - popup handshake, save, print ============= */
+function paMessageMatches(e,origin,token,sources){return !!(e&&e.source&&e.origin===origin&&sources.indexOf(e.source)>=0&&e.data&&typeof e.data==="object"&&e.data.paToken===token&&e.data.paVersion===PRIORS.version);}
+function paCrossMessage(e,origin,token,sources){if(!paMessageMatches(e,origin,token,sources)||!e.data.paLink||!e.data.paObs||typeof e.data.paObs!=="object"||Array.isArray(e.data.paObs))return false;return PRIORS.surfaces.filter(function(s){return !s.optional;}).every(function(s){var v=e.data.paObs[s.k];return (typeof v==="string"&&v.length<=20000)||(typeof v==="number"&&isFinite(v));});}
 function paBackOrigin(){var o=otherOrigin();if(o)return location.protocol+"//"+o;try{if(PA_HOME&&/^https?:/i.test(PA_HOME)&&!paIsLocalPage())return new URL(PA_HOME).origin;}catch(e){}return "";}
 function otherOrigin(){if(!/^https?:$/.test(location.protocol))return null;var hn=location.hostname,pt=location.port?":"+location.port:"";if(hn==="localhost")return "127.0.0.1"+pt;if(hn==="127.0.0.1")return "localhost"+pt;return null;}
 function paIsLocalPage(){return !/^https?:$/.test(location.protocol)||/^(localhost|\[?::1\]?|127(\.\d{1,3}){3})$/i.test(location.hostname);}
@@ -2875,21 +2824,22 @@ function paCompanion(){var oh=otherOrigin();if(oh)return {host:oh,origin:locatio
 function paRunCrossWindow(){
   
   var K=window.__KIT;if(!K||!K.findability)return;
-  var comp=paCompanion();var oh=comp?comp.host:null;
+  var comp=window.__paSkipCross?null:paCompanion();var oh=comp?comp.host:null;
   if(!oh){K.crossFailed="The two-site test needs a second origin. Serve the folder over http (python serve.py) to use the loopback pair, or point PA_COMPANION and PA_HOME at your own two hosts.";K.crossCanMeasure=false;try{paRenderView(K);}catch(e){}return;}
+  var runK=K;
   var xTok="pa"+Math.random().toString(36).slice(2,10);
-  var pop=window.open("about:blank","pa_unlink","width=460,height=320,left=100,top=100");
+  var pop=window.open("about:blank","pa_unlink_"+xTok,"width=460,height=320,left=100,top=100");
   if(!pop){K.crossFailed="The window was blocked. Allow pop-ups for this page, then press Measure again.";K.crossCanMeasure=true;try{paRenderView(K);}catch(e){}return;}
   try{pop.document.write('<!doctype html><meta charset="utf-8"><title>Privacyassay - second site</title><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;font:14px system-ui,sans-serif;background:#0f1420;color:#dbe4f0"><div style="max-width:300px;padding:24px">Measuring this browser on a second site, then closing on its own.</div></body>');pop.document.close();}catch(e){}
   K.crossMeasuring=true;K.crossFailed="measuring";try{paRenderView(K);}catch(e){}
   var done=false;
   function clean(){window.removeEventListener("message",onMsg);try{if(pop)pop.close();}catch(x){}}
-  function onMsg(e){if(done||!e.data||!e.data.paLink)return;if(!comp||!e.origin||e.origin!==comp.origin)return;done=true;clean();
+  function onMsg(e){if(done||window.__KIT!==runK||!paCrossMessage(e,comp.origin,xTok,[pop]))return;done=true;clean();
     K.crossMeasuring=false;K.crossFailed=null;K.crossSkippedRandomizer=false;K.crossCanMeasure=false;
     if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
   window.addEventListener("message",onMsg);
   try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){clean();K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="Could not open the second site. Press Measure to retry.";try{paRenderView(K);}catch(e){}}
-  setTimeout(function(){if(!done){done=true;clean();K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="The second-site window did not respond. Press Measure to try again.";try{paRenderView(K);}catch(_e){}}},PA_CROSS_MS);
+  setTimeout(function(){if(!done){done=true;clean();if(window.__KIT!==runK)return;K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="The second-site window did not respond. Press Measure to try again.";try{paRenderView(K);}catch(_e){}}},PA_CROSS_MS);
 }
 (function(){var wo=document.getElementById("webrtcOptin");if(wo)wo.addEventListener("change",function(e){PAV.webrtcStun=!!e.target.checked;});var so=document.getElementById("storageOptin");if(so)so.addEventListener("change",function(e){PAV.storageTest=!!e.target.checked;});var ro=document.getElementById("redactOptin");if(ro){PAV.redact=!!ro.checked;ro.addEventListener("change",function(e){PAV.redact=!!e.target.checked;var K=window.__KIT;if(K&&K.findability){paRenderView(K);paRenderRaw(K,null);}});}})();
 
@@ -2902,11 +2852,11 @@ document.getElementById("runBtn").addEventListener("click",function(){
   var wantStore=oh&&!!PAV.storageTest;
   var isBrave=oh&&(function(){try{return !!navigator.brave;}catch(e){return false;}})();
   
-  var useWindow=oh&&(isBrave||wantStore);
+  var useWindow=!!oh;
   
-  var pop=useWindow?window.open("about:blank","pa_unlink","width=460,height=320,left=100,top=100"):null;
+  var pop=useWindow?window.open("about:blank","pa_unlink_"+xTok,"width=460,height=320,left=100,top=100"):null;
   if(pop){try{pop.document.write('<!doctype html><meta charset="utf-8"><title>Privacyassay - second site</title><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;font:14px system-ui,sans-serif;background:#0f1420;color:#dbe4f0"><div style="max-width:300px;padding:24px">Measuring this browser on a second site, then closing on its own.</div></body>');pop.document.close();}catch(e){}}
-  var ifr=(oh&&(!useWindow||!pop))?(function(){var f=document.createElement("iframe");f.setAttribute("aria-hidden","true");f.setAttribute("data-pa-x","1");f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(f);return f;})():null;
+  var ifr=null;
   btn.disabled=true;
   var storeWrite=Promise.resolve(null);
   window.__paStoreBlocked="";
@@ -2919,17 +2869,17 @@ document.getElementById("runBtn").addEventListener("click",function(){
     btn.disabled=false;lbl.textContent="Re-run";btn.setAttribute("aria-label","Re-run benchmark");
     
     var runK=window.__KIT;
-    if(useWindow&&!pop&&isBrave){if(runK){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="This browser reshuffles its fingerprint per site, so a single page cannot show its real protection. The measuring window was blocked - allow pop-ups for this page, then use the button below to run it.";try{paRenderView(runK);}catch(_e){}}return;}
+    if(useWindow&&!pop){if(runK){runK.crossCanMeasure=true;runK.crossFailed="The second-site window was blocked. Allow pop-ups, then retry the comparison.";try{paRenderView(runK);}catch(_e){}}return;}
     if(pop){
       var doneW=false,crossDoneW=false,storeDoneW=!wantStore,fbIfr=null;
       if(runK){if(isBrave)runK.crossSkippedRandomizer=true;runK.crossMeasuring=true;runK.crossFailed="measuring";try{paRenderView(runK);}catch(_e){}}
       function _cleanW(){window.removeEventListener("message",onMsgW);try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
       function onMsgW(e){
-        if(e.data&&e.data.paStoreEarly&&e.data.topLevel&&!storeDoneW&&comp&&e.origin===comp.origin&&window.__KIT===runK){
+        if(paMessageMatches(e,comp.origin,xTok,[pop])&&e.data.paStoreEarly&&e.data.topLevel&&!storeDoneW&&window.__KIT===runK){
           storeDoneW=true;SD.fromPop=true;var _es=e.data.paStoreRead||{};SD.readKeys=Object.keys(_es).length;
           storeWrite.then(function(w){if(window.__KIT!==runK)return;if(window.__paApplyPartition)window.__paApplyPartition(w,_es,oh);if(w&&w.clear)w.clear();});
           if(crossDoneW){doneW=true;_cleanW();}return;}
-        if(doneW||!e.data||!e.data.paLink)return;if(!comp||!e.origin||e.origin!==comp.origin)return;if(window.__KIT!==runK)return;
+        if(doneW||window.__KIT!==runK||!paCrossMessage(e,comp.origin,xTok,[pop]))return;
         if(e.source===pop)SD.fromPop=true;else SD.fromFrame=true;
         if(!crossDoneW){crossDoneW=true;
           runK.crossMeasuring=false;runK.crossFailed=null;runK.crossSkippedRandomizer=false;runK.crossCanMeasure=false;
@@ -2939,19 +2889,11 @@ document.getElementById("runBtn").addEventListener("click",function(){
       window.addEventListener("message",onMsgW);
       try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){}
       
-      setTimeout(function(){if(crossDoneW||fbIfr||window.__KIT!==runK)return;SD.fellBack=true;fbIfr=document.createElement("iframe");fbIfr.setAttribute("aria-hidden","true");fbIfr.setAttribute("data-pa-x","1");fbIfr.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";document.body.appendChild(fbIfr);try{fbIfr.src=comp.url+"#pabeacon="+xTok;}catch(x){}},PA_CROSS_FALLBACK_MS);
-      setTimeout(function(){if(doneW)return;SD.timedOut=true;doneW=true;_cleanW();if(window.__KIT!==runK)return;runK.crossMeasuring=false;if(wantStore&&!storeDoneW&&!runK.partitioning)window.__paStoreBlocked="The supercookie test needs the second site to answer as a page of its own, and it never did. Your storage was not read back, so this is left out of the score rather than guessed at.";if(!crossDoneW){if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}}try{paRenderView(runK);}catch(_e){}},PA_CROSS_MS);
+
+      setTimeout(function(){if(doneW)return;SD.timedOut=true;doneW=true;_cleanW();if(window.__KIT!==runK)return;runK.crossMeasuring=false;if(wantStore&&!storeDoneW&&!runK.partitioning)window.__paStoreBlocked="The supercookie test needs the second site to answer as a page of its own, and it never did. Your storage was not read back, so this requested reading remains unknown and receives no protection credit.";if(!crossDoneW){if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}}try{paRenderView(runK);}catch(_e){}},PA_CROSS_MS);
       return;
     }
-    if(oh&&ifr){
-      var done=false;
-      function _clean(){window.removeEventListener("message",onMsg);try{if(ifr&&ifr.parentNode)ifr.parentNode.removeChild(ifr);}catch(x){}}
-      function onMsg(e){if(done||!e.data||!e.data.paLink)return;if(!comp||!e.origin||e.origin!==comp.origin)return;if(window.__KIT!==runK)return;done=true;_clean();
-        if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
-      window.addEventListener("message",onMsg);
-      try{ifr.src=comp.url+"#pabeacon="+xTok;}catch(x){_clean();}
-      setTimeout(function(){if(!done&&window.__KIT===runK){done=true;_clean();runK.crossFailed=paIsRand(runK)?"The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.":"The second-site check did not respond. Press Re-run to try again.";try{paRenderView(runK);}catch(_e){}}else if(!done){done=true;_clean();}},PA_CROSS_MS);
-    }
+
   }).catch(function(e){
     try{if(pop)pop.close();}catch(x){}
     try{if(ifr&&ifr.parentNode)ifr.parentNode.removeChild(ifr);}catch(x){}
@@ -2963,15 +2905,15 @@ document.getElementById("runBtn").addEventListener("click",function(){
 
 /* SECOND-ORIGIN MODE - opened as the companion, posts readings back ====== */
 if(/pabeacon/.test(location.hash)||/pabeacon/.test(location.search)){
-  if(window.top===window&&window.opener){try{paStoreEach("r","").then(function(v){try{var bo=paBackOrigin();if(bo)window.opener.postMessage({paStoreEarly:1,topLevel:true,paStoreRead:v||{}},bo);}catch(e){}},function(){});}catch(e){}}
+  if(window.top===window&&window.opener){try{paStoreEach("r","").then(function(v){try{var bo=paBackOrigin();if(bo)window.opener.postMessage({paToken:(/pabeacon=([a-z0-9]+)/i.exec(location.hash+location.search)||[])[1],paVersion:PRIORS.version,paStoreEarly:1,topLevel:true,paStoreRead:v||{}},bo);}catch(e){}},function(){});}catch(e){}}
   try{runKit();}catch(e){}}
 else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
   if(_sm){var _tk=_sm[1];
     var _po=paBackOrigin();
     var _tgt=window.parent||window.opener;
-    var _post=function(m){try{if(_po)_tgt.postMessage(m,_po);}catch(e){}};
+    var _post=function(m){m.paToken=_tk;m.paVersion=PRIORS.version;try{if(_po)_tgt.postMessage(m,_po);}catch(e){}};
     paStoreEach("w",_tk).then(function(w){_post({paStoreTok:_tk,wrote:w});},function(){_post({paStoreTok:_tk,wrote:{}});});
-    window.addEventListener("message",function(e){if(!e.data||e.data.paClear!==_tk)return;if(!_po||e.origin!==_po)return;paStoreClear().then(function(){_post({paStoreCleared:_tk});});});}}
+    window.addEventListener("message",function(e){if(!e.data||e.data.paClear!==_tk)return;if(!_po||!paMessageMatches(e,_po,_tk,[window.parent,window.opener]))return;paStoreClear().then(function(){_post({paStoreCleared:_tk});});});}}
 })();
 </script>
 <script>

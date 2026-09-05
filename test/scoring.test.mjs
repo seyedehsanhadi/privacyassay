@@ -27,11 +27,7 @@ function allShown() {
   return o;
 }
 
-test("all readings refused -> 100 / A", () => {
-  const F = findability({}, "other");      // every non-optional key undefined = refused; optionals skipped
-  assert.equal(F.score, 100);
-  assert.equal(F.grade, "A");
-});
+test("missing readings are incomplete and earn no credit",()=>{const f=findability({},"other");assert.equal(f.score,0);assert.equal(f.grade,"I");assert.equal(f.coverage,0);assert.equal(f.upperBound,100);assert.equal(f.checks.held,0);});
 
 test("all readings shown -> 0 / F", () => {
   const F = findability(allShown(), "other");
@@ -43,25 +39,14 @@ test("hiding one reading can only raise the score (monotonic)", () => {
   const base = findability(allShown(), "other").score;          // 0
   const obs = allShown();
   obs.canvasHash = "";                                          // hide the strongest GPU reading
-  obs.canvasClass = "";
+  obs.canvasClass = "uniform-masked";
   const F = findability(obs, "other");
   assert.ok(F.score > base, `expected >${base}, got ${F.score}`);
 });
 
-test("optional readings only count when measured", () => {
-  const off = findability({}, "other");                        // webrtcIP undefined -> dropped
-  const on = findability({ webrtcIP: "exposed" }, "other");    // network category now shown
-  assert.equal(off.score, 100);
-  assert.ok(on.score < 100, `exposed WebRTC IP must lower the score, got ${on.score}`);
-  assert.notEqual(on.grade, "A");
-});
+test("optional readings affect the denominator only when requested",()=>{const o=allShown();for(const s of PRIORS.surfaces.filter(s=>s.optional))delete o[s.k];o.canvasClass="uniform-masked";o.fontSet="unsupported";const off=findability(o,"other"),on=findability({...o,webrtcIP:"exposed"},"other");assert.ok(on.totalWeight>off.totalWeight);assert.ok(on.score<off.score);assert.equal(on.complete,true);});
 
-test("score is round(100 * hidden / total) with grade bands A>=90 B>=75 C>=60 D>=40 F", () => {
-  const F = findability({ webrtcIP: "exposed" }, "other");
-  const bandOf = (n) => (n >= 90 ? "A" : n >= 75 ? "B" : n >= 60 ? "C" : n >= 40 ? "D" : "F");
-  assert.equal(F.grade, bandOf(F.score));
-  assert.equal(F.score, Math.round(F.score));                  // integer, no fractional leak
-});
+test("complete score is rounded weighted hidden share",()=>{const o=allShown();o.canvasClass="uniform-masked";const f=findability(o,"other");assert.equal(f.score,Math.round(100*f.earnedWeight/f.totalWeight));assert.equal(f.grade,f.score>=90?"A":f.score>=75?"B":f.score>=60?"C":f.score>=40?"D":"F");});
 
 // ---- classification + cross-site: the half where every real browser score is actually decided ----
 
@@ -72,23 +57,9 @@ test("classification: canvas noise-per-read blends (not shown)", () => {
   assert.equal(row.state, "blended");
 });
 
-test("classification: a blocked local() font list blends", () => {
-  const o = allShown();
-  o.fontLocalBlocked = "blocked - protected";
-  const row = findability(o, "other").rows.find((r) => r.label === "installed fonts");
-  assert.equal(row.state, "blended");
-});
+test("failed local-font access does not hide a measured font list",()=>{const row=findability({...allShown(),fontLocalBlocked:"blocked - protected"},"other").rows.find(r=>r.label==="installed fonts");assert.equal(row.state,"shown");});
 
-test("classification: a value the browser family implies blends", () => {
-  const fam = "firefox-rfp";
-  const impliedKey = Object.keys(PRIORS.browsers[fam].implies || {})[0];
-  const surf = PRIORS.surfaces.find((s) => s.k === impliedKey);
-  assert.ok(surf, "firefox-rfp should imply at least one scored surface");
-  const o = allShown();
-  o[impliedKey] = String(PRIORS.browsers[fam].implies[impliedKey][0]);
-  const row = findability(o, fam).rows.find((r) => r.label === surf.label);
-  assert.equal(row.state, "blended", `${surf.label} should blend at its implied value`);
-});
+test("a browser-family guess does not change measured exposure",()=>{const o={...allShown(),timezone:"Atlantic/Reykjavik",cores:4};assert.equal(findability(o,"other").score,findability(o,"firefox-rfp").score);});
 
 test("cross: a reading shown on one site and differing on the other is credited", () => {
   const a = allShown();
@@ -100,17 +71,7 @@ test("cross: a reading shown on one site and differing on the other is credited"
   assert.ok(cross.score >= findability(a, "other").score, "crediting a change cannot lower the cross score");
 });
 
-test("cross: a mask-blended reading stays blended across origins (B4 regression)", () => {
-  const a = allShown();
-  a.fontLocalBlocked = "blocked - protected";   // installed fonts -> blended single-site
-  const b = allShown();
-  b.fontSet = "a-different-font-hash";           // it "changes" across origins
-  assert.equal(findability(a, "other").rows.find((r) => r.label === "installed fonts").state, "blended");
-  const cross = findabilityCross(a, b, "other");
-  const row = cross.rows.find((r) => r.label === "installed fonts");
-  assert.equal(row.state, "blended", "a masked reading must not flip to shown cross-site");
-  assert.ok(!cross.exposedStrong.includes("installed fonts"), "masked fonts must not become a cross-site leak");
-});
+test("cross comparison preserves measured masks",()=>{const a={...allShown(),canvasClass:"uniform-masked"};const b={...allShown(),canvasHash:"different"};const f=findabilityCross(a,b,"other");assert.equal(f.rows.find(r=>r.label==="canvas drawing").state,"blended");assert.ok(!f.changedAcrossOrigins.includes("canvas drawing"));});
 
 // ---- redaction: decides what survives into a report the user is invited to share ----
 // paRedactVal is default-deny. Only recognised safe primitives pass; anything else is masked,

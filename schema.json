@@ -1,17 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "privacyassay-summary/1.0",
-  "description": "On-device browser-fingerprint benchmark result. Two producers write this schema id: the CLI runner bin/privacyassay.mjs, and the in-page Save-summary button. They agree on schema, score, grade, verdict, randomizer, crossSite and note, but each adds its own fields, and the in-page file uses friendlier names for three of them: cappedBy is the CLI's strongest, topLeaks is its exposedStrong, and counts.readingsTotal is its readingsTotal, but counts.readingsHidden is the COMPLEMENT of shownCount, not the same number: readingsHidden equals readingsTotal minus shownCount. Reading one as the other inverts it. Both sets are described below, so read defensively rather than assuming the CLI vocabulary. Nothing in this document leaves the machine unless a human chooses to share it.",
+  "title": "privacyassay-summary/1.1",
+  "description": "On-device fingerprint exposure result from the CLI or in-page export. Unknown readings receive no credit. The CLI uses strongest/exposedStrong/readingsTotal; the page uses cappedBy/topLeaks/counts. readingsHidden excludes unknown readings.",
   "type": "object",
   "required": [
     "schema",
     "score",
-    "grade"
+    "grade",
+    "complete",
+    "coverage",
+    "upperBound"
   ],
   "additionalProperties": false,
   "properties": {
     "schema": {
-      "const": "privacyassay-summary/1.0"
+      "const": "privacyassay-summary/1.1"
     },
     "tool": {
       "type": "string"
@@ -30,7 +33,7 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 100,
-      "description": "Share of what this tool checks that the browser hides, weighted by how identifying each reading is. Higher is more private."
+      "description": "Weighted observed masking, variation or unavailable APIs. Unknown readings remain in the denominator without credit. For incomplete results this is a lower bound, not a privacy grade."
     },
     "grade": {
       "type": "string",
@@ -39,7 +42,8 @@
         "B",
         "C",
         "D",
-        "F"
+        "F",
+        "I"
       ]
     },
     "verdict": {
@@ -77,7 +81,7 @@
     },
     "randomizer": {
       "type": "boolean",
-      "description": "True if the browser randomizes per site; then the single-site score is exposure on one page, not a grade"
+      "description": "Informational indication of a randomizing strategy; not proof of unlinkability."
     },
     "crossSite": {
       "type": [
@@ -99,6 +103,13 @@
           "type": "integer"
         },
         "recognizedOnSecondSite": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Null: this test does not establish whether a tracker recognizes the browser."
+        },
+        "complete": {
           "type": "boolean"
         }
       }
@@ -164,7 +175,7 @@
     },
     "counts": {
       "type": "object",
-      "description": "In-page only: reading tallies, all five counting READINGS not categories. readingsTotal is the CLI's readingsTotal. readingsHidden is the COMPLEMENT of the CLI's shownCount: readingsHidden = readingsTotal - shownCount, and readingsHidden = masked + notReadable. Reading one as the other inverts it.",
+      "description": "Reading counts; hidden + exposed + unknown equals total. Unknown is never counted as hidden.",
       "properties": {
         "readingsHidden": {
           "type": "integer"
@@ -180,11 +191,30 @@
         },
         "notReadable": {
           "type": "integer"
+        },
+        "unknown": {
+          "type": "integer"
         }
       }
     },
     "note": {
       "type": "string"
+    },
+    "complete": {
+      "type": "boolean",
+      "description": "False when any requested scored reading is unknown; grade I means incomplete."
+    },
+    "coverage": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percentage of requested readings with an established outcome."
+    },
+    "upperBound": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Maximum hidden percentage if all unknown readings were protected. Score is the lower bound."
     }
   }
 }

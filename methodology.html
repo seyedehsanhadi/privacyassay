@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Browser privacy test methodology and limitations — Privacyassay</title>
+<meta name="description" content="How Privacyassay scores browser fingerprint exposure, compares sites, and handles measurements. Read the formula, coverage and known limitations before comparing results.">
+<link rel="canonical" href="https://privacyassay.com/methodology.html">
+<style>
+:root{color-scheme:light dark;font:18px/1.65 system-ui,sans-serif}body{max-width:48rem;margin:auto;padding:2rem 1.25rem 4rem}a{color:light-dark(#1455a4,#90c2ff)}h1,h2{line-height:1.2}h1{font-size:2.2rem}h2{margin-top:2.4rem;font-size:1.5rem}p,li{max-width:72ch}nav,footer{font-size:.9rem}pre{padding:1rem;border:1px solid #8886;border-radius:.4rem;white-space:pre-wrap;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #8886;padding:.65rem}.note{border-left:4px solid #b57a10;padding-left:1rem}a:focus-visible{outline:3px solid currentColor;outline-offset:3px}@media(max-width:500px){h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<nav aria-label="Main"><a href="./">Run the browser test</a> · <a href="https://github.com/seyedehsanhadi/privacyassay">Source code</a></nav>
+<main>
+<h1>How the browser privacy score works</h1>
+<p>Privacyassay measures selected information a website can read from your browser. Measurements run in the browser; your fingerprint is not uploaded. This page describes <strong>0.9.2</strong>.</p>
+<p class="note">The score summarizes an experiment. It is not a probability of being tracked, a uniqueness estimate, or a complete browser privacy grade.</p>
+<h2>What the test covers</h2>
+<p>The catalog contains 32 readings across 13 categories, including canvas, WebGL, WebGPU, audio, fonts, layout, screen and device details. The raw report includes additional capability checks. WebRTC public-IP and cross-site storage tests are optional and off by default.</p>
+<h2>Reading states</h2>
+<table><caption>How each result contributes</caption><thead><tr><th scope="col">State</th><th scope="col">Meaning</th></tr></thead><tbody>
+<tr><th scope="row">Shown</th><td>An observable value was returned.</td></tr>
+<tr><th scope="row">Blended</th><td>Output was masked or changed in repeated measurements.</td></tr>
+<tr><th scope="row">Refused</th><td>An API is unsupported, access was explicitly denied, or a completed optional test returned no exposed value.</td></tr>
+<tr><th scope="row">Unknown</th><td>The measurement was missing, invalid, failed or did not finish. It receives no protection credit.</td></tr>
+</tbody></table>
+<h2>Score and completeness</h2>
+<p>Readings have weights of 3, 2 or 1. Each category is worth its heaviest reading, and earns the share of reading weight classified as blended or refused. Unknowns remain in the denominator.</p>
+<pre>category earned = category weight × hidden reading weight / total reading weight
+score = round(100 × sum(category earned) / sum(category weight))</pre>
+<p>For complete measurements, the bands are A at 90+, B at 75–89, C at 60–74, D at 40–59 and F below 40. These weights and bands are judgments, not measured tracking probabilities.</p>
+<p><strong>Grade I means incomplete.</strong> The displayed score is then a lower bound, accompanied by coverage and an upper bound that includes unknown readings. Incomplete results do not satisfy CLI score thresholds. They should not be compared with complete results as equivalent.</p>
+<h2>Repeated and cross-site measurements</h2>
+<p>Canvas, GPU rendering, audio, font and layout measurements run again with the same stimuli. Failed repeats are unknown. Browser names, common values or missing local fonts do not establish protection.</p>
+<p>The cross-site test opens a second origin as a top-level window for every browser. If the window is blocked, fails to respond or serves a different methodology version, the comparison is unmeasured. Results report the number of comparable readings that changed, without claiming a tracker can or cannot recognize you.</p>
+<p>Changing a reading does not prove resistance to averaging or linking through other attributes. Localhost comparisons are not equivalent to two registered domains. Compare the same browser/OS versions, settings, opt-ins and context.</p>
+<h2>Optional checks and privacy</h2>
+<p>The WebRTC opt-in contacts a public STUN service and reports observed candidates, completion and failures. It is not a VPN-bypass certification. The storage opt-in tests selected persistent stores with confirmed writes and readbacks; failed controls remain unknown.</p>
+<p>The hosted comparison loads a companion page, which receives a normal web request. Measured values return between windows inside your browser. Redaction is on by default for display and saved reports; it does not affect scoring.</p>
+<h2>AI and other limits</h2>
+<p>The AI section checks web API availability. It cannot establish Firefox AI Controls, sidebar-assistant settings, cloud processing or retention. See <a href="https://support.mozilla.org/en-US/kb/firefox-ai-controls">Mozilla's AI Controls documentation</a> for those settings.</p>
+<p>Browser telemetry, network-layer fingerprinting, comprehensive tracker blocking, bounce tracking and behavioral tracking are outside this score. No population of fingerprints is collected for uniqueness estimates. Compatibility requires testing on each browser and platform.</p>
+<h2>Reproduce and contribute</h2>
+<p>Saved reports identify methodology version and completion state. Historical 0.9.1-beta captures are not comparable with current scores. See the <a href="METHODOLOGY.md">technical methodology</a> for every weight and the <a href="https://github.com/seyedehsanhadi/privacyassay/tree/main/bench">benchmark instructions</a> for reproductions.</p>
+<p>Contribute minimal examples with browser version, operating system and settings. Keep raw fingerprints out of public issues and use the <a href="https://github.com/seyedehsanhadi/privacyassay/blob/main/SECURITY.md">security reporting process</a> for sensitive findings.</p>
+</main>
+<footer><p><a href="./">Test your browser</a> · <a href="METHODOLOGY.md">Full technical methodology</a> · <a href="https://github.com/seyedehsanhadi/privacyassay">Apache-2.0 source</a></p></footer>
+</body>
+</html>

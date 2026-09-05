@@ -112,7 +112,7 @@ const RING = `(function(){
 // The real trigger: __paApplyPartition is what a late storage result calls. Held on the first
 // call and carried on the second, so the score is guaranteed to move between the two reads.
 const partition = (leaked) => `(function(){
-  var names={"localStorage":1,"IndexedDB":1},back=${leaked} ? {"localStorage":"T","IndexedDB":"T"} : {};
+  var names={"localStorage":1,"IndexedDB":1},back=${leaked} ? {"localStorage":"T","IndexedDB":"T"} : {"localStorage":"","IndexedDB":""};
   window.__paApplyPartition({tok:"T",origin:location.origin,
     wrote:{ok:names,refused:[],unsupported:[]}},back);
   return "ok";})()`;
@@ -145,3 +145,5 @@ test("the ring draws the score it is labelled with, animation or not", async () 
       `the two partition results must move the score, otherwise this proves nothing (both ${seen[0]})`);
   } finally { await page.close(); srv.close(); }
 });
+
+test("rerun clears previous report and companion state immediately",async()=>{const srv=await startServer();const page=await launch({port:srv.port,preload:'window.__popupNames=[];window.open=function(url,name){window.__popupNames.push(name);return null;};'});try{await runAudit(page);const cleared=await page.ev('window.__paObsB={old:true};document.getElementById("runBtn").click();window.__KIT===null&&window.__paObsB===null&&window.__paApplyCross===null&&window.__paApplyPartition===null');assert.equal(cleared,true);const names=await page.ev("window.__popupNames");assert.equal(names.length,2);assert.notEqual(names[0],names[1],"an old popup cleanup must not close the new run’s window");}finally{await page.close();srv.close();}});

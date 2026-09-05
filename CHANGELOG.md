@@ -2,6 +2,18 @@
 
 Notable changes per release.
 
+## 0.9.2 - 2026-09-05
+
+- Separate unknown measurements from protection; expose coverage and score bounds.
+- Re-run fingerprint stimuli; correct GPU identity and font classifications.
+- Bind companion replies to the window, run token and methodology version.
+- Use the same top-level comparison for all browsers and report unmeasured contexts.
+- Bound asynchronous probes and avoid late AI/WebGPU result mutation.
+- Add summary schema 1.1 and fail CLI thresholds on incomplete runs.
+- Preserve installed browser extensions and scope harness cleanup to launched processes.
+- Add a public HTML methodology page and update indexing documentation.
+- Replace historical ranking charts with current catalog weights; refresh the redacted example and social card.
+
 ## 0.9.1-beta - 2026-08-16
 
 ### Fixed

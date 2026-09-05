@@ -28,14 +28,7 @@ function allShown() {
 // A1. A desktop with no reserved screen area is not a defence. Windows with an auto-hide taskbar,
 // a tiling WM and essentially every phone report availWidth === width, and used to collect the
 // same credit as a browser that deliberately masks the frame.
-test("availFrame masked credits only families known to mask it", () => {
-  const base = findability(allShown(), "other").score;
-  const zeroed = { ...allShown(), availFrame: "masked" };
-  assert.equal(findability(zeroed, "other").score, base,
-    "a vanilla browser reporting a zero taskbar must not gain score");
-  assert.ok(findability(zeroed, "brave").score > base,
-    "a family whose priors say it masks the frame must still be credited");
-});
+test("taskbar auto-hide and browser brand do not prove protection",()=>{const base=findability(allShown(),"other").score;const o={...allShown(),availFrame:"masked"};assert.equal(findability(o,"other").score,base);assert.equal(findability(o,"brave").score,base);});
 
 // A2. Firefox steppedSize uses stepping 200 on BOTH axes above 1600, and 50 up to and including
 // 500. The old width arm used a strict <500, so a 500px letterboxed width was scored as exposed.

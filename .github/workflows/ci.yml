@@ -19,8 +19,7 @@ jobs:
           node-version: '22'
       - run: npm test
 
-  # Breaks each probe on purpose: a refused reading scores as protection, so a broken probe
-  # would raise the score. See the Limits section of METHODOLOGY.md.
+  # Broken probes must remain unknown and receive no protection credit.
   browser:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -54,6 +53,4 @@ jobs:
         env:
           PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
 
-# Not here: the seven-browser ranking. Tor and Mullvad cannot be installed on a hosted runner, and
-# a job that skipped them would report green for a benchmark missing its two most important rows.
-# That suite runs locally and its results are committed as a dated table.
+# Installed-browser compatibility runs are local; CI does not establish all-browser coverage.

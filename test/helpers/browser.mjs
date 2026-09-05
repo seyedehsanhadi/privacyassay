@@ -73,7 +73,7 @@ async function connect(wsUrl) {
   ws.addEventListener("message", (e) => {
     let m; try { m = JSON.parse(e.data); } catch { return; }
     if (m.id && pending.has(m.id)) {
-      const p = pending.get(m.id); pending.delete(m.id);
+      const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer);
       m.error ? p.rej(new Error(m.error.message)) : p.res(m.result);
     }
   });
@@ -86,7 +86,7 @@ async function connect(wsUrl) {
     send: (method, params = {}) => new Promise((res, rej) => {
       const i = ++id; pending.set(i, { res, rej });
       ws.send(JSON.stringify({ id: i, method, params }));
-      setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, 60000);
+      pending.get(i).timer = setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, 60000);
     }),
   };
 }
@@ -112,10 +112,7 @@ export async function launch({ port, preload = null, headful = false } = {}) {
   const portFile = path.join(udd, "DevToolsActivePort");
   let cdpPort = null;
   for (let i = 0; i < 100 && !cdpPort; i++) {
-    if (fs.existsSync(portFile)) {
-      const l = fs.readFileSync(portFile, "utf8").split("\n");
-      if (l[0]) cdpPort = l[0].trim();
-    }
+    try { const l=fs.readFileSync(portFile,"utf8").split("\n");if(/^\d+$/.test(l[0]))cdpPort=l[0].trim(); } catch(e) { if(!["ENOENT","EBUSY","EACCES"].includes(e.code))throw e; }
     if (!cdpPort) await sleep(150);
   }
   if (!cdpPort) {

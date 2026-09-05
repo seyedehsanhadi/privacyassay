@@ -79,7 +79,7 @@ test("opt-ins: a supercookie test that cannot run says so instead of vanishing",
     })`));
     assert.match(out.blocked, /pop-up/i, "the blocked reason must be recorded");
     assert.equal(out.onScreen, true, "the report must tell the user the test they opted into did not run");
-    assert.equal(out.storageScored, false, "a test that never ran must not be scored either way");
+    assert.equal(out.storageScored, true, "a requested test that never ran must remain unknown in the denominator");
     assert.ok(Number.isFinite(out.score), "the audit must still produce a score");
   } finally { await page.close(); srv.close(); }
 });
@@ -97,3 +97,5 @@ test("opt-ins: both on scores over both extra categories at once", async () => {
     assert.ok(Number.isFinite(both.score) && both.score >= 0 && both.score <= 100, `score out of range: ${both.score}`);
   } finally { srv.close(); }
 });
+
+test("storage: missing readback cannot establish isolation", async()=>{const srv=await startServer();const page=await launch({port:srv.port});try{await page.ev('document.getElementById("runBtn").click();"go"');for(let i=0;i<90;i++){if(await page.ev('!!window.__KIT_DONE'))break;await new Promise(r=>setTimeout(r,1000));}const probe=async read=>JSON.parse(await page.ev('window.__paApplyPartition({tok:"test-token",wrote:{ok:{localStorage:true},refused:[],unsupported:[],stalled:[]}},'+JSON.stringify(read)+',"http://localhost");JSON.stringify(window.__KIT.findability.rows.find(r=>r.label==="storage carried across sites"))'));assert.equal((await probe({})).state,"unknown");assert.equal((await probe({localStorage:""})).state,"refused");assert.equal((await probe({localStorage:"test-token"})).state,"shown");}finally{await page.close();srv.close();}});

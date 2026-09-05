@@ -92,7 +92,7 @@ function grabExports(){
     out.pending=Promise.all(grabbed.map(function(b){return b.text();})).then(function(txt){
       txt.forEach(function(t,i){
         var o=null;try{o=JSON.parse(t);}catch(e){out.errors.push("parse "+i+": "+e.message);return;}
-        if(o&&o.schema==="privacyassay-summary/1.0")out.summary=o;else out.full=o;
+        if(o&&o.schema==="privacyassay-summary/1.1")out.summary=o;else out.full=o;
       });
       delete out.pending;
     });
@@ -109,7 +109,7 @@ function collect(){
 
 function finishCollect(ex){
   var K=win.__KIT||{},F=K.findability||{},C=K.findabilityCross||null;
-  results.push({exports:ex,score:F.score,grade:F.grade,
+  results.push({version:K.version,complete:F.complete,coverage:F.coverage,exports:ex,score:F.score,grade:F.grade,
     cross:C?C.score:null,crossGrade:C?C.grade:null,
     changedAcrossOrigins:C?(C.changedAcrossOrigins||[]):null,
     crossFailed:K.crossFailed||null,crossSkipped:!!K.crossSkippedRandomizer,
@@ -126,7 +126,7 @@ function finishCollect(ex){
 
 function post(fatal){
   if(posted)return;posted=true;
-  var scores=results.map(function(r){return r.score;});
+  var scores=results.filter(function(r){return r.complete;}).map(function(r){return r.score;});
   var body={browser:NAME,mode:MODE,transportUsed:TRANSPORT,runs:results,scores:scores,
     identical:scores.length>0&&scores.every(function(x){return x===scores[0];}),
     errors:fatal?[fatal]:[]};

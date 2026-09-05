@@ -54,70 +54,14 @@ function profileFor(key) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pa-post-"));
   fs.writeFileSync(path.join(d, "user.js"), [
     'user_pref("browser.shell.checkDefaultBrowser", false);',
-    'user_pref("extensions.torlauncher.start_tor", false);',
-    'user_pref("torbrowser.settings.quickstart.enabled", true);',
-    'user_pref("network.proxy.type", 0);',
-    'user_pref("network.proxy.allow_hijacking_localhost", false);',
-    'user_pref("network.proxy.no_proxies_on", "localhost, 127.0.0.1");',
-    'user_pref("network.dns.blockDotOnion", false);',
-    'user_pref("toolkit.telemetry.enabled", false);',
-    'user_pref("datareporting.policy.dataSubmissionEnabled", false);',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
-    'user_pref("dom.disable_open_during_load", false);',
-    'user_pref("dom.block_multiple_popups", false);',
-    'user_pref("dom.popup_allowed_events", "click keydown load");',
-    'user_pref("privacy.window.maxInnerWidth", 1280);',
-    'user_pref("browser.link.open_newwindow", 2);',
-    'user_pref("browser.link.open_newwindow.restriction", 0);',
-    'user_pref("app.update.auto", false);',
   ].join("\n"));
   return d;
 }
 
-// Tor and Mullvad bundle NoScript, which enforces a CSP that blocks script loading on a plain http
-// origin. It fires INTERMITTENTLY on a fresh profile: some launches load the runner and never reach
-// script-start, others complete normally. Two captures succeeded with it installed, which is why an
-// earlier note wrongly concluded it was harmless; the very next full run lost both browsers to it.
-// Intermittent means unusable for a benchmark, so it is moved aside for the capture and restored
-// afterwards even on throw. NoScript is not a fingerprinting defense and does not touch
-// resistFingerprinting, which is what the score measures, but this must travel with any published
-// Tor or Mullvad number.
-const NOSCRIPT_ID = "{73a6fe31-595d-460b-a920-fcc0f8843232}.xpi";
-
-function noscriptPaths(key) {
-  if (key !== "tor" && key !== "mullvad") return [];
-  const dir = path.dirname(MANIFEST[key].path);
-  const roots = [dir, path.dirname(dir)];
-  const out = [];
-  for (const r of roots) {
-    for (const rel of [["distribution", "extensions"], ["TorBrowser", "Data", "Browser", "profile.default", "extensions"]]) {
-      const p = path.join(r, ...rel, NOSCRIPT_ID);
-      if (fs.existsSync(p) || fs.existsSync(p + ".bench-off")) out.push(p);
-    }
-  }
-  return out;
-}
-
-function setNoscript(key, enabled) {
-  let n = 0;
-  for (const p of noscriptPaths(key)) {
-    const off = p + ".bench-off";
-    try {
-      if (!enabled && fs.existsSync(p)) { fs.renameSync(p, off); n++; }
-      else if (enabled && fs.existsSync(off)) { fs.renameSync(off, p); n++; }
-    } catch {}
-  }
-  return n;
-}
-
 export async function capturePostback(key, opts = {}) {
   sweepOldProfiles();
-  const moved = setNoscript(key, false);
-  try {
-    const r = await captureOnce(key, opts);
-    if (moved) r.noscriptDisabled = true;
-    return r;
-  } finally { setNoscript(key, true); }
+  return captureOnce(key, opts);
 }
 // ---- one capture: serve, launch, wait for the postback ----
 
@@ -212,7 +156,7 @@ async function captureOnce(key, { runs = 5, mode = "headful", timeout = 300000, 
   out.transport = "postback";
   out.serverHits = hits;
   out.optins = { webrtc: !!webrtc, storage: !!store };
-  fs.writeFileSync(path.join(OUT, `${key}-${mode}-postback${tag}.json`), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, `${key}-${mode}-postback-0.9.2${tag}.json`), JSON.stringify(out, null, 2));
   return out;
 }
 

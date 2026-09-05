@@ -99,7 +99,7 @@ test("export: the summary the Save button writes validates against schema.json",
   try {
     await runAudit(page);
     const { json } = await saveAndRead(page, "savesum");
-    assert.equal(json.schema, "privacyassay-summary/1.0", "the file must identify its own schema");
+    assert.equal(json.schema, "privacyassay-summary/1.1", "the file must identify its own schema");
     assert.deepEqual(validate(json, SCHEMA), []);
   } finally { await page.close(); srv.close(); }
 });
@@ -125,7 +125,7 @@ test("export: the full report is valid JSON and carries the same score as the su
     const sum = await saveAndRead(page, "savesum");
     const full = await saveAndRead(page, "savefull");
     assert.equal(typeof full.json, "object", "the full report must parse as an object");
-    assert.equal(full.json.schema, "privacyassay-full/1.0",
+    assert.equal(full.json.schema, "privacyassay-full/1.1",
       "the full report must identify itself; 64KB of JSON with no schema id cannot be consumed safely");
     assert.equal(full.json.score ?? sum.json.score, sum.json.score,
       "the two files disagree about the score of the same run");
@@ -186,4 +186,9 @@ test("export: the full report is where redaction actually bites", async () => {
     assert.ok(JSON.stringify(on.json).length < JSON.stringify(off.json).length,
       "a redacted report should not be larger than the raw one it masks");
   } finally { await page.close(); srv.close(); }
+});
+
+test("export: a timed-out reading remains incomplete in the saved report",async()=>{
+  const srv=await startServer();const preload=CAPTURE+';window.__paSkipCross=true;Object.defineProperty(NavigatorUAData.prototype,"getHighEntropyValues",{value:function(){return new Promise(function(){});},configurable:true});';
+  const page=await launch({port:srv.port,preload});try{const kit=await runAudit(page);assert.equal(kit.findability.grade,"I");const {json:summary}=await saveAndRead(page,"savesum");assert.equal(summary.complete,false);assert.equal(summary.grade,"I");assert.ok(summary.counts.unknown>0);assert.ok(summary.coverage<100);assert.ok(summary.upperBound>=summary.score);assert.deepEqual(validate(summary,SCHEMA),[]);}finally{await page.close();srv.close();}
 });

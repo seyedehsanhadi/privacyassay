@@ -102,13 +102,13 @@ async function cdp(wsUrl) {
   let id = 0; const pending = new Map();
   ws.addEventListener("message", (e) => {
     let m; try { m = JSON.parse(e.data); } catch { return; }
-    if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(m.error.message)) : p.res(m.result); }
+    if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer); m.error ? p.rej(new Error(m.error.message)) : p.res(m.result); }
   });
   await new Promise((r, j) => { ws.addEventListener("open", r); ws.addEventListener("error", () => j(new Error("cdp socket error"))); });
   const send = (method, params = {}) => new Promise((res, rej) => {
     const i = ++id; pending.set(i, { res, rej });
     ws.send(JSON.stringify({ id: i, method, params }));
-    setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, 60000);
+    pending.get(i).timer = setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, 60000);
   });
   return { ws, send };
 }
@@ -126,7 +126,7 @@ async function runOnce(browser, port) {
   try {
     const portFile = path.join(udd, "DevToolsActivePort");
     let cdpPort = null;
-    for (let i = 0; i < 100; i++) { if (fs.existsSync(portFile)) { const l = fs.readFileSync(portFile, "utf8").split("\n"); if (l[0]) { cdpPort = l[0].trim(); break; } } await sleep(150); }
+    for (let i = 0; i < 100; i++) { try { const l=fs.readFileSync(portFile,"utf8").split("\n");if(/^\d+$/.test(l[0])){cdpPort=l[0].trim();break;} } catch(e) { if(!["ENOENT","EBUSY","EACCES"].includes(e.code))throw e; } await sleep(150); }
     if (!cdpPort) throw new Error("browser did not expose a debugging port");
 
     let target = null;
@@ -140,6 +140,7 @@ async function runOnce(browser, port) {
 
       const deadline = Date.now() + TIMEOUT;
       await sleep(1200);
+      if (NOCROSS) await ev("window.__paSkipCross=true");
       if (WEBRTC) await ev(`(function(){var w=document.getElementById("webrtcOptin");if(w){w.checked=true;w.dispatchEvent(new Event("change"));}return 1;})()`);
       await ev(`document.getElementById("runBtn").click();"go"`);
       while (Date.now() < deadline) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
@@ -159,17 +160,16 @@ async function runOnce(browser, port) {
 
       const data = await ev(`(function(){var K=window.__KIT||{},F=K.findability||{},Fc=K.findabilityCross||null;
         return JSON.stringify({version:K.version||null,userAgent:navigator.userAgent,
-          score:F.score,grade:F.grade,verdict:F.verdict||null,strongest:F.strongest||null,
+          score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,upperBound:F.upperBound,verdict:F.verdict||null,strongest:F.strongest||null,
           exposedStrong:F.exposedStrong||[],shownCount:F.shownCount,readingsTotal:(F.checks&&F.checks.total)||null,
           crossSite:(function(){try{
             if(!Fc)return null;
             // Same arithmetic as the in-page paCrossData, computed here rather than called, so the
             // two producers cannot drift and the CLI does not depend on a render helper being global.
-            var total=(Fc.rows||[]).length||(Fc.checks&&Fc.checks.total)||0;
+            var total=(Fc.comparedAcrossOrigins||[]).length;
             var anon=(Fc.changedAcrossOrigins||[]).length;
-            var shownTotal=(Fc.shownCount!=null)?Fc.shownCount:((Fc.rows||[]).filter(function(r){return r&&r.state==="shown";}).length||total);
-            return {score:Fc.score,grade:Fc.grade,signalsChanged:anon,signalsCompared:total,
-              recognizedOnSecondSite:anon<Math.max(3,Math.round(shownTotal*0.2))};
+            return {score:Fc.score,grade:Fc.grade,complete:Fc.complete,signalsChanged:anon,signalsCompared:total,
+              recognizedOnSecondSite:null};
           }catch(e){return null;}})(),
           crossSiteNote:(K.crossFailed&&K.crossFailed!=="measuring")?String(K.crossFailed):null,
           randomizer:(function(){try{return typeof window.__paIsRand==="function"?!!window.__paIsRand(K):null;}catch(e){return null;}})(),
@@ -227,18 +227,19 @@ async function main() {
   const scores = results.map((r) => r.score);
 
   const out = FULL ? med.full : {
-    schema: "privacyassay-summary/1.0", tool: "privacyassay", version: med.version,
-    userAgent: med.userAgent, score: med.score, grade: med.grade, verdict: med.verdict,
+    schema: "privacyassay-summary/1.1", tool: "privacyassay", version: med.version,
+    userAgent: med.userAgent, score: med.score, grade: med.grade, complete: med.complete, coverage: med.coverage, upperBound: med.upperBound, verdict: med.verdict,
     strongest: med.strongest, exposedStrong: med.exposedStrong,
     shownCount: med.shownCount, readingsTotal: med.readingsTotal,
     randomizer: !!med.randomizer, crossSite: med.crossSite || null,
     ...(med.crossSite ? {} : { crossSiteNote: med.crossSiteNote || (NOCROSS ? "skipped (--no-cross)" : "not measurable") }),
     ...(RUNS > 1 ? { runs: RUNS, runScores: scores } : {}),
-    note: (RUNS > 1 ? `Median of ${RUNS} runs (scores ${scores.join(", ")}). ` : "") + "Run entirely on-device. Method: METHODOLOGY.md.",
+    note: (RUNS > 1 ? `Median of ${RUNS} runs (scores ${scores.join(", ")}); ${results.filter(r => !r.complete).length} incomplete. Fields describe the selected run. ` : "") + "Run entirely on-device. Method: METHODOLOGY.md.",
   };
   process.stdout.write(JSON.stringify(out, null, 2) + "\n");
   log(`score ${med.score}/${med.grade}` + (RUNS > 1 ? ` (median of ${scores.join(", ")})` : ""));
 
+  if (MIN != null && results.some(r => !r.complete)) { log("FAIL: incomplete measurement cannot satisfy --min-score"); process.exit(2); }
   if (MIN != null && med.score < MIN) { log(`FAIL: ${med.score} < ${MIN}`); process.exit(1); }
   process.exit(0);
 }

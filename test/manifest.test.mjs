@@ -1,6 +1,7 @@
 // The parts that must agree with each other: package.json, schema.json, the CLI flags, the README
 // section markers, and the deadlines the document quotes. Drift here is invisible until it ships.
 import { test } from "node:test";
+import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -25,59 +26,11 @@ test("manifest: the no-dependencies claim on the README badge is still true", ()
       `package.json declares ${field}, but the README badge and the headline both say there are none`);
 });
 
-test("manifest: the size the README quotes is the size of the file", () => {
-  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
-  const stated = Number((readme.match(/one HTML file, (\d+) KB/) || [])[1]);
-  assert.ok(stated > 0, "the README should state the size of the one file it ships");
-  const real = fs.statSync(path.join(ROOT, "index.html")).size / 1024;
-  assert.ok(Math.abs(real - stated) < 10,
-    `README says ${stated} KB, index.html is ${Math.round(real)} KB`);
-});
+test("manifest: entry page remains a standalone document",()=>{const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");assert.match(html,/<!doctype html>/i);assert.equal(/<script[^>]+src=/.test(html),false);});
 
-test("manifest: the results chart shows the numbers the results table states", () => {
-  const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
-  const section = (readme.match(/## Results[\s\S]*?(?=\n## )/) || [""])[0];
-  const dataRows = section.split("\n")
-    .filter((l) => l.startsWith("| ") && !/^\| *Browser/.test(l) && !/^\|[\s\-:|]+\|$/.test(l));
-  const table = [...section.matchAll(/^\| ([A-Z][A-Za-z ]+?) \| [\w.\-]+ \| (\d+) \| (\d+)(?:-(\d+))? \|/gm)]
-    .map(([, name, dflt, lo, hi]) => ({ name: name.trim(), dflt: +dflt, lo: +lo, hi: hi ? +hi : +lo }));
-  assert.equal(table.length, dataRows.length,
-    `parsed ${table.length} of ${dataRows.length} result rows; a row this pattern skips is a row nothing checks`);
-  assert.ok(table.length >= 7, `expected every browser in the results table, parsed ${table.length}`);
-  for (const file of ["chart-light.svg", "chart-dark.svg"]) {
-    const svg = fs.readFileSync(path.join(ROOT, file), "utf8");
-    for (const r of table) {
-      assert.ok(svg.includes(`>${r.name}<`) || svg.includes(`>${r.name.replace(" Browser", "")}<`),
-        `${file} has no row for ${r.name}`);
-      const label = r.hi > r.lo ? `${r.lo}-${r.hi}` : String(r.dflt);
-      assert.ok(svg.includes(`>${label}<`),
-        `${file} does not show "${label}" for ${r.name}; the chart and the table disagree`);
-    }
-  }
-  const alt = (readme.match(/alt="Score by browser: ([^"]+)"/) || [])[1] || "";
-  for (const r of table) {
-    const shown = r.hi > r.lo ? `${r.lo}-${r.hi}` : String(r.dflt);
-    assert.ok(alt.includes(shown), `the chart's alt text omits ${r.name}'s ${shown}, so it reads wrong aloud`);
-  }
-});
+test("historical charts are not presented as current rankings",()=>{const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");assert.match(readme,/not comparable/i);assert.match(readme,/0.9.1-beta/);assert.match(readme,/generated from the current catalog/);});
 
-test("manifest: the cross-site range the docs quote is the range the published capture contains", () => {
-  const matrix = JSON.parse(fs.readFileSync(path.join(ROOT, "bench", "captures", "matrix.json"), "utf8"));
-  const cross = matrix.filter((r) => r.browser === "brave").flatMap((r) => r.cross || []);
-  assert.ok(cross.length >= 3, `expected brave cross values in the capture, found ${cross.length}`);
-  const stated = `${Math.min(...cross)} to ${Math.max(...cross)}`;
-  let cited = 0;
-  for (const doc of ["README.md", "METHODOLOGY.md"]) {
-    const text = fs.readFileSync(path.join(ROOT, doc), "utf8");
-    for (const m of text.matchAll(/(\d+ to \d+) across/g)) {
-      cited++;
-      assert.equal(m[1], stated,
-        `${doc} says "${m[1]} across" but bench/captures/matrix.json contains ${stated}; a reviewer recomputing from the published data cannot reach that number`);
-    }
-  }
-  assert.ok(cited > 0,
-    "no document cites the range in bench/captures/matrix.json, so the published capture is orphaned and nothing checks it");
-});
+test("historical captures remain distinct from the current methodology",()=>{const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");assert.match(readme,/0.9.1-beta/);assert.match(readme,/0.9.2/);assert.match(readme,/not comparable/i);});
 
 test("manifest: the citation file agrees with the package it cites", () => {
   const cff = fs.readFileSync(path.join(ROOT, "CITATION.cff"), "utf8");
@@ -326,4 +279,19 @@ test("index.html: every inline script parses", () => {
   assert.equal(data.softwareVersion, P.version,
     "the version in structured data drifted from the one the tool reports");
   assert.equal(data.url, "https://privacyassay.com/");
+});
+
+test("figures: published charts match the current catalog",()=>{execFileSync(process.execPath,[path.join(ROOT,"bench/figures.mjs"),"--check"],{cwd:ROOT});});
+
+test("cli: median report keeps completion and bounds from the same run", () => {
+  const start = CLI.indexOf("  const out = FULL ?");
+  const end = CLI.indexOf("  process.stdout.write", start);
+  const report = new Function("med", "results", "scores", "RUNS", "FULL", "NOCROSS", CLI.slice(start, end) + ";return out;");
+  const complete = { score: 50, grade: "D", complete: true, coverage: 100, upperBound: 50 };
+  const incomplete = { score: 0, grade: "I", complete: false, coverage: 0, upperBound: 100 };
+  for (const med of [complete, incomplete]) {
+    const out = report(med, [incomplete, complete, complete], [0, 50, 50], 3, false, true);
+    for (const key of ["score", "grade", "complete", "coverage", "upperBound"]) assert.equal(out[key], med[key]);
+    assert.match(out.note, /1 incomplete/);
+  }
 });
