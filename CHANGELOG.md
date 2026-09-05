@@ -14,6 +14,8 @@ Notable changes per release.
 - Add a public HTML methodology page and update indexing documentation.
 - Retain the original browser charts and screenshot with historical methodology labels; refresh the social card.
 - Correct fault-injection coverage checks on runners without a usable WebGPU adapter.
+- Read cross-site storage once so a partial companion reply cannot win a race.
+- Report unmeasured storage mechanisms and singular incomplete verdicts accurately.
 
 ## 0.9.1-beta - 2026-08-16
 

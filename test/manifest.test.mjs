@@ -221,6 +221,10 @@ test("companion: the home redirect exempts every second-origin entry point", () 
   }
 });
 
+test("companion: storage is read once so a partial reply cannot win a race", () => {
+  assert.equal((SRC.match(/paStoreEach\("r"/g) || []).length, 1);
+});
+
 test("second-origin: a reply target is never derived from document.referrer", () => {
   const src = fs.readFileSync(path.join(HERE, "..", "index.html"), "utf8");
   assert.equal((src.match(/document\.referrer/g) || []).length, 0,

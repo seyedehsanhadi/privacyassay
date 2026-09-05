@@ -58,6 +58,7 @@ test('late WebGPU adapters cannot mutate a completed category',async()=>{
 });
 
 test('invalid numeric and object outcomes remain unknown',()=>{for(const cores of [NaN,Infinity,{},[],false]){const f=findability({...observed(),cores},'other');assert.equal(f.grade,'I');assert.equal(f.rows.find(r=>r.label==='CPU cores').state,'unknown');}});
+test('a single unknown reading uses a singular verdict',()=>{assert.match(findability({...observed(),cores:NaN},'other').verdict,/1 reading is unknown/);});
 test('unavailable APIs are not counted as matching fingerprints',()=>{const f=findabilityCross(observed('unsupported'),observed('unsupported'),'other');const a=Object.fromEntries(PRIORS.surfaces.filter(s=>!s.optional).map(s=>[s.k,'unsupported']));const g=findabilityCross(a,a,'other');assert.equal(g.comparedAcrossOrigins.length,0);assert.equal(g.changedAcrossOrigins.length,0);});
 
 test('WebGPU descriptions remain measured when the other identity fields are empty',()=>{const observe=new Function('navigator','window','paRow','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({gpu:{}},{},(c,n)=>n==='adapter description'?'test GPU':'',()=>'',p=>p.filter(Boolean).join('|'),null);assert.equal(observe().webgpuAdapter,'test GPU');});
