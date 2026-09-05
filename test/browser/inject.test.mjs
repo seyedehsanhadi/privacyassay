@@ -1,5 +1,4 @@
-// Deliberate sabotage. A refused reading counts as protection, so a broken probe would raise the
-// score. Each surface is broken on its own and asserted never to score as a value handed over.
+// Deliberate sabotage: failed readings must stay unknown and earn no protection credit.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { startServer } from "../helpers/server.mjs";
@@ -44,7 +43,6 @@ test("inject: a probe that throws is never scored as shown", async () => {
 test("inject: a probe that throws makes the result incomplete", async () => {
   const srv = await startServer();
   try {
-    const clean = await scoreWith(srv.port, null);
     const thrown = await scoreWith(srv.port, OVERRIDE("navigator.hardwareConcurrency", "throw"));
     assert.equal(thrown.complete, false);
   } finally { srv.close(); }
@@ -55,9 +53,11 @@ test("inject: breaking several readings leaves an incomplete result", async () =
   const all = ["navigator.hardwareConcurrency", "navigator.deviceMemory", "navigator.maxTouchPoints", "screen.colorDepth"]
     .map((p) => OVERRIDE(p, "throw")).join("\n");
   try {
-    const clean = await scoreWith(srv.port, null);
     const broken = await scoreWith(srv.port, all);
-    assert.equal(false, false);
+    assert.equal(broken.complete, false);
+    for (const label of ["CPU cores", "device memory", "touch points", "colour depth"]) {
+      assert.equal(broken.rows.find(r => r.label === label)?.state, "unknown", label);
+    }
   } finally { srv.close(); }
 });
 
@@ -176,27 +176,59 @@ async function getClean() {
 
 function diffBatch(rows, cleanRows, labels) {
   const noEffect = [];
-  const stillShown = [];
+  const invalidState = [];
   const absent = [];
   for (const label of labels) {
     const row = rows.find((r) => r.label === label);
     const cleanRow = cleanRows.find((r) => r.label === label);
     if (!row || !cleanRow) { noEffect.push(`${label} (row missing from response)`); continue; }
-    if (cleanRow.value === "" || cleanRow.value === "ERR") { absent.push(label); continue; }
-    if (row.value === cleanRow.value) { noEffect.push(`${label} (value unchanged: ${JSON.stringify(row.value)})`); continue; }
-    if (row.state === "shown") stillShown.push(`${label} (value=${JSON.stringify(row.value)}, state=shown, clean-value=${JSON.stringify(cleanRow.value)})`);
+    if (row.state !== "unknown") invalidState.push(`${label} (state=${row.state})`);
+    // An unavailable baseline cannot prove an injection changed a measurement. It must still
+    // remain unknown after sabotage, and it does not count toward the coverage floor below.
+    if (cleanRow.state === "unknown" || cleanRow.state === "refused") { absent.push(label); continue; }
+    if (row.value === cleanRow.value && row.state === cleanRow.state) noEffect.push(`${label} (value unchanged: ${JSON.stringify(row.value)})`);
   }
-  return { noEffect, stillShown, absent };
+  return { noEffect, invalidState, absent };
 }
 
-function assertBatch(kind, { noEffect, stillShown, absent }, labels) {
-  assert.equal(noEffect.length + stillShown.length, 0,
-    `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || still classified shown after ${kind}: ${stillShown.join(" | ") || "none"}`);
+function assertBatch(kind, { noEffect, invalidState, absent }, labels) {
+  assert.equal(noEffect.length + invalidState.length, 0,
+    `gaps (no observable effect): ${noEffect.join(" | ") || "none"} || failed readings not unknown after ${kind}: ${invalidState.join(" | ") || "none"}`);
   assert.ok(labels.length - absent.length >= Math.ceil(labels.length * 0.6),
-    `only ${labels.length - absent.length} of ${labels.length} surfaces exist on this machine, so the ${kind} matrix barely tested anything: ${absent.join(", ")}`);
+    `only ${labels.length - absent.length} of ${labels.length} surfaces have usable baselines, so the ${kind} matrix barely tested anything: ${absent.join(", ")}`);
 }
 
 // ---- matrix: every scored surface, sabotaged on its own ----
+test("inject-matrix: unavailable baselines cannot hide credited failures or satisfy coverage", () => {
+  const label = "WebGPU adapter", labels = [label];
+  const unknown = { label, state: "unknown", value: "ERR:repeat-incomplete" };
+  for (const state of ["unknown", "refused"]) {
+    const clean = { ...unknown, state };
+    const batch = diffBatch([unknown], [clean], labels);
+    assert.deepEqual(batch, { noEffect: [], invalidState: [], absent: labels });
+    assert.throws(() => assertBatch("throw", batch, labels), /barely tested anything/);
+    for (const badState of ["shown", "blended", "refused"]) {
+      assert.equal(diffBatch([{ ...unknown, state: badState }], [clean], labels).invalidState.length, 1);
+    }
+  }
+  const shown = { label, state: "shown", value: "adapter" };
+  assert.equal(diffBatch([shown], [shown], labels).noEffect.length, 1);
+  assert.equal(diffBatch([], [shown], labels).noEffect.length, 1);
+  assertBatch("throw", diffBatch([unknown], [shown], labels), labels);
+});
+
+test("inject-matrix: a browser without a usable WebGPU adapter retains unknown outcomes", async () => {
+  const srv = await getServer();
+  const noAdapter = 'Object.defineProperty(navigator,"gpu",{configurable:true,value:{requestAdapter:async function(){return null;}}});';
+  const clean = await scoreWith(srv.port, noAdapter);
+  for (const label of ["WebGPU adapter", "WebGPU limits"]) assert.equal(clean.rows.find(r => r.label === label)?.state, "unknown");
+  for (const mode of ["throw", "undefined"]) {
+    const broken = await scoreWith(srv.port, noAdapter + propPreload(mode));
+    assert.equal(broken.complete, false);
+    assertBatch(mode, diffBatch(broken.rows, clean.rows, PROP_LABELS), PROP_LABELS);
+  }
+});
+
 test("inject-matrix: property surfaces (throw) - never shown, failed readings stay unknown", async () => {
   const srv = await getServer();
   const clean = await getClean();
@@ -301,7 +333,7 @@ for (const mode of ["throw", "undefined"]) {
       results.push(await injectOne(srv.port, target, name, mode, label, clean, extra ? [extra] : []));
     }
     methodResults.set(mode, results);
-    const bad = results.filter((r) => r.verdict === "still-shown" || r.verdict === "failure-credited" || r.verdict === "crashed");
+    const bad = results.filter((r) => r.verdict === "still-shown" || r.verdict === "failure-credited" || r.verdict === "crashed" || r.verdict === "missing");
     const unproven = results.filter((r) => r.verdict === "unproven").map((r) => r.label);
     const fundamental = results.filter((r) => r.verdict === "crashed-fundamental").map((r) => r.label);
     if (unproven.length) console.log(`      unproven under ${mode} (injection had no observable effect, so untested here): ${unproven.join(", ")}`);
@@ -320,7 +352,7 @@ test("inject-matrix: at least half the method surfaces are genuinely injectable,
   if (!results.length) for (const [label, target, name, extra] of METHOD_SURFACES) {
     results.push(await injectOne(srv.port, target, name, "throw", label, clean, extra ? [extra] : []));
   }
-  const proven = results.filter((r) => r.verdict !== "unproven" && r.verdict !== "missing").length;
+  const proven = results.filter((r) => r.verdict === "ok").length;
   assert.ok(proven >= Math.ceil(METHOD_SURFACES.length / 2),
     `only ${proven} of ${METHOD_SURFACES.length} method surfaces could be injected; the guarantee is untested on the rest`);
 });

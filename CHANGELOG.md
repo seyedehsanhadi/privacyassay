@@ -13,6 +13,7 @@ Notable changes per release.
 - Preserve installed browser extensions and scope harness cleanup to launched processes.
 - Add a public HTML methodology page and update indexing documentation.
 - Replace historical ranking charts with current catalog weights; refresh the redacted example and social card.
+- Correct fault-injection coverage checks on runners without a usable WebGPU adapter.
 
 ## 0.9.1-beta - 2026-08-16
 
