@@ -16,6 +16,7 @@ Notable changes per release.
 - Correct fault-injection coverage checks on runners without a usable WebGPU adapter.
 - Read cross-site storage once so a partial companion reply cannot win a race.
 - Report unmeasured storage mechanisms and singular incomplete verdicts accurately.
+- Treat a missing OPFS file and explicitly disabled GPU or voice APIs as completed protection outcomes.
 
 ## 0.9.1-beta - 2026-08-16
 

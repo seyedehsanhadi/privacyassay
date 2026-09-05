@@ -1193,8 +1193,8 @@ function paIdb(mode,tok){return new Promise(function(res,rej){var r;function NOT
   r.onsuccess=function(){var db=r.result;try{var tx=db.transaction("s",mode==="w"?"readwrite":"readonly"),st=tx.objectStore("s");
     if(mode==="w"){st.put(tok,"k");tx.oncomplete=function(){db.close();res(1);};}else{var g=st.get("k");g.onsuccess=function(){var v=g.result;tx.oncomplete=function(){db.close();res(v);};};}
     tx.onerror=function(){try{db.close();}catch(e){}rej(0);};}catch(e){try{db.close();}catch(x){}rej(0);}};});}
-function paOpfs(mode,tok){return navigator.storage.getDirectory().then(function(d){return d.getFileHandle(PA_SK+".txt",{create:mode==="w"});})
-  .then(function(h){return mode==="w"?h.createWritable().then(function(w){return w.write(tok).then(function(){return w.close();}).then(function(){return 1;});}):h.getFile().then(function(f){return f.text();});});}
+function paOpfs(mode,tok){return navigator.storage.getDirectory().then(function(d){return d.getFileHandle(PA_SK+".txt",{create:mode==="w"}).catch(function(e){if(mode==="r"&&e&&e.name==="NotFoundError")return null;throw e;});})
+  .then(function(h){if(!h)return "";return mode==="w"?h.createWritable().then(function(w){return w.write(tok).then(function(){return w.close();}).then(function(){return 1;});}):h.getFile().then(function(f){return f.text();});});}
 function paCacheApi(mode,tok){var u="/__pa_cache_probe";return caches.open(PA_SK).then(function(c){
   return mode==="w"?c.put(new Request(u),new Response(tok)).then(function(){return 1;}):c.match(u).then(function(m){return m?m.text():"";});});}
 
@@ -1475,6 +1475,10 @@ function paRow(catName,needle){
   }catch(e){}
   return "";
 }
+function paRowExact(catName,label){
+  try{var c=C[catName];if(!c)return "";label=label.toLowerCase();for(var i=0;i<c.rows.length;i++)if(String(c.rows[i][0]).toLowerCase()===label){var v=c.rows[i][1];return String(Array.isArray(v)?v[0]:v);}}catch(e){}
+  return "";
+}
 function paLetterboxed(w,h){
   
   if(!(w>50&&h>50))return false;
@@ -1513,6 +1517,9 @@ function observeVectors(){
   var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return "ERR:"+(e&&e.name||"Error");}};
   var W=function(needle){var v=paRow("WebGPU",needle);
     return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
+  var glOff=paRowExact("Active Rendering & GPU","webgl")==="unavailable";
+  var wai=[W("adapter vendor"),W("adapter architecture"),W("adapter device"),W("adapter description")];
+  var wa=fnvParts(wai);if(wa==="ERR"&&(paRow("WebGPU","adapter vendor")==="(empty)"||paRow("WebGPU","gpuadapter")==="null (blocked)"))wa="blocked";
   var out={
     cores:P(function(){return navigator.hardwareConcurrency;},""),
     deviceMemory:P(function(){return String(navigator.deviceMemory);},""),
@@ -1522,16 +1529,16 @@ function observeVectors(){
     maxTouchPoints:P(function(){return navigator.maxTouchPoints;},""),
     platform:P(function(){return navigator.platform||"";},""),
     languages:P(function(){return (navigator.languages||[])[0]||navigator.language||"";},""),
-    webglVendor:P(function(){var g=document.createElement("canvas").getContext("webgl");if(!g)return "";
+    webglVendor:P(function(){var g=document.createElement("canvas").getContext("webgl");if(!g)return glOff?"blocked":"";
       var d=g.getExtension("WEBGL_debug_renderer_info");
       var v=String(d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER));glDone(g);return v;},""),
     audioRate:P(function(){var A=window.AudioContext||window.webkitAudioContext;if(!A)return "";
       var a=new A();var v=a.sampleRate;try{a.close();}catch(e){}return v;},""),
     canvasClass:paCanvasClass(),
     audioHash:paRow("Audio & Media Codecs","audiocontext render hash"),
-    webglHash:paRow("Active Rendering & GPU","webgl render hash"),
+    webglHash:glOff?"blocked":paRow("Active Rendering & GPU","webgl render hash"),
     audioRenderClass:paRow("Audio & Media Codecs","audiocontext render hash"),
-    webglRenderClass:paRow("Active Rendering & GPU","webgl render hash"),
+    webglRenderClass:glOff?"blocked":paRow("Active Rendering & GPU","webgl render hash"),
     canvasHash:P(function(){var c=document.createElement("canvas");c.width=90;c.height=24;
       var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
       x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
@@ -1551,11 +1558,11 @@ function observeVectors(){
     fontSet:paRow("Font Enumeration","font list hash"),
     fontLocalBlocked:paRow("Font Enumeration","fontface local() blocked"),
     mathml:paRow("CSS & Rendering","mathml render metrics"),
-    webglExt:paRow("Active Rendering & GPU","webgl extensions"),
-    webglParams:paRow("Active Rendering & GPU","webgl params"),
+    webglExt:glOff?"blocked":paRow("Active Rendering & GPU","webgl extensions"),
+    webglParams:glOff?"blocked":paRow("Active Rendering & GPU","webgl params"),
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
     codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
-    webgpuAdapter:fnvParts([W("adapter vendor"),W("adapter architecture"),W("adapter device"),W("adapter description")]),
+    webgpuAdapter:wa,
     webgpuLimits:W("gpuadapter.limits"),
     uaCh:P(function(){var u=PA_UACH;if(!u)return "unsupported";if(u.__paStatus)return u.__paStatus;var v=[u.model,u.platformVersion,u.architecture,u.bitness,u.uaFullVersion,u.fullVersionList&&JSON.stringify(u.fullVersionList),u.wow64,u.formFactors&&JSON.stringify(u.formFactors)].filter(function(x){return x!==undefined&&x!==null&&String(x)!=="";});return v.length?v.join(" | "):"ERR:empty-client-hints";},"")
   };
@@ -1570,7 +1577,7 @@ function repeatVectors(){
     return paDeadline(collectAudioAsync,3500).catch(function(){return {hash:"ERR:repeat-timeout"};});
   }).then(function(audio){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
-    try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"ERR:voices-not-ready"]);}catch(e){}
+    try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);}catch(e){}
     var second=observeVectors(),a=findability(first,"other"),b=findability(second,"other"),noisy={};
     PRIORS.surfaces.forEach(function(s){if(s.optional||s.noCrossDiff)return;var ar=a.rows.find(function(r){return r.label===s.label;}),br=b.rows.find(function(r){return r.label===s.label;});if(br&&br.state==="unknown"){first[s.k]="ERR:repeat-incomplete";return;}if(ar&&br&&ar.state==="shown"&&br.state==="shown"&&String(first[s.k])!==String(second[s.k]))noisy[s.k]=1;});
     first._noisy=noisy;return first;
@@ -2532,7 +2539,7 @@ async function runKit(){
     if(audio.bufHash)C["Audio & Media Codecs"].rows.push(["audio buffer slice hash (200 samples)",audio.bufHash]);
     if(audio.nonZero)C["Audio & Media Codecs"].rows.push(["audio non-zero samples",audio.nonZero]);
     var voices=[];try{voices=speechSynthesis.getVoices()||[];if(!voices.length){voices=await new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v=speechSynthesis.getVoices()||[];tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}}catch(e){}
-    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")";})()]);
+    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")":"blocked";})()]);
     C["Audio & Media Codecs"].hash=catHash(C["Audio & Media Codecs"].rows);
   }
   var ffProbe=await fontFaceLocalProbe();

@@ -33,6 +33,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // is slower at it than a stock one. PA_CROSS_MS in the page is 45s, so anything shorter here would
 // report "not measurable" for a run the page went on to finish.
 const CROSS_BUDGET_MS = 52000;
+const AUDIT_BUDGET_MS = Number(process.env.PA_AUDIT_MS || 120000);
 
 function profileFor() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pa-live-"));
@@ -55,11 +56,11 @@ function stopBrowser(proc,binary,profile){
 
 const READ_KIT = `JSON.stringify((function(){
   var K = window.__KIT || {}, F = K.findability || {}, C = K.findabilityCross || null;
-  return { unknown: (F.rows||[]).filter(function(r){return r.state==="unknown";}).map(function(r){return r.label;}), version: K.version, complete: F.complete, coverage: F.coverage, score: F.score, grade: F.grade, crossComplete: C ? C.complete : false,
+  return { unknown: (F.rows||[]).filter(function(r){return r.state==="unknown";}).map(function(r){return r.label;}), page: location.href, status: document.getElementById("stat")&&document.getElementById("stat").textContent, version: K.version, complete: F.complete, coverage: F.coverage, score: F.score, grade: F.grade, crossComplete: C ? C.complete : false,
     cross: C ? C.score : null,
     changed: C ? (C.changedAcrossOrigins || []).length : null,
-    partitioning: !!K.partitioning,
-    leaked: K.partitioning ? (K.partitioning.leaked || []).length : null,
+    partitioning: K.partitioning || null,
+    storeDiag: window.__paStoreDiag || null,
     crossFailed: K.crossFailed || null };
 })())`;
 const OPTINS = (store, rtc) => `(function(){
@@ -101,7 +102,9 @@ async function runChromium(key) {
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
     await ev(`document.getElementById("runBtn").click();"go"`);
-    for (let deadline=Date.now()+120000; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
+    let done = false;
+    for (let deadline=Date.now()+AUDIT_BUDGET_MS; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) { done = true; break; } }
+    if (!done) throw new Error("audit did not finish: " + String(await ev(`location.href+" | "+(document.getElementById("stat")&&document.getElementById("stat").textContent)`).catch(() => "page unavailable")));
     await sleep(CROSS_BUDGET_MS);
     return JSON.parse(await ev(READ_KIT) || "{}");
   } finally {
@@ -114,9 +117,8 @@ async function runChromium(key) {
 
 async function runGecko(key) {
   const profile = profileFor();
-  const port = 9400 + Math.floor(Math.random() * 300);
   const proc = spawn(MANIFEST[key].path,
-    ["-no-remote", "-profile", profile, "--remote-debugging-port=" + port, "--width=1600", "--height=1100", URL_],
+    ["-no-remote", "-profile", profile, "--remote-debugging-port=0", "--width=1600", "--height=1100", URL_],
     { stdio: ["ignore", "pipe", "pipe"] });
   let ws;
   try {
@@ -128,18 +130,19 @@ async function runGecko(key) {
     await sleep(1000);
     const m = stderr.match(/ws:\/\/[^\s"]+/);
     if (m) wsUrl = /\/session/.test(m[0]) ? m[0] : m[0].replace(/\/$/, "") + "/session";
-    else if (i > 8) wsUrl = `ws://127.0.0.1:${port}/session`;
   }
+  if (!wsUrl) throw new Error("Firefox did not announce a BiDi endpoint: " + stderr.slice(-350));
   ws = new WebSocket(wsUrl);
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error("BiDi socket refused: " + stderr.slice(-350))); });
-  let id = 0; const pend = new Map();
-  ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { const { res, rej, timer } = pend.get(m.id); pend.delete(m.id);clearTimeout(timer); m.error ? rej(new Error(m.error)) : res(m.result); } };
+  let id = 0; const pend = new Map(), logs = [];
+  ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { const { res, rej, timer } = pend.get(m.id); pend.delete(m.id);clearTimeout(timer); m.error ? rej(new Error(m.error)) : res(m.result); } else if(m.method==="log.entryAdded") logs.push(m.params&&m.params.entry&&m.params.entry.text); };
   const cmd = (method, params = {}) => new Promise((res, rej) => {
     const i = ++id; pend.set(i, { res, rej });
     ws.send(JSON.stringify({ id: i, method, params }));
     pend.get(i).timer=setTimeout(() => { if (pend.has(i)) { pend.delete(i); rej(new Error(method + " timed out")); } }, 10000);
   });
     await cmd("session.new", { capabilities: { alwaysMatch: {} } });
+    await cmd("session.subscribe", { events: ["log.entryAdded"] });
     const tree = await cmd("browsingContext.getTree", {});
     const hit = tree.contexts.find((c) => c.url && c.url.startsWith(new URL(URL_).origin));
     const ctx = (hit || tree.contexts[0]).context;
@@ -154,8 +157,11 @@ async function runGecko(key) {
     for (let deadline=Date.now()+90000; Date.now()<deadline;) { await sleep(500); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
-    await ev(`document.getElementById("runBtn").click();"go"`);
-    for (let deadline=Date.now()+120000; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE").catch(() => false)) break; }
+    const pt = JSON.parse(await ev(`JSON.stringify((function(){var r=document.getElementById("runBtn").getBoundingClientRect();return{x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})())`));
+    await cmd("input.performActions", { context: ctx, actions: [{ type: "pointer", id: "mouse", parameters: { pointerType: "mouse" }, actions: [{ type: "pointerMove", x: pt.x, y: pt.y, duration: 0, origin: "viewport" }, { type: "pointerDown", button: 0 }, { type: "pointerUp", button: 0 }] }] });
+    let done = false;
+    for (let deadline=Date.now()+AUDIT_BUDGET_MS; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE").catch(() => false)) { done = true; break; } }
+    if (!done) throw new Error("audit did not finish: " + String(await ev(`location.href+" | "+(document.getElementById("stat")&&document.getElementById("stat").textContent)+" | collectors="+(!!window.__collectors)+" paIsRand="+(typeof window.paIsRand)+" class="+document.body.className`).catch(() => "page unavailable")) + (logs.length ? " | " + logs.slice(-3).join(" | ") : ""));
     await sleep(CROSS_BUDGET_MS);
     return JSON.parse(await ev(READ_KIT) || "{}");
   } finally {
