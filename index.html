@@ -1519,7 +1519,7 @@ function observeVectors(){
     return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
   var glOff=paRowExact("Active Rendering & GPU","webgl")==="unavailable";
   var wai=[W("adapter vendor"),W("adapter architecture"),W("adapter device"),W("adapter description")];
-  var wa=fnvParts(wai);if(wa==="ERR"&&(paRow("WebGPU","adapter vendor")==="(empty)"||paRow("WebGPU","gpuadapter")==="null (blocked)"))wa="blocked";
+  var wa=fnvParts(wai);if(wa==="ERR"&&(paRowExact("WebGPU","adapter vendor")==="(empty)"||paRowExact("WebGPU","gpuadapter")==="null (blocked)"))wa="blocked";
   var out={
     cores:P(function(){return navigator.hardwareConcurrency;},""),
     deviceMemory:P(function(){return String(navigator.deviceMemory);},""),
