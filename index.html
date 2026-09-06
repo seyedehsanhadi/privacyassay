@@ -440,8 +440,9 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
     <div class="pa-ctrls" id="paCtrls">
       <span class="pa-mono pa-scan" id="scanAt"></span>
       <button class="pa-ibtn" id="themeBtn" aria-label="Toggle dark mode"></button>
-      <button class="pa-runbtn" id="runBtn" aria-label="Run benchmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span id="runLbl">Run the scan</span></button>
+      <button class="pa-runbtn" id="runBtn" aria-label="Run benchmark" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span id="runLbl">Run the scan</span></button>
     </div>
+    <p id="scriptStatus" role="status">The audit script has not started. If this message remains, this browser may be blocking scripts for this page.</p>
     <div class="pa-checks" id="paChecks">
       <label class="pa-optin"><input type="checkbox" id="webrtcOptin"> <span class="pa-lg">Also test the WebRTC public-IP leak. Off by default so the audit stays fully local; turning it on opens one request to a public STUN server.</span><span class="pa-sm">WebRTC leak</span></label>
       <label class="pa-optin"><input type="checkbox" id="storageOptin"> <span class="pa-lg">Also test for supercookies: whether a tracker can plant an ID that survives across sites. Opens a brief second-site window to read storage as a first party.</span><span class="pa-sm">Supercookies</span></label>
@@ -1187,48 +1188,49 @@ function checkNative(fn){var ts=tsOf(fn);if(!NATIVE_RE.test(ts))return "toString
 var PA_SK="pa_partition";
 var __paWallets=[];
 try{addEventListener("eip6963:announceProvider",function(e){try{var n=e&&e.detail&&e.detail.info&&e.detail.info.name;if(n&&__paWallets.indexOf(n)<0)__paWallets.push(n);}catch(x){}});dispatchEvent(new Event("eip6963:requestProvider"));}catch(e){}
-function paIdb(mode,tok){return new Promise(function(res,rej){var r;function NOTMEASURED(){var e=new Error("unsupported");e.paUnsupported=1;return e;}
-  try{r=indexedDB.open("pa_part",1);}catch(e){return rej(NOTMEASURED());}
-  r.onupgradeneeded=function(){try{r.result.createObjectStore("s");}catch(e){}};r.onerror=function(){rej(0);};r.onblocked=function(){rej(NOTMEASURED());};
+function paIdb(mode,tok){return new Promise(function(res,rej){var r;
+  try{r=indexedDB.open("pa_part",1);}catch(e){return rej(e);}
+  r.onupgradeneeded=function(){try{r.result.createObjectStore("s");}catch(e){}};r.onerror=function(){rej(r.error);};r.onblocked=function(){rej(new Error("database blocked"));};
   r.onsuccess=function(){var db=r.result;try{var tx=db.transaction("s",mode==="w"?"readwrite":"readonly"),st=tx.objectStore("s");
     if(mode==="w"){st.put(tok,"k");tx.oncomplete=function(){db.close();res(1);};}else{var g=st.get("k");g.onsuccess=function(){var v=g.result;tx.oncomplete=function(){db.close();res(v);};};}
-    tx.onerror=function(){try{db.close();}catch(e){}rej(0);};}catch(e){try{db.close();}catch(x){}rej(0);}};});}
+    tx.onerror=tx.onabort=function(){try{db.close();}catch(e){}rej(tx.error||new Error("transaction aborted"));};}catch(e){try{db.close();}catch(x){}rej(e);}};});}
 function paOpfs(mode,tok){return navigator.storage.getDirectory().then(function(d){return d.getFileHandle(PA_SK+".txt",{create:mode==="w"}).catch(function(e){if(mode==="r"&&e&&e.name==="NotFoundError")return null;throw e;});})
   .then(function(h){if(!h)return "";return mode==="w"?h.createWritable().then(function(w){return w.write(tok).then(function(){return w.close();}).then(function(){return 1;});}):h.getFile().then(function(f){return f.text();});});}
 function paCacheApi(mode,tok){var u="/__pa_cache_probe";return caches.open(PA_SK).then(function(c){
   return mode==="w"?c.put(new Request(u),new Response(tok)).then(function(){return 1;}):c.match(u).then(function(m){return m?m.text():"";});});}
+function paCookieStore(mode,tok){
+  if(mode==="r")return cookieStore.get(PA_SK+"_cs").then(function(c){return c&&c.value;});
+  return cookieStore.set({name:PA_SK+"_cs",value:tok,sameSite:"none",path:"/"}).then(function(){return cookieStore.get(PA_SK+"_cs");}).then(function(c){if(!c||c.value!==tok){var e=new Error("cookie write not retained");e.name="NotAllowedError";throw e;}return 1;});
+}
 
 /* - write, read back, clear across all mechanisms -------- */
 function paStoreEach(mode,tok){
-  var got={},refused=[],unsup=[],stalled=[],jobs=[];
+  var got={},refused=[],unsup=[],stalled=[],errors={},jobs=[];
   function J(k,okf,fn){
     var ok=false;
-    try{ok=okf();}catch(e){if(mode==="w")stalled.push(k);return;}
+    try{ok=okf();}catch(e){if(mode==="w"){errors[k]=String(e&&e.name||"Error");(/^(SecurityError|NotAllowedError)$/.test(e&&e.name)?refused:stalled).push(k);}return;}
     if(!ok){if(mode==="w")unsup.push(k);return;}
     jobs.push(new Promise(function(done){
       var settled=false;
       var t=setTimeout(function(){if(settled)return;settled=true;if(mode==="w")stalled.push(k);done();},PA_STORE_JOB_MS);
       Promise.resolve().then(fn).then(function(v){if(settled)return;settled=true;clearTimeout(t);if(mode==="w"){got[k]=1;}else got[k]=v==null?"":String(v);done();},
-        function(e){if(settled)return;settled=true;clearTimeout(t);if(mode==="w")(e&&e.paUnsupported?unsup:e&&/^(SecurityError|NotAllowedError)$/.test(e.name)?refused:stalled).push(k);done();});
+        function(e){if(settled)return;settled=true;clearTimeout(t);if(mode==="w"){errors[k]=String(e&&e.name||"Error");(e&&e.paUnsupported?unsup:e&&/^(SecurityError|NotAllowedError)$/.test(e.name)?refused:stalled).push(k);}done();});
     }));}
   function NOSRV(){var e=new Error("unsupported");e.paUnsupported=1;return e;}
   J("cookie (document.cookie)",function(){return typeof document.cookie==="string";},function(){
-    if(mode==="w"){document.cookie=PA_SK+"="+tok+";path=/;max-age=600;SameSite=None;Secure";if(document.cookie.indexOf(tok)<0)throw 0;return 1;}
-    var m=new RegExp(PA_SK+"=([a-z0-9]+)").exec(document.cookie);return m&&m[1];});
+    if(mode==="w"){document.cookie=PA_SK+"="+tok+";path=/;max-age=600;SameSite=None;Secure";if(!document.cookie.split(";").some(function(c){return c.trim()===PA_SK+"="+tok;})){var e=new Error("cookie write not retained");if(location.protocol==="https:")e.name="NotAllowedError";throw e;}return 1;}
+    var m=new RegExp("(?:^|;\\s*)"+PA_SK+"=([a-z0-9]+)(?:;|$)").exec(document.cookie);return m&&m[1];});
   J("localStorage",function(){return !!window.localStorage;},function(){if(mode==="w"){localStorage.setItem(PA_SK,tok);return 1;}return localStorage.getItem(PA_SK);});
   J("indexedDB",function(){return !!window.indexedDB;},function(){return paIdb(mode,tok);});
   J("CacheStorage",function(){return !!window.caches;},function(){return paCacheApi(mode,tok);});
-  J("CookieStore",function(){return !!window.cookieStore;},function(){
-    if(mode==="w")return cookieStore.set({name:PA_SK+"_cs",value:tok,sameSite:"none",path:"/"}).then(function(){return 1;});
-    return cookieStore.get(PA_SK+"_cs").then(function(c){return c&&c.value;});});
+  J("CookieStore",function(){return !!window.cookieStore;},function(){return paCookieStore(mode,tok);});
   J("OPFS (storage.getDirectory)",function(){return !!(navigator.storage&&navigator.storage.getDirectory);},function(){return paOpfs(mode,tok);});
   function paCacheVia(kind,loader){
     return function(){
       var u="/__res?t="+kind+"&k="+tok+"_"+kind;
-      if(mode==="w")return loader(u).then(function(){return 1;},function(){throw NOSRV();});
       return loader(u).then(function(){
-        return fetch("/__ctr?k="+tok+"_"+kind,{cache:"no-store"}).then(function(r){return r.json();})
-          .then(function(o){return (o&&o.n===1)?tok:"";});
+        return fetch("/__ctr?k="+tok+"_"+kind,{cache:"no-store"}).then(function(r){if(!r.ok)throw NOSRV();return r.json();})
+          .then(function(o){if(!o||!Number.isInteger(o.n)||o.n<1)throw NOSRV();return mode==="w"?1:o.n===1?tok:"";},function(){throw NOSRV();});
       },function(){throw NOSRV();});
     };
   }
@@ -1247,12 +1249,8 @@ function paStoreEach(mode,tok){
   J("prefetch cache",function(){return HTTPOK;},paCacheVia("bin",loadEl(function(u){var e=document.createElement("link");e.rel="prefetch";e.href=u;return e;})));
   J("XHR cache",function(){return HTTPOK;},paCacheVia("bin2",function(u){return new Promise(function(ok,no){
     try{var x=new XMLHttpRequest();x.open("GET",u,true);x.onload=function(){ok();};x.onerror=function(){no();};x.send();}catch(e){no();}});}));
-  J("HTTP cache",function(){return /^https?:$/.test(location.protocol);},function(){
-    var u="/__res?k="+tok;
-    if(mode==="w")return fetch(u,{cache:"force-cache"}).then(function(r){if(!r.ok)throw NOSRV();return 1;},function(){throw NOSRV();});
-    return fetch(u,{cache:"force-cache"}).then(function(r){if(!r.ok)throw NOSRV();return fetch("/__ctr?k="+tok,{cache:"no-store"});})
-      .then(function(r){return r.json();}).then(function(o){return o&&o.n===1?tok:"";});});
-  return Promise.all(jobs).then(function(){return mode==="w"?{ok:got,refused:refused,unsupported:unsup,stalled:stalled}:got;});
+  J("HTTP cache",function(){return HTTPOK;},paCacheVia("http",function(u){return fetch(u,{cache:"force-cache"}).then(function(r){if(!r.ok)throw NOSRV();});}));
+  return Promise.all(jobs).then(function(){return mode==="w"?{ok:got,refused:refused,unsupported:unsup,stalled:stalled,errors:errors}:got;});
 }
 function paStoreClear(){
   var jobs=[];
@@ -1283,7 +1281,7 @@ function paPartitionWrite(tok){
     window.addEventListener("message",onM);
     f.src=comp.url+"?pa=w#pastore="+tok;
     document.body.appendChild(f);
-    setTimeout(function(){if(!resolved){resolved=true;res(null);}clear();},PA_CROSS_MS);
+    setTimeout(function(){if(!resolved){resolved=true;res(null);clear();}},PA_CROSS_MS);
   });
 }
 
@@ -1563,7 +1561,7 @@ function observeVectors(){
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
     codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
     webgpuAdapter:wa,
-    webgpuLimits:W("gpuadapter.limits"),
+    webgpuLimits:paRowExact("WebGPU","gpuadapter")==="null (blocked)"?"blocked":W("gpuadapter.limits"),
     uaCh:P(function(){var u=PA_UACH;if(!u)return "unsupported";if(u.__paStatus)return u.__paStatus;var v=[u.model,u.platformVersion,u.architecture,u.bitness,u.uaFullVersion,u.fullVersionList&&JSON.stringify(u.fullVersionList),u.wow64,u.formFactors&&JSON.stringify(u.formFactors)].filter(function(x){return x!==undefined&&x!==null&&String(x)!=="";});return v.length?v.join(" | "):"ERR:empty-client-hints";},"")
   };
   [["deviceMemory",function(){return "deviceMemory" in navigator;}],["webgpuAdapter",function(){return "gpu" in navigator;}],["webgpuLimits",function(){return "gpu" in navigator;}],["speechVoices",function(){return "speechSynthesis" in window;}],["codecSupport",function(){return "MediaSource" in window;}],["audioRenderClass",function(){return !!(window.OfflineAudioContext||window.webkitOfflineAudioContext);}],["audioRate",function(){return !!(window.AudioContext||window.webkitAudioContext);}]].forEach(function(p){try{if(!p[1]())out[p[0]]="unsupported";}catch(e){out[p[0]]="ERR:availability";}});
@@ -1719,8 +1717,6 @@ function identify(){
     hit("Privacy Badger","certain","the doNotTrack getter is readable JavaScript source rather than native code","addon");
   if(!baseBrowser&&gl===null&&T(function(){return !!navigator.gpu;},false))
     hit("WebGL turned off, by a pref or an extension such as NoScript","strong","WebGL is unavailable while WebGPU is present; an engine or driver limitation would remove both, but a pref such as webgl.disabled does exactly this");
-  if(window.isSecureContext&&T(function(){return !("serviceWorker" in navigator)&&!("PushManager" in window);},false))
-    hit("Pale Moon or another Goanna build","strong","neither ServiceWorker nor PushManager exists in a secure context, a combination effectively unique to UXP");
 
   var ua=navigator.userAgent||"";
   [[/Vivaldi\/([\d.]+)/,"Vivaldi"],[/\bOPR\/([\d.]+)/,"Opera"],[/YaBrowser\/([\d.]+)/,"Yandex Browser"],[/Edg\/([\d.]+)/,"Edge"]].forEach(function(p){
@@ -2057,13 +2053,8 @@ function paGroupsFrom(F){
 
 /* - the two axes and the defence strategy behind them ---- */
 var PAMONO="font-family:ui-monospace,Menlo,Consolas,monospace;";
-var PASTRAT={
-  uniformity:["Uniformity","every user of this browser is meant to look the same, so you hide in that crowd"],
-  randomization:["Randomization","observed values change; this does not establish anonymity or prevent correlation"],
-  mixed:["Mixed","some readings are made uniform and others are altered"],
-  exposed:["No strategy","readings are handed over as they are"]};
 function paAxisPair(R,F,cs){
-  var st=PASTRAT[R.strategy]||null;
+  var st=F.complete===false?["Incomplete measurement","The unknown readings must be resolved before assigning a grade."]:F.checks.held?["Some readings hidden","Masked, varied or unavailable in this test; privacy outside its scope is not assessed."]:["Readings observable","No masking, variation or refusal was measured in the scored readings."];
   var here=F.score,there=(cs&&!cs.pending&&!cs.failed&&!cs.unavailable&&typeof cs.score==="number")?cs.score:null;
   var box='flex:1 1 132px;min-width:132px;background:var(--inset);border:1px solid var(--line-soft);border-radius:12px;padding:11px 13px;';
   var lab=PAMONO+"font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);";
@@ -2074,7 +2065,7 @@ function paAxisPair(R,F,cs){
   h+='<div style="'+box+'"><div style="'+lab+'">Another site</div><div style="'+num+'">'+
      (there===null?'<span style="color:var(--text-3);font-size:15px;font-weight:600;">'+(cs&&cs.pending?"measuring":"not measurable")+'</span>':there)+'</div>'+
      '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">'+(there!==null?'hidden from a site on another domain':(cs&&cs.pending?'opening a second site to compare':'the second site did not answer'))+'</div></div>';
-  if(st)h+='<div style="flex:2 1 240px;min-width:200px;'+box+'"><div style="'+lab+'">Strategy</div>'+
+  if(st)h+='<div style="flex:2 1 240px;min-width:200px;'+box+'"><div style="'+lab+'">Observed outcome</div>'+
      '<div style="font-size:15px;font-weight:650;color:var(--text);margin-top:5px;">'+paEsc(st[0])+'</div>'+
      '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.45;">'+paEsc(st[1])+'</div></div>';
   return h+'</div>';
@@ -2125,7 +2116,7 @@ function paCrossData(R){
     result:anon+" of "+total+" comparable readings differed. This experiment does not determine whether a tracker can recognize you."};
   var p=R.partitioning;
   if(pb)cs.partitionBlocked=pb;
-  if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),notMeasured:p.notMeasured||[],leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
+  if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),notMeasured:p.notMeasured||[],unknown:p.unknownPersistent||[],leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
   return cs;
 }
 function paEsc(s){return esc(String(s==null?"":s));}
@@ -2150,7 +2141,7 @@ function paRenderView(R){
   var supporting=(F.strongest?("Biggest tell: "+F.strongest+". "):"")+
     (strongN?(strongN===1?"One strong surface is still exposed.":strongN+" strong surfaces are still exposed."):"Nothing strong is exposed.")+
     (cs.pending?" The cross-site check is still running, its result appears below in a moment.":"");
-  if(F.complete===false)supporting=(F.checks.total-F.checks.unknown)+" of "+F.checks.total+" readings measured ("+F.coverage+"%). Hidden-weight range: "+F.score+"–"+F.upperBound+"%. Re-run to complete the missing measurements.";
+  if(F.complete===false)supporting=(F.checks.total-F.checks.unknown)+" of "+F.checks.total+" readings measured ("+F.coverage+"%). Hidden-weight range: "+F.score+"–"+F.upperBound+"%. Not measured: "+F.rows.filter(function(r){return r.state==="unknown";}).map(function(r){return r.label;}).join(", ")+". "+(R.crossMeasuring?"The second-site test is still running.":"Check the test details below before re-running.");
   var groups=paGroupsFrom(F);
   var shown=groups.filter(function(g){return g.state==="shown";}).sort(function(a,b){return b.weight-a.weight;});
   var refused=groups.filter(function(g){return g.state==="refused";}).sort(function(a,b){return b.weight-a.weight;});
@@ -2210,7 +2201,7 @@ function paRenderView(R){
     h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On a second site</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.crossColor+';letter-spacing:-.02em;">'+cs.score+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.crossColor+';margin-top:2px;">grade '+cs.grade+'</div></div>';
     h+='</div>';
     h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
-    if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' measured storage mechanisms stayed partitioned'+(cs.partition.notMeasured.length?'; '+cs.partition.notMeasured.length+' could not be measured':'')+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):'; no persistent supercookie carried')+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); browsers partition it per site on real cross-origin domains, so it is shown but not scored':'')+'.</div>';
+    if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' measured storage mechanisms did not carry a token (isolated or write refused)'+(cs.partition.notMeasured.length?'; not measured: '+cs.partition.notMeasured.map(paEsc).join(", "):'')+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):(cs.partition.unknown.length?'; persistent storage result is incomplete':'; no persistent token carryover observed in the measured mechanisms'))+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); informational and not scored':'')+'.</div>';
   }
   if(cs.partitionBlocked)h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--amber);line-height:1.5;"><b>Supercookie test did not run.</b> '+paEsc(cs.partitionBlocked)+'</div>';
   h+='</div></div>';
@@ -2436,6 +2427,24 @@ function paIdentity(K){
   var base=browsers.length?browsers.join(", "):(paUABaseName()||"an unrecognised browser");
   return base+(addons.length?", with "+addons.join(" + "):"");
 }
+function paFindabilityCategory(F){
+    var fRows=[];
+    var STATEWORD={shown:"SHOWN",refused:"refused",blended:"blended",unknown:"unknown"};
+    fRows.push(["Readings your browser held",
+      F.checks.held+" masked, varied or unavailable; "+F.checks.exposed+" observable; "+F.checks.unknown+" unknown, out of "+F.checks.total+" readings."]);
+    fRows.push(["Protection score",
+      F.verdict+
+      (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")]);
+    F.rows.forEach(function(r){
+      var tag=r.state==="shown"?(STATEWORD.shown+" ("+(TIERWORD[r.tier]||"")+" clue)"):STATEWORD[r.state];
+      var dispVal=((r.state==="refused"||r.state==="blended")&&r.okLabel)?r.okLabel:String(r.value).slice(0,40);
+      fRows.push([r.label+" = "+dispVal,
+        [tag+". "+r.why,
+         r.state==="shown"?(r.tier>=3?"no":"mid"):r.state==="unknown"?"mid":"ok"]]);
+    });
+    return cat("How findable you are",fRows,
+      "The whole check, in the open. Each reading is rated strong, medium or weak by how much it gives you away, in our judgment. A tracker needs one strong stable clue to follow you, or several weaker ones together.");
+  }
 function paSave(kind){
   var K=window.__KIT;if(!K||!K.findability)return;
   var F=K.findability,Fc=K.findabilityCross,cs=paCrossData(K),rand=paIsRand(K),groups=paGroupsFrom(F);
@@ -2567,10 +2576,12 @@ async function runKit(){
   if(BEACON){
     
     var _btm=/pabeacon=([a-z0-9]+)/i.exec(location.hash+location.search);
-    var _st=null;try{_st=await paStoreEach("r",_btm?_btm[1]:"");}catch(e){}
+    var _st=null,_sc=null;if(/[&#?]pastoreRead=1(?:&|$)/.test(location.hash+location.search)){try{_st=await paStoreEach("r",_btm?_btm[1]:"");}catch(e){}
+      if(/[&#?]pacookieControl=1(?:&|$)/.test(location.hash+location.search)){try{_sc=await paDeadline(function(){return paCookieStore("w",_btm[1]);},PA_STORE_JOB_MS);}catch(e){}}
+      await paDeadline(paStoreClear,PA_STORE_JOB_MS).catch(function(){});}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paObs:_bobs},_to);}catch(e){}
+    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paCookieControl:_sc,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
@@ -2594,24 +2605,7 @@ async function runKit(){
   var idRows=(R.whoYouAre||[]).map(function(f){return [f.what,[f.confidence+": "+f.evidence,f.confidence==="certain"?"no":"mid"]];});
   if(!idRows.length)idRows.push(["nothing here names a specific product",["no defense signature matched a known browser or tool","ok"]]);
   cat("Browser Identification",idRows,"What this browser actually is, worked out from its own defenses. Protection is a signature: the more distinctive the defense, the more precisely it names you.");
-  if(R.findability){
-    var F=R.findability,fRows=[];
-    var STATEWORD={shown:"SHOWN",refused:"refused",blended:"blended",unknown:"unknown"};
-    fRows.push(["Readings your browser held",
-      F.checks.held+" masked, varied or unavailable; "+F.checks.exposed+" observable; "+F.checks.unknown+" unknown, out of "+F.checks.total+" readings."]);
-    fRows.push(["Protection score",
-      F.verdict+
-      (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")]);
-    F.rows.forEach(function(r){
-      var tag=r.state==="shown"?(STATEWORD.shown+" ("+(TIERWORD[r.tier]||"")+" clue)"):STATEWORD[r.state];
-      var dispVal=(r.state!=="shown"&&r.okLabel)?r.okLabel:String(r.value).slice(0,40);
-      fRows.push([r.label+" = "+dispVal,
-        [tag+". "+r.why,
-         r.state==="shown"?(r.tier>=3?"no":"mid"):r.state==="unknown"?"mid":"ok"]]);
-    });
-    cat("How findable you are",fRows,
-      "The whole check, in the open. Each reading is rated strong, medium or weak by how much it gives you away, in our judgment. A tracker needs one strong stable clue to follow you, or several weaker ones together.");
-  }
+  if(R.findability)paFindabilityCategory(R.findability);
   R.realm=await realmCheck();R.worker=await workerCheck();R.sharedWorker=await sharedWorkerCheck();
 
 /* - phase 4: the fingerprint hashes ---------------------- */
@@ -2783,7 +2777,9 @@ async function runKit(){
   var _rescore=function(){
     var o=R.findability&&R.findability.observed,f=R.findability&&R.findability.familyKey;
     if(!o)return;
-    try{R.findability=findability(o,f);R.findability.observed=o;R.findability.familyKey=f;}catch(e){}
+    try{R.findability=findability(o,f);R.findability.observed=o;R.findability.familyKey=f;
+      var extra=R.categories["How findable you are"].rows.filter(function(r){return r[0]==="cross-browser identity";});
+      var category=paFindabilityCategory(R.findability);category.rows.splice.apply(category.rows,[2,0].concat(extra));category.hash=catHash(category.rows);R.categories["How findable you are"]=category;paRenderRaw(R,null);}catch(e){}
   };
   window.__paApplyCross=function(obsB){
     if(!R.findability||!obsB)return;
@@ -2794,16 +2790,17 @@ async function runKit(){
       try{paRenderView(R);}catch(_e){}
     }catch(e){}
   };
-  window.__paApplyPartition=function(w,readBack,oh){
+  window.__paApplyPartition=function(w,readBack,oh,cookieControl){
     
     if(!w||!w.tok)return;
-    var wrote=(w.wrote&&w.wrote.ok)||{},refused=(w.wrote&&w.wrote.refused)||[],unsup=(w.wrote&&w.wrote.unsupported)||[],read=readBack||{},names=Object.keys(wrote);
+    var wrote=(w.wrote&&w.wrote.ok)||{},refused=((w.wrote&&w.wrote.refused)||[]).slice(),unsup=(w.wrote&&w.wrote.unsupported)||[],read=readBack||{},names=Object.keys(wrote);
     var leaked=[],held=[],unknown=(w.wrote&&w.wrote.stalled||[]).slice();
-    names.forEach(function(k){if(!Object.prototype.hasOwnProperty.call(read,k)){unknown.push(k);return;}(read[k]===w.tok?leaked:held).push(k);});
+    if(cookieControl===1&&typeof read.CookieStore==="string"&&read.CookieStore!==w.tok&&/^(TypeError|UnknownError)$/.test(w.wrote&&w.wrote.errors&&w.wrote.errors.CookieStore)&&unknown.indexOf("CookieStore")>=0){unknown=unknown.filter(function(k){return k!=="CookieStore";});refused.push("CookieStore");}
+    names.forEach(function(k){if(!Object.prototype.hasOwnProperty.call(read,k)||typeof read[k]!=="string"){unknown.push(k);return;}(read[k]===w.tok?leaked:held).push(k);});
     var CACHE_MECH={"script cache":1,"stylesheet cache":1,"image cache":1,"prefetch cache":1,"iframe cache":1,"XHR cache":1,"HTTP cache":1};
     var leakedPersistent=leaked.filter(function(k){return !CACHE_MECH[k];});
     var total=leaked.length+held.length+refused.length;
-    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup.concat(unknown),tested:total,origin:w.origin};
+    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup.concat(unknown),unknown:unknown,unknownPersistent:unknown.filter(function(k){return !CACHE_MECH[k];}),unsupported:unsup,writeErrors:w.wrote&&w.wrote.errors||{},cookieControl:cookieControl===1,tested:total,origin:w.origin};
     try{
       if(R.findability&&R.findability.observed){
         var completeStores=held.concat(refused).filter(function(k){return !CACHE_MECH[k];});
@@ -2872,25 +2869,27 @@ document.getElementById("runBtn").addEventListener("click",function(){
     if(pop)storeWrite=paPartitionWrite(xTok).then(function(w){SD.writeSettled=true;SD.wrote=(w&&w.wrote)?{ok:Object.keys(w.wrote.ok||{}).length,refused:(w.wrote.refused||[]).length,unsupported:(w.wrote.unsupported||[]).length,stalled:(w.wrote.stalled||[]).length}:null;return w;}).catch(function(){SD.writeSettled=true;return null;});
     else window.__paStoreBlocked="The supercookie test needs a pop-up window to read your storage back from a second site, and this browser blocked it. Allow pop-ups for this page and run again.";
   }
-  runKit().then(function(){
+  runKit().then(async function(){
     btn.disabled=false;lbl.textContent="Re-run";btn.setAttribute("aria-label","Re-run benchmark");
     
     var runK=window.__KIT;
     if(useWindow&&!pop){if(runK){runK.crossCanMeasure=true;runK.crossFailed="The second-site window was blocked. Allow pop-ups, then retry the comparison.";try{paRenderView(runK);}catch(_e){}}return;}
     if(pop){
+      btn.disabled=true;
+      var written=await storeWrite;
       var doneW=false,crossDoneW=false,storeDoneW=!wantStore,fbIfr=null;
       if(runK){if(isBrave)runK.crossSkippedRandomizer=true;runK.crossMeasuring=true;runK.crossFailed="measuring";try{paRenderView(runK);}catch(_e){}}
-      function _cleanW(){window.removeEventListener("message",onMsgW);try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
+      function _cleanW(){window.removeEventListener("message",onMsgW);if(window.__KIT===runK)btn.disabled=false;if(written&&written.clear)written.clear();try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
       function onMsgW(e){
         if(doneW||window.__KIT!==runK||!paCrossMessage(e,comp.origin,xTok,[pop]))return;
         if(e.source===pop)SD.fromPop=true;else SD.fromFrame=true;
         if(!crossDoneW){crossDoneW=true;
           runK.crossMeasuring=false;runK.crossFailed=null;runK.crossSkippedRandomizer=false;runK.crossCanMeasure=false;
           if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
-        if(!storeDoneW&&e.source===pop){storeDoneW=true;var _sr=e.data.paStoreRead;SD.readKeys=_sr?Object.keys(_sr).length:-1;storeWrite.then(function(w){if(window.__KIT!==runK)return;if(window.__paApplyPartition)window.__paApplyPartition(w,_sr,oh);if(w&&w.clear)w.clear();});}
+        if(!storeDoneW&&e.source===pop){storeDoneW=true;var _sr=e.data.paStoreRead;SD.readKeys=_sr?Object.keys(_sr).length:-1;if(window.__paApplyPartition)window.__paApplyPartition(written,_sr,oh,e.data.paCookieControl);if(!written){window.__paStoreBlocked="The companion frame did not confirm its storage writes. Check that the companion is reachable and can be embedded, then re-run.";paRenderView(runK);}}
         if(crossDoneW&&storeDoneW){doneW=true;_cleanW();}}
       window.addEventListener("message",onMsgW);
-      try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){}
+      try{pop.location.href=comp.url+"#pabeacon="+xTok+(wantStore?"&pastoreRead=1":"")+(written&&written.wrote&&/^(TypeError|UnknownError)$/.test(written.wrote.errors&&written.wrote.errors.CookieStore)?"&pacookieControl=1":"");}catch(x){}
       
 
       setTimeout(function(){if(doneW)return;SD.timedOut=true;doneW=true;_cleanW();if(window.__KIT!==runK)return;runK.crossMeasuring=false;if(wantStore&&!storeDoneW&&!runK.partitioning)window.__paStoreBlocked="The supercookie test needs the second site to answer as a page of its own, and it never did. Your storage was not read back, so this requested reading remains unknown and receives no protection credit.";if(!crossDoneW){if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}}try{paRenderView(runK);}catch(_e){}},PA_CROSS_MS);
@@ -2907,6 +2906,8 @@ document.getElementById("runBtn").addEventListener("click",function(){
 });
 
 /* SECOND-ORIGIN MODE - opened as the companion, posts readings back ====== */
+document.getElementById("runBtn").disabled=false;
+document.getElementById("scriptStatus").remove();
 if(/pabeacon/.test(location.hash)||/pabeacon/.test(location.search)){
   try{runKit();}catch(e){}}
 else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);

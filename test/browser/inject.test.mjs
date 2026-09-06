@@ -217,12 +217,12 @@ test("inject-matrix: unavailable baselines cannot hide credited failures or sati
   assertBatch("throw", diffBatch([unknown], [shown], labels), labels);
 });
 
-test("inject-matrix: a browser without a usable WebGPU adapter confirms no identity but leaves limits unknown", async () => {
+test("inject-matrix: a confirmed absent WebGPU adapter exposes neither identity nor limits", async () => {
   const srv = await getServer();
   const noAdapter = 'Object.defineProperty(navigator,"gpu",{configurable:true,value:{requestAdapter:async function(){return null;}}});';
   const clean = await scoreWith(srv.port, noAdapter);
   assert.equal(clean.rows.find(r => r.label === "WebGPU adapter")?.state, "refused");
-  assert.equal(clean.rows.find(r => r.label === "WebGPU limits")?.state, "unknown");
+  assert.equal(clean.rows.find(r => r.label === "WebGPU limits")?.state, "refused");
   for (const mode of ["throw", "undefined"]) {
     const broken = await scoreWith(srv.port, noAdapter + propPreload(mode));
     assert.equal(broken.complete, false);

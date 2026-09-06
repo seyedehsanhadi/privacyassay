@@ -15,6 +15,9 @@ const RERUN = `
 (async function(){
   var out = [];
   for (var i = 0; i < ARG_N; i++) {
+    var ready = Date.now();
+    while (document.getElementById("runBtn").disabled && Date.now() - ready < 90000) await new Promise(function(r){ setTimeout(r, 250); });
+    if (document.getElementById("runBtn").disabled) throw new Error("Run did not become available after comparison");
     window.__KIT_DONE = false;
     document.getElementById("runBtn").click();
     var t0 = Date.now();

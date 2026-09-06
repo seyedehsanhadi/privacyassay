@@ -4,6 +4,10 @@ Notable changes per release.
 
 ## 0.9.2 - 2026-09-05
 
+- Complete supercookie comparisons when third-party storage is explicitly refused, with a first-party Cookie Store control for ambiguous write errors.
+- Wait for storage writes before readback and keep the report and JSON exports synchronized after rescoring.
+- Keep failed storage reads unknown, validate cache controls, and explain script-blocked pages.
+- Stop identifying Goanna from disabled worker and push APIs, which also occur in hardened Firefox builds.
 - Separate unknown measurements from protection; expose coverage and score bounds.
 - Re-run fingerprint stimuli; correct GPU identity and font classifications.
 - Bind companion replies to the window, run token and methodology version.

@@ -70,6 +70,10 @@ WebRTC and cross-site storage are off by default. WebRTC opt-in contacts a publi
 
 Storage plants a token in a companion frame and reads it back with that origin top-level. Only confirmed writes and successful reads establish isolation or carryover. Missing readbacks and failed controls remain unknown. Persistent stores affect the score; HTTP-cache probes remain informational and need the local server. This is not a complete common-tracker-under-two-first-parties partitioning suite.
 
+Storage readback waits for the frame's write result. Explicit access denials and secure cookie writes that return no token are recorded as write refusals. A generic Cookie Store write error alone remains unknown: it counts as a context-specific refusal only when a successful top-level read finds no token and the same write/read control succeeds there afterward. That control runs after the carryover read so it cannot create a false carryover result. Both contexts then clear the test's storage. Cache probes require a working server counter before reporting a measured cache result; they never affect the persistent-storage score.
+
+A completed WebGPU request returning no adapter establishes that neither its identity nor its limits were exposed. A failed request or an adapter whose limits cannot be read remains unknown for the affected reading.
+
 Extension resource enumeration is not measured under the page's CSP. Positive page-visible extension evidence can be reported; no detected extension is not credited as protection.
 
 ## Exports and privacy

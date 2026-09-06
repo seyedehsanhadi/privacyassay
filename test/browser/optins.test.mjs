@@ -22,7 +22,7 @@ async function runWith(port, { webrtc = false, storage = false } = {}) {
     assert.deepEqual(JSON.parse(state), [webrtc, storage], "the opt-in boxes did not take, so this run proves nothing");
     await page.ev(`document.getElementById("runBtn").click();"go"`);
     for (let i = 0; i < 90; i++) { if (await page.ev("!!window.__KIT_DONE")) break; await new Promise((r) => setTimeout(r, 1000)); }
-    await new Promise((r) => setTimeout(r, 9000));
+    for(let i=0;i<60;i++){if(await page.ev('!document.getElementById("runBtn").disabled && (!window.__KIT.crossMeasuring)'))break;await new Promise(r=>setTimeout(r,1000));}
     return JSON.parse(await page.ev(`JSON.stringify((function(){
       var K=window.__KIT||{},F=K.findability||{},X=K.findabilityCross||null,P=K.partitioning||null;
       var has=function(l){return (F.rows||[]).some(function(r){return r.label===l;});};
@@ -47,6 +47,7 @@ test("opt-ins: a measured reading always reaches the score that is displayed", a
     assert.equal(rtc.rows, base.rows + 1, `expected one more scored reading, got ${base.rows} -> ${rtc.rows}`);
 
     const store = await runWith(srv.port, { storage: true });
+    assert.ok(store.partTested>0,"the normal storage run must finish its controls, not silently skip its assertions");
     if (store.partTested > 0) {
       assert.equal(store.storageRow, true,
         `the supercookie probe tested ${store.partTested} mechanisms and found ${JSON.stringify(store.carried)}, so the reading must be scored`);
