@@ -176,6 +176,10 @@ export async function runAudit(page, { timeout = 90000 } = {}) {
     if (await page.ev("!!window.__KIT_DONE")) break;
   }
   await sleep(400);
+  while (Date.now() < deadline) {
+    if (await page.ev(`!(window.__KIT && (window.__KIT.crossMeasuring || window.__KIT.crossFailed === "measuring"))`)) break;
+    await sleep(250);
+  }
   const raw = await page.ev(`JSON.stringify(window.__KIT || {})`);
   const kit = JSON.parse(raw || "{}");
   if (!kit.findability) throw new Error("audit did not populate __KIT.findability");
