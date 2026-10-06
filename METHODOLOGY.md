@@ -1,6 +1,6 @@
-# Methodology 0.9.3
+# Methodology 0.9.4
 
-Updated 2026-10-06. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression.
+Updated 2026-10-07. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3.
 
 ## Outcomes
 

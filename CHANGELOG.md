@@ -2,6 +2,12 @@
 
 Notable changes per release.
 
+## 0.9.4 - 2026-10-07
+
+- Treat a WebGL readback refused with NotSupportedError, as Mullvad Browser and Tor Browser do, as a refused reading. It was classed unknown, which made every run in those browsers incomplete.
+- Send the second-site reply with both the exact target origin and a wildcard fallback. Browsers that isolate first parties silently drop a message with an exact cross-origin target, so the cross-site comparison never completed in Mullvad and Tor. The receiver still checks origin, window, token and version.
+- Benchmark harness: connect Tor Browser automatically and let it reach the loopback server.
+
 ## 0.9.3 - 2026-10-06
 
 - Compare canvas across sites on decoded pixels instead of encoded PNG bytes. Firefox can return different PNG bytes for identical pixels, which earned cross-site canvas credit that nothing supported. Cross-site canvas results are not comparable with 0.9.2; lower scores remove false credit and are not browser regressions.

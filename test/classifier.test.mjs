@@ -82,6 +82,8 @@ test("local-font failure cannot override independent enumeration",()=>{for(const
 
 test("unknown and confirmed unavailable outcomes are distinct",()=>{for(const v of ["ERR","ERR:SecurityError","n/a","unavailable","absent",""])assert.equal(stateOf({timezone:v},"other","timezone"),"unknown");for(const v of ["unsupported","blocked","blocked:SecurityError"])assert.equal(stateOf({timezone:v},"other","timezone"),"refused");});
 
+test("a WebGL readback the browser denies with NotSupportedError is refused, not unknown",()=>{assert.equal(stateOf({webglRenderClass:"blocked:NotSupportedError"},"other","webglRenderClass"),"refused");assert.equal(stateOf({webglRenderClass:"ERR"},"other","webglRenderClass"),"unknown");});
+
 test("refused: a value that merely starts with those letters is still shown", () => {
   assert.equal(stateOf({ timezone: "Europe/Berlin" }, "other", "timezone"), "shown");
   assert.equal(stateOf({ platform: "Linux x86_64" }, "other", "platform"), "shown");

@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.3","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.4","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -542,7 +542,7 @@ function collectGPU(){
     try{rows.push(["WebGL extensions",fnvParts(gl.getSupportedExtensions()||[],",")]);}catch(e){}
     try{rows.push(["WebGL context attributes",fnv(JSON.stringify(gl.getContextAttributes()||{}))]);}catch(e){}
 
-    try{var c2=document.createElement("canvas");c2.width=96;c2.height=96;var g2=c2.getContext("webgl");var vs=g2.createShader(g2.VERTEX_SHADER);g2.shaderSource(vs,"attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);gl_PointSize=80.;}");g2.compileShader(vs);var fs=g2.createShader(g2.FRAGMENT_SHADER);g2.shaderSource(fs,"precision mediump float;void main(){gl_FragColor=vec4(.4,.7,.25,1.);}");g2.compileShader(fs);var pr=g2.createProgram();g2.attachShader(pr,vs);g2.attachShader(pr,fs);g2.linkProgram(pr);g2.useProgram(pr);var b=g2.createBuffer();g2.bindBuffer(g2.ARRAY_BUFFER,b);g2.bufferData(g2.ARRAY_BUFFER,new Float32Array([0,0]),g2.STATIC_DRAW);var l=g2.getAttribLocation(pr,"p");g2.enableVertexAttribArray(l);g2.vertexAttribPointer(l,2,g2.FLOAT,false,0,0);g2.drawArrays(g2.POINTS,0,1);var px=new Uint8Array(96*96*4);g2.readPixels(0,0,96,96,g2.RGBA,g2.UNSIGNED_BYTE,px);var _drew=false;for(var _pi=0;_pi<px.length;_pi++){if(px[_pi]!==0){_drew=true;break;}}rows.push(["WebGL render hash",_drew?fnvBytes(px):"ERR"]);glDone(g2);}catch(e){rows.push(["WebGL render hash","ERR"]);}
+    try{var c2=document.createElement("canvas");c2.width=96;c2.height=96;var g2=c2.getContext("webgl");var vs=g2.createShader(g2.VERTEX_SHADER);g2.shaderSource(vs,"attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);gl_PointSize=80.;}");g2.compileShader(vs);var fs=g2.createShader(g2.FRAGMENT_SHADER);g2.shaderSource(fs,"precision mediump float;void main(){gl_FragColor=vec4(.4,.7,.25,1.);}");g2.compileShader(fs);var pr=g2.createProgram();g2.attachShader(pr,vs);g2.attachShader(pr,fs);g2.linkProgram(pr);g2.useProgram(pr);var b=g2.createBuffer();g2.bindBuffer(g2.ARRAY_BUFFER,b);g2.bufferData(g2.ARRAY_BUFFER,new Float32Array([0,0]),g2.STATIC_DRAW);var l=g2.getAttribLocation(pr,"p");g2.enableVertexAttribArray(l);g2.vertexAttribPointer(l,2,g2.FLOAT,false,0,0);g2.drawArrays(g2.POINTS,0,1);var px=new Uint8Array(96*96*4);var _rp=0;try{g2.readPixels(0,0,96,96,g2.RGBA,g2.UNSIGNED_BYTE,px);}catch(e){_rp=e&&e.name==='NotSupportedError'&&g2.getError()===0?1:0;if(!_rp)throw e;}var _drew=false;for(var _pi=0;_pi<px.length;_pi++){if(px[_pi]!==0){_drew=true;break;}}rows.push(["WebGL render hash",_rp?"blocked:NotSupportedError":_drew?fnvBytes(px):"ERR"]);glDone(g2);}catch(e){rows.push(["WebGL render hash","ERR"]);}
     glDone(gl);
   }else rows.push(["WebGL","unavailable"]);
   rows.push(["WebGL2 support",present(window.WebGL2RenderingContext)]);
@@ -1386,7 +1386,7 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.3", dated:"2026-10-06",
+  version:"0.9.4", dated:"2026-10-07",
 
 
 /* - browser labels (informational only) ------------------ */
@@ -1607,7 +1607,7 @@ function findability(observed,familyKey){
     if(s.optional&&(v===undefined||v===null))return;
     var text=String(v==null?"":v);
     var unknown=v==null||(typeof v!=="string"&&typeof v!=="number")||text===""||/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|0 \(ERR\))$/i.test(text);
-    var refused=/^(unsupported|blocked(?::(?:SecurityError|NotAllowedError))?)$/.test(text)||
+    var refused=/^(unsupported|blocked(?::(?:SecurityError|NotAllowedError|NotSupportedError))?)$/.test(text)||
       (s.k==="webrtcIP"&&text==="not-exposed")||(s.k==="storageCarry"&&text==="not-carried");
     if(unknown){state="unknown";why="The measurement did not establish a result; no protection credit is awarded.";}
     else if(refused){state="refused";why="This API is unsupported, explicitly denied, or the completed test returned no exposed value.";}
@@ -2598,7 +2598,7 @@ async function runKit(){
       await paDeadline(paStoreClear,PA_STORE_JOB_MS).catch(function(){});}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)_tgt.postMessage({paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paCookieControl:_sc,paObs:_bobs},_to);}catch(e){}
+    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)paPostBack(_tgt,{paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paCookieControl:_sc,paObs:_bobs},_to);}catch(e){}
     setTimeout(function(){try{window.close();}catch(e){}},150);return;}
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
@@ -2842,6 +2842,7 @@ async function runKit(){
 function paMessageMatches(e,origin,token,sources){return !!(e&&e.source&&e.origin===origin&&sources.indexOf(e.source)>=0&&e.data&&typeof e.data==="object"&&e.data.paToken===token&&e.data.paVersion===PRIORS.version);}
 function paCrossMessage(e,origin,token,sources){if(!paMessageMatches(e,origin,token,sources)||!e.data.paLink||!e.data.paObs||typeof e.data.paObs!=="object"||Array.isArray(e.data.paObs))return false;return PRIORS.surfaces.filter(function(s){return !s.optional;}).every(function(s){var v=e.data.paObs[s.k];return (typeof v==="string"&&v.length<=20000)||(typeof v==="number"&&isFinite(v));});}
 function paBackOrigin(){var o=otherOrigin();if(o)return location.protocol+"//"+o;try{if(PA_HOME&&/^https?:/i.test(PA_HOME)&&!paIsLocalPage())return new URL(PA_HOME).origin;}catch(e){}return "";}
+function paPostBack(t,m,o){try{t.postMessage(m,o);}catch(e){}try{t.postMessage(m,"*");}catch(e){}}
 function otherOrigin(){if(!/^https?:$/.test(location.protocol))return null;var hn=location.hostname,pt=location.port?":"+location.port:"";if(hn==="localhost")return "127.0.0.1"+pt;if(hn==="127.0.0.1")return "localhost"+pt;return null;}
 function paIsLocalPage(){return !/^https?:$/.test(location.protocol)||/^(localhost|\[?::1\]?|127(\.\d{1,3}){3})$/i.test(location.hostname);}
 function paCompanion(){var oh=otherOrigin();if(oh)return {host:oh,origin:location.protocol+"//"+oh,url:location.protocol+"//"+oh+location.pathname};try{if(PA_COMPANION&&/^https?:\/\//i.test(PA_COMPANION)&&PA_HOME&&location.origin===new URL(PA_HOME).origin){var u=new URL(PA_COMPANION);if(u.origin!==location.origin)return {host:u.host,origin:u.origin,url:PA_COMPANION.replace(/#.*$/,"")};}}catch(e){}return null;}
@@ -2934,7 +2935,7 @@ else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
   if(_sm){var _tk=_sm[1];
     var _po=paBackOrigin();
     var _tgt=window.parent||window.opener;
-    var _post=function(m){m.paToken=_tk;m.paVersion=PRIORS.version;try{if(_po)_tgt.postMessage(m,_po);}catch(e){}};
+    var _post=function(m){m.paToken=_tk;m.paVersion=PRIORS.version;if(_po)paPostBack(_tgt,m,_po);};
     paStoreEach("w",_tk).then(function(w){_post({paStoreTok:_tk,wrote:w});},function(){_post({paStoreTok:_tk,wrote:{}});});
     window.addEventListener("message",function(e){if(!e.data||e.data.paClear!==_tk)return;if(!_po||!paMessageMatches(e,_po,_tk,[window.parent,window.opener]))return;paStoreClear().then(function(){_post({paStoreCleared:_tk});});});}}
 })();

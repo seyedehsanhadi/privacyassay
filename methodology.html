@@ -19,7 +19,7 @@
 <nav aria-label="Main"><a href="./">Run the browser test</a> · <a href="https://github.com/seyedehsanhadi/privacyassay">Source code</a></nav>
 <main>
 <h1>How the browser privacy score works</h1>
-<p>Privacyassay measures selected information a website can read from your browser. Measurements run in the browser; your fingerprint is not uploaded. This page describes <strong>0.9.3</strong>.</p>
+<p>Privacyassay measures selected information a website can read from your browser. Measurements run in the browser; your fingerprint is not uploaded. This page describes <strong>0.9.4</strong>.</p>
 <p class="note">The score summarizes an experiment. It is not a probability of being tracked, a uniqueness estimate, or a complete browser privacy grade.</p>
 <h2>What the test covers</h2>
 <p>The catalog contains 32 readings across 13 categories, including canvas, WebGL, WebGPU, audio, fonts, layout, screen and device details. The raw report includes additional capability checks. WebRTC public-IP, cross-site storage and DRM key-system tests are optional and off by default.</p>
@@ -39,7 +39,7 @@ score = round(100 × sum(category earned) / sum(category weight))</pre>
 <h2>Repeated and cross-site measurements</h2>
 <p>Canvas, GPU rendering, audio, font and layout measurements run again with the same stimuli. Failed repeats are unknown. Browser names, common values or missing local fonts do not establish protection.</p>
 <p>The cross-site test opens a second origin as a top-level window for every browser. If the window is blocked, fails to respond or serves a different methodology version, the comparison is unmeasured. Results report the number of comparable readings that changed, without claiming a tracker can or cannot recognize you.</p>
-<p>A reading counts as compared only when both sites returned a usable value; a missing, empty, error or timed-out value leaves it unknown. Canvas is compared on its decoded pixels, not on the encoded PNG, so a browser that changes only the file bytes earns no canvas credit. Because of that change, 0.9.3 cross-site canvas results are not comparable with 0.9.2; a lower score removes earlier false credit and is not a browser regression.</p>
+<p>A reading counts as compared only when both sites returned a usable value; a missing, empty, error or timed-out value leaves it unknown. Canvas is compared on its decoded pixels, not on the encoded PNG, so a browser that changes only the file bytes earns no canvas credit. Because of that change, 0.9.3 cross-site canvas results are not comparable with 0.9.2; a lower score removes earlier false credit and is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3.</p>
 <p>Changing a reading does not prove resistance to averaging or linking through other attributes. Localhost comparisons are not equivalent to two registered domains. Compare the same browser/OS versions, settings, opt-ins and context.</p>
 <h2>Optional checks and privacy</h2>
 <p>The WebRTC opt-in contacts a public STUN service and reports observed candidates, completion and failures. It is not a VPN-bypass certification. The storage opt-in tests selected persistent stores with confirmed writes and readbacks; failed controls remain unknown.</p>

@@ -40,13 +40,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const CROSS_BUDGET_MS = 52000;
 const AUDIT_BUDGET_MS = Number(process.env.PA_AUDIT_MS || 120000);
 
-function profileFor() {
+function profileFor(key) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pa-live-"));
   fs.writeFileSync(path.join(d, "user.js"), [
     'user_pref("browser.shell.checkDefaultBrowser", false);',
     'user_pref("browser.aboutwelcome.enabled", false);',
     'user_pref("datareporting.policy.firstRunURL", "");',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
+    ...(key === "tor" ? ['user_pref("torbrowser.settings.quickstart.enabled", true);','user_pref("network.proxy.no_proxies_on", "127.0.0.1,localhost");'] : []),
   ].join("\n"));
   return d;
 }
@@ -142,7 +143,7 @@ async function runChromium(key) {
 
 async function runGecko(key) {
   if(SOURCE)throw new Error('candidate response override is Chromium-only; use loopback for Gecko candidate checks');
-  const profile = profileFor();
+  const profile = profileFor(key);
   const proc = spawn(MANIFEST[key].path,
     [...(HEADLESS?["-headless"]:[]),"-no-remote", "-profile", profile, "--remote-debugging-port=0", "--width=1600", "--height=1100", URL_],
     { stdio: ["ignore", "pipe", "pipe"] });
@@ -180,7 +181,7 @@ async function runGecko(key) {
       return r.result?.value;
     };
     let ready = false;
-    for (let deadline=Date.now()+90000; Date.now()<deadline;) { await sleep(500); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
+    for (let deadline=Date.now()+(key==="tor"?300000:90000); Date.now()<deadline;) { await sleep(500); if (key==="tor") await ev(`(function(){var b=document.getElementById("connectButton");if(location.protocol==="about:"&&b&&!window.__paConnect){window.__paConnect=1;b.click();}})()`).catch(() => {}); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
     const pt = JSON.parse(await ev(`JSON.stringify((function(){var r=document.getElementById("runBtn").getBoundingClientRect();return{x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})())`));
@@ -208,7 +209,7 @@ for (const key of BROWSERS) {
       try {
         const out = entry.engine === "gecko" ? await runGecko(key) : await runChromium(key);
         samples.push(out);
-        if(out.version!=="0.9.3")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
+        if(out.version!=="0.9.4")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
         if (out.complete && typeof out.score === "number") scores.push(out.score); else errors.push("incomplete measurement");
         if (out.crossComplete && typeof out.cross === "number") crosses.push(out.cross);
         else errors.push(out.crossFailed ? String(out.crossFailed).slice(0, 60) : "cross not measurable");
@@ -217,14 +218,14 @@ for (const key of BROWSERS) {
   const row = {
     browser: key, url: URL_, capturedAt:new Date().toISOString(), os:os.type()+" "+os.release(), headless:HEADLESS, optins: { storage: STORE, webrtc: RTC }, blockThirdPartyCookies:BLOCK_3PC, runs: RUNS,
     scores, cross: crosses, stable: scores.length > 1 && new Set(scores).size === 1,
-    version: "0.9.3", source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
+    version: "0.9.4", source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
   };
   report.push(row);
   console.log(`${key.padEnd(11)} score ${JSON.stringify(scores).padEnd(12)} cross ${JSON.stringify(crosses).padEnd(12)}${errors.length ? "  " + errors[0] : ""}`);
 }
 
 const tag = `${SOURCE?"-candidate":""}${HEADLESS?"-headless":""}${new URL(URL_).hostname==="127.0.0.1"||new URL(URL_).hostname==="localhost"?"-local":""}${STORE ? "-store" : ""}${RTC ? "-rtc" : ""}${BLOCK_3PC?"-3pc":""}`;
-const file = path.join(OUT, `live-0.9.3${tag}.json`);
+const file = path.join(OUT, `live-0.9.4${tag}.json`);
 // Merge rather than overwrite: running one browser at a time is the normal way to work through a
 // long matrix, and a plain write would silently discard every earlier row.
 let prior = [];

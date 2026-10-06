@@ -28,18 +28,15 @@ test("manifest: the no-dependencies claim on the README badge is still true", ()
 
 test("manifest: entry page remains a standalone document",()=>{const html=fs.readFileSync(path.join(ROOT,"index.html"),"utf8");assert.match(html,/<!doctype html>/i);assert.equal(/<script[^>]+src=/.test(html),false);});
 
-test("historical browser charts retain their presentation and methodology label",()=>{
+test("browser charts match the README table",()=>{
   const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");
-  assert.match(readme,/not comparable/i);assert.match(readme,/Historical figures \(0.9.1-beta\)/);
+  assert.match(readme,/not comparable/i);assert.match(readme,/0.9.3 measured/);
   for(const theme of ["light","dark"]){
     const svg=fs.readFileSync(path.join(ROOT,`chart-${theme}.svg`),"utf8");
-    assert.match(svg,/viewBox="0 0 756 324"/);
-    for(const browser of ["Tor Browser","Mullvad Browser","LibreWolf","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
-    assert.equal((svg.match(/<rect /g)||[]).length,7);
+    for(const browser of ["LibreWolf","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
+    assert.equal((svg.match(/<rect /g)||[]).length,5);
   }
 });
-
-test("historical captures remain distinct from the current methodology",()=>{const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");assert.match(readme,/0.9.1-beta/);assert.match(readme,/0.9.2/);assert.match(readme,/not comparable/i);});
 
 test("manifest: the citation file agrees with the package it cites", () => {
   const cff = fs.readFileSync(path.join(ROOT, "CITATION.cff"), "utf8");

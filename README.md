@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: Mullvad Browser, 74 of 100 hidden, grade C, 74 on a second site, no hardware anchors exposed](screenshot.png)
+![Privacyassay result: Brave, 0 of 100 hidden on this page, 25 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Historical example, before 0.9.2. A real run on the hosted pair: Mullvad Browser 140.13.0, both opt-ins off, 2026-08-03. The two origins are privacyassay.com and privacyassay.github.io, separate registrable domains. Its bundled NoScript was moved aside, so this was a modified profile. Your own result will differ.</sub></div>
+<div align="center"><sub>Brave 154, 0.9.3, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -35,9 +35,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 | | |
 |---|---|
-| **Size** | one HTML file, 282 KB |
+| **Size** | one HTML file, 286 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
-| **Status** | 0.9.3; failed readings remain unknown; canvas compared on pixels, so a lower score than 0.9.2 removes false credit; the browser figures below are historical |
+| **Status** | 0.9.4; failed readings stay unknown; canvas compared on pixels |
 
 Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
@@ -49,32 +49,22 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-**Historical figures (0.9.1-beta), not comparable with 0.9.2.** The original browser bars, screenshot and table are retained below. Fresh scores require measurements with the corrected method; these are not current browser rankings.
-
-One machine, Windows 11, 2026-08-03, measured on the hosted pair: `privacyassay.com` against `privacyassay.github.io`. Two runs per setting, a fresh browser launch each, and every cell returned the same score on both. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, 2026-10-06, 0.9.3 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each, both runs agreed. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Score by browser: Tor 74 (range 74-78), Mullvad 74 (74-78), LibreWolf 48 (42-55), Firefox 9 (8-20), Brave 5 (5-17), Chrome 0, Edge 0">
+  <img src="chart-light.svg" width="756" alt="Score by browser: LibreWolf 26 (range 23-35), Firefox 9 (8-20), Brave 0 (0-13), Chrome 0, Edge 0">
 </picture>
 
-| Browser | Version | Historical score | Range | Why it moves |
-|---|---|---:|---:|---|
-| Tor Browser | 140.13.0 | 74 | 74-78 | the WebRTC test adds a category it refuses outright; loopback figure, see below |
-| Mullvad Browser | 140.13.0 | 74 | 74-78 | same |
-| LibreWolf | 152.0.6-1 | 48 | 42-55 | loses on WebRTC, gains on supercookies |
-| Firefox | 153.0.1 | 9 | 8-20 | partitions storage well, which only counts when you ask for it |
-| Brave | 151.1.93.129 | 5 | 5-17 | flat within a visit by design; its cookie blocking only shows between real domains |
-| Chrome | 150.0.7871.187 | 0 | 0 | nothing hidden under any setting |
-| Edge | 151.0.4129.59 | 0 | 0 | nothing hidden under any setting |
+| Browser | Version | Score | Range | Cross-site |
+|---|---|---:|---:|---:|
+| LibreWolf | 152.0.6-1 | 26 | 23-35 | 26 |
+| Firefox | 154.0.1 | 9 | 8-20 | 9 |
+| Brave | 154.1.96.61 | 0 | 0-13 | 14-27 |
+| Chrome | 154.0.8037.92 | 0 | 0 | 0 |
+| Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-The earlier runs used fresh profiles, but the documented Mullvad run moved NoScript aside, so these are not all untouched defaults. Brave's Shields were reported at their defaults. Every row is measured on the hosted pair except Tor: reaching a public site needs its network bootstrapped, which this harness does not do, so it keeps its loopback figure and its three runs. Mullvad runs the same engine at the same version and measures 74 on the hosted pair, matching Tor's loopback 74.
-
-**Brave's 5 is not a verdict on Brave, and the table would mislead you if you read it as one.** This column is one visit to one site, and Brave's defence is not built to operate inside one visit: it re-seeds per session and keys per site, so its values hold still while you are on a page and it reads as exposed. Between two real domains it scores **21 to 34**, the only column where it separates from Chrome. Every other browser's cross-site figure equals its single-site score.
-
-The same table measured on loopback differs in one place. `bench/captures/matrix.json` holds the `localhost` against `127.0.0.1` run, which can be recomputed with its historical methodology, not the current scorer. Every cell agrees except Brave with supercookies on: 5 there, 17 here. Brave carries cookies across the loopback pair but blocks them between two real domains, and that single row is the whole storage category. The order does not change: at 17 Brave still sits below Firefox at 20.
-
-> These ranges are not measurement noise. Every cell returned the same score on both runs. The spread comes entirely from the opt-in setting, which changes the denominator, so **two scores taken under different settings cannot be compared**.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. Cross-site is the score between the two origins. Brave re-seeds per session and keys per site, so its single-page score reads as exposed while its cross-site score varies by session. Mullvad Browser and Tor Browser did not complete a run: Mullvad 140.15.0 (NoScript moved aside) leaves one reading unknown and the second-site probe times out, so no score is published. Tor was not run (needs a bootstrapped network). Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.2 or 0.9.1-beta.
 
 ## Run it
 
@@ -120,10 +110,10 @@ A confirmed refused reading receives credit; a broken probe stays unknown and re
 
 ## What it cannot do
 
-- **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity.
+- **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity. Browsers that protect you by making everyone look the same, such as Tor and Mullvad, earn no credit for that, so their score understates it.
 - **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
 - **See behaviour.** Mouse, typing and scroll are not measured.
-- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The historical table above mixes hosted results with Tor loopback measurements from `bench/live.mjs`, which drives the browser rather than hosting it; `bench/matrix.mjs` measures the same grid over loopback and is faster but is not the same measurement.
+- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The table above comes from `bench/live.mjs`, which drives each browser against the hosted pair.
 
 - **Audit browser AI settings or every privacy defense.** AI API availability cannot establish Firefox AI Controls or assistant data handling. Telemetry, comprehensive tracker blocking and all-browser compatibility are outside this score.
 
