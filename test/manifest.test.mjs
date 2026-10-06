@@ -30,11 +30,11 @@ test("manifest: entry page remains a standalone document",()=>{const html=fs.rea
 
 test("browser charts match the README table",()=>{
   const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");
-  assert.match(readme,/not comparable/i);assert.match(readme,/0.9.3 measured/);
+  assert.match(readme,/not comparable/i);assert.match(readme,/\d+\.\d+\.\d+ measured/);
   for(const theme of ["light","dark"]){
     const svg=fs.readFileSync(path.join(ROOT,`chart-${theme}.svg`),"utf8");
-    for(const browser of ["LibreWolf","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
-    assert.equal((svg.match(/<rect /g)||[]).length,5);
+    for(const browser of ["LibreWolf","Tor Browser","Mullvad Browser","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
+    assert.equal((svg.match(/<rect /g)||[]).length,7);
   }
 });
 

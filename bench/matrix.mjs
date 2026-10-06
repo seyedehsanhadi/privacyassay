@@ -55,5 +55,5 @@ for (const b of BROWSERS) {
       `${rec.errors.length ? "ERRORS: " + rec.errors.join("; ") : ""}`);
   }
 }
-fs.writeFileSync(path.join(OUT, "matrix-0.9.4.json"), JSON.stringify(report, null, 2));
-console.log("\nwrote captures/matrix-0.9.4.json  (" + report.length + " captures)");
+fs.writeFileSync(path.join(OUT, "matrix-0.9.5.json"), JSON.stringify(report, null, 2));
+console.log("\nwrote captures/matrix-0.9.5.json  (" + report.length + " captures)");

@@ -209,7 +209,7 @@ for (const key of BROWSERS) {
       try {
         const out = entry.engine === "gecko" ? await runGecko(key) : await runChromium(key);
         samples.push(out);
-        if(out.version!=="0.9.4")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
+        if(out.version!=="0.9.5")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
         if (out.complete && typeof out.score === "number") scores.push(out.score); else errors.push("incomplete measurement");
         if (out.crossComplete && typeof out.cross === "number") crosses.push(out.cross);
         else errors.push(out.crossFailed ? String(out.crossFailed).slice(0, 60) : "cross not measurable");
@@ -218,14 +218,14 @@ for (const key of BROWSERS) {
   const row = {
     browser: key, url: URL_, capturedAt:new Date().toISOString(), os:os.type()+" "+os.release(), headless:HEADLESS, optins: { storage: STORE, webrtc: RTC }, blockThirdPartyCookies:BLOCK_3PC, runs: RUNS,
     scores, cross: crosses, stable: scores.length > 1 && new Set(scores).size === 1,
-    version: "0.9.4", source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
+    version: "0.9.5", source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
   };
   report.push(row);
   console.log(`${key.padEnd(11)} score ${JSON.stringify(scores).padEnd(12)} cross ${JSON.stringify(crosses).padEnd(12)}${errors.length ? "  " + errors[0] : ""}`);
 }
 
 const tag = `${SOURCE?"-candidate":""}${HEADLESS?"-headless":""}${new URL(URL_).hostname==="127.0.0.1"||new URL(URL_).hostname==="localhost"?"-local":""}${STORE ? "-store" : ""}${RTC ? "-rtc" : ""}${BLOCK_3PC?"-3pc":""}`;
-const file = path.join(OUT, `live-0.9.4${tag}.json`);
+const file = path.join(OUT, `live-0.9.5${tag}.json`);
 // Merge rather than overwrite: running one browser at a time is the normal way to work through a
 // long matrix, and a plain write would silently discard every earlier row.
 let prior = [];

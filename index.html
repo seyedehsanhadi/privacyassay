@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.4","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.5","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -1386,7 +1386,7 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.4", dated:"2026-10-07",
+  version:"0.9.5", dated:"2026-10-07",
 
 
 /* - browser labels (informational only) ------------------ */
@@ -1603,7 +1603,7 @@ function findability(observed,familyKey){
   observed=observed||{};
   var rows=[],groupShownTier={},groupTotalTier={},groupSum={},groupHid={},groupUnknown={};
   PRIORS.surfaces.forEach(function(s){
-    var v=observed[s.k],state,tier=0,why;
+    var v=observed[s.k],state,tier=0,why,mask="";
     if(s.optional&&(v===undefined||v===null))return;
     var text=String(v==null?"":v);
     var unknown=v==null||(typeof v!=="string"&&typeof v!=="number")||text===""||/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|0 \(ERR\))$/i.test(text);
@@ -1614,7 +1614,9 @@ function findability(observed,familyKey){
     else if((s.k==="canvasClass"&&(text==="noise-per-read"||text==="uniform-masked"))||
       (!s.noCrossDiff&&observed._noisy&&observed._noisy[s.k])||
       (!s.noCrossDiff&&observed._crossChanged&&observed._crossChanged[s.k])){
-      state="blended";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
+      state="blended";mask="varied";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
+    }else if(observed._crossUniform&&observed._crossUniform[s.k]){
+      state="blended";mask="uniform";why="The same standard value of this browser family on both sites. Every user of the family reports it, so it identifies no one in particular; this is uniformity, not randomization.";
     }else{state="shown";tier=paTier(s);why="An observable value was returned; uniformity across users is not established by this test.";}
     var w=paTier(s);
     groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,w);
@@ -1622,7 +1624,7 @@ function findability(observed,familyKey){
     if(state==="refused"||state==="blended")groupHid[s.group]=(groupHid[s.group]||0)+w;
     if(state==="unknown")groupUnknown[s.group]=(groupUnknown[s.group]||0)+w;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,why:why,src:s.verified||"",okLabel:s.okLabel||""});
+    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,mask:mask,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
   var groups=Object.keys(groupShownTier),totW=0,hidW=0,unknownW=0;
   var categories=Object.keys(groupTotalTier).map(function(g){
@@ -1644,10 +1646,29 @@ function findability(observed,familyKey){
     verdict:complete?(score+"% of the weighted readings were masked, varied or unavailable in this experiment."):("Incomplete: "+unknown+" reading"+(unknown===1?" is":"s are")+" unknown. "+score+" is a lower bound; no privacy grade is assigned."),version:PRIORS.version};
 }
 
+/* - the fixed values a uniformizing family reports ------- */
+var PA_STD={
+  rfp:{
+    cores:function(v){return /^(4|8)$/.test(String(v));},
+    timezone:function(v){return v==="Atlantic/Reykjavik"||v==="UTC";},
+    colorDepth:function(v){return String(v)==="24";},
+    devicePixelRatio:function(v){return String(v)==="2";},
+    maxTouchPoints:function(v){return /^(10|5)$/.test(String(v));},
+    audioRate:function(v){return String(v)==="44100";},
+    languages:function(v){return v==="en-US";},
+    availFrame:function(v){return v==="masked";}
+  },
+  letterbox:{
+    innerSize:function(v){return paIsLB(v);},
+    screenClass:function(v,o){return paIsLB(v)&&String(v)===String(o.innerSize);}
+  },
+  family:{"firefox-rfp":["rfp"],"tor-build":["rfp","letterbox"]}
+};
+
 /* - same catalog on a second origin, merged -------------- */
 function findabilityCross(obsA,obsB,familyKey){
   var single=findability(obsA,familyKey),second=findability(obsB||{},familyKey),merged={},changed=[],compared=[];
-  Object.keys(obsA||{}).forEach(function(k){merged[k]=obsA[k];});merged._crossChanged={};
+  Object.keys(obsA||{}).forEach(function(k){merged[k]=obsA[k];});merged._crossChanged={};merged._crossUniform={};var uniform=[];
   PRIORS.surfaces.forEach(function(s){
     if(s.noCrossDiff||s.optional)return;
     var a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
@@ -1661,7 +1682,15 @@ function findabilityCross(obsA,obsB,familyKey){
       merged._crossChanged[s.k]=true;changed.push(s.label);
     }
   });
-  var out=findability(merged,familyKey);out.changedAcrossOrigins=changed;out.comparedAcrossOrigins=compared;return out;
+  (PA_STD.family[familyKey]||[]).forEach(function(set){
+    Object.keys(PA_STD[set]).forEach(function(k){
+      var s=PRIORS.surfaces.find(function(x){return x.k===k;}),a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
+      if(!a||!b||a.state!=="shown"||b.state!=="shown")return;
+      var test=PA_STD[set][k];
+      if(test(obsA[k],obsA)&&test((obsB||{})[k],obsB||{})&&String(obsA[k])===String(obsB[k])){merged._crossUniform[k]=true;uniform.push(s.label);}
+    });
+  });
+  var out=findability(merged,familyKey);out.changedAcrossOrigins=changed;out.comparedAcrossOrigins=compared;out.uniformAcrossOrigins=uniform;return out;
 }
 
 /* BROWSER IDENTIFICATION - name the browser from its defenses ============ */
@@ -2130,7 +2159,8 @@ function paCrossData(R){
     single:single,singleGrade:singleGrade,singleColor:paBandFor(singleGrade).band,crossColor:paBandFor(Fc.grade).band,delta:Fc.score-single,
     pct:total?Math.round(anon/total*100):0,answer:Fc.complete===false?"Incomplete":!total?"No comparison":anon?"Changed":"Matched",
     tone:"var(--text-2)",bg:"var(--hover)",
-    result:anon+" of "+total+" comparable readings differed. This experiment does not determine whether a tracker can recognize you."};
+    uni:(Fc.uniformAcrossOrigins||[]).length,
+    result:anon+" of "+total+" comparable readings differed"+((Fc.uniformAcrossOrigins||[]).length?"; "+(Fc.uniformAcrossOrigins||[]).length+" more matched the standard values of this browser family on both sites (uniformity)":"")+". This experiment does not determine whether a tracker can recognize you."};
   var p=R.partitioning;
   if(pb)cs.partitionBlocked=pb;
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),notMeasured:p.notMeasured||[],unknown:p.unknownPersistent||[],leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};

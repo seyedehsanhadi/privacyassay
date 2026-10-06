@@ -1,15 +1,17 @@
-# Methodology 0.9.4
+# Methodology 0.9.5
 
-Updated 2026-10-07. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3.
+Updated 2026-10-07. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3. 0.9.5 adds uniformity credit to the cross-site score, so cross-site scores of Tor Browser, Mullvad Browser and LibreWolf are not comparable with 0.9.4.
 
 ## Outcomes
 
 - **shown**: the probe returned an observable value.
-- **blended**: the canvas experiment observed a mask, or repeated measurements returned different values.
+- **blended**: the canvas experiment observed a mask, repeated measurements returned different values, or the cross-site score found the standard value of a uniformizing family on both origins (mask: uniform).
 - **refused**: an API is unsupported, access was explicitly denied, or a completed optional test observed no exposed value.
 - **unknown**: missing, invalid, failed, timed-out or incomplete measurement. Unknown readings receive no protection credit.
 
-Browser names, common values, a letterbox-shaped window, an empty voice list, and a failed local-font load do not establish uniformity across users. They do not earn masking credit. Browser identification remains informational.
+Two origins separate the two kinds of protection. A randomizer is credited when a reading differs between the origins. A uniformizer is credited when a reading carries the fixed value its family standardizes, identically on both origins. A plain browser that shows the same value on both earns neither.
+
+Uniformity credit applies to the cross-site score only, never to a single-site run, and only to Tor Browser, Mullvad Browser (family tor-build) and Firefox with resistFingerprinting, LibreWolf included (family firefox-rfp). Both families: CPU cores 4 or 8, timezone Atlantic/Reykjavik or UTC, colour depth 24, display scaling 2, touch points 10 or 5, sample rate 44100, language en-US, taskbar size masked. Tor builds only: window size on the letterbox grid, and screen size equal to that window. Installed fonts, text metrics and font measurement are not credited, because the tool cannot verify the bundled set. Browser names and values outside these sets earn nothing. Browser identification remains informational.
 
 ## Weights
 

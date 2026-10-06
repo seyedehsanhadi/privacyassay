@@ -134,7 +134,7 @@ test("missing values cannot acquire credit from browser metadata",()=>{for(const
 
 test("cross: a probe that failed on the second origin is not a value that differed", () => {
   const { findabilityCross } = new Function(
-    grabVar("PRIORS") + "\n" + grabFn("paTier") + "\n" + grabFn("paLetterboxed") + "\n" + grabFn("paIsLB")
+    grabVar("PRIORS") + "\n" + grabVar("PA_STD") + "\n" + grabFn("paTier") + "\n" + grabFn("paLetterboxed") + "\n" + grabFn("paIsLB")
     + "\n" + grabFn("findability") + "\n" + grabFn("findabilityCross") + "\nreturn { findabilityCross };")();
   const a = { timezone: "Europe/Berlin", platform: "Win32", cores: "8" };
   const real = findabilityCross(a, { timezone: "America/Denver", platform: "Win32", cores: "8" }, "other");

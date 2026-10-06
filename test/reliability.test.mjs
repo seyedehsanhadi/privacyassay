@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {grabFn,grabVar} from './helpers/extract.mjs';
-const core=grabVar('PRIORS')+['paTier','findability','findabilityCross','paMessageMatches','paCrossMessage'].map(grabFn).join('\n');
+const core=grabVar('PRIORS')+grabVar('PA_STD')+['paTier','paLetterboxed','paIsLB','findability','findabilityCross','paMessageMatches','paCrossMessage'].map(grabFn).join('\n');
 const {PRIORS,findability,findabilityCross,paCrossMessage}=new Function(core+';return {PRIORS,findability,findabilityCross,paCrossMessage}')();
 const observed=(value='value')=>Object.fromEntries(PRIORS.surfaces.filter(s=>!s.optional).map(s=>[s.k,value+'-'+s.k]));
 test('all missing and all failed observations cannot obtain a privacy grade',()=>{

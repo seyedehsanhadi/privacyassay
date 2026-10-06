@@ -9,7 +9,7 @@ import { grabVar, grabFn } from "./helpers/extract.mjs";
 // Pull PRIORS + findability (and their two pure helpers) out of the inline script with a
 // string/comment-aware brace matcher, then run them in isolation. No browser, no DOM.
 
-const core = grabVar("PRIORS") + "\n" + grabFn("paTier") + "\n" + grabFn("paLetterboxed") + "\n" + grabFn("paIsLB") + "\n" + grabFn("findability") + "\n" + grabFn("findabilityCross") + "\nreturn { findability, findabilityCross, PRIORS };";
+const core = grabVar("PRIORS") + "\n" + grabVar("PA_STD") + "\n" + grabFn("paTier") + "\n" + grabFn("paLetterboxed") + "\n" + grabFn("paIsLB") + "\n" + grabFn("findability") + "\n" + grabFn("findabilityCross") + "\nreturn { findability, findabilityCross, PRIORS };";
 const { findability, findabilityCross, PRIORS } = new Function(core)();
 
 // Build an "observed" where every surface reads as SHOWN (real value, no mask trigger),

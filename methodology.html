@@ -19,17 +19,19 @@
 <nav aria-label="Main"><a href="./">Run the browser test</a> · <a href="https://github.com/seyedehsanhadi/privacyassay">Source code</a></nav>
 <main>
 <h1>How the browser privacy score works</h1>
-<p>Privacyassay measures selected information a website can read from your browser. Measurements run in the browser; your fingerprint is not uploaded. This page describes <strong>0.9.4</strong>.</p>
+<p>Privacyassay measures selected information a website can read from your browser. Measurements run in the browser; your fingerprint is not uploaded. This page describes <strong>0.9.5</strong>.</p>
 <p class="note">The score summarizes an experiment. It is not a probability of being tracked, a uniqueness estimate, or a complete browser privacy grade.</p>
 <h2>What the test covers</h2>
 <p>The catalog contains 32 readings across 13 categories, including canvas, WebGL, WebGPU, audio, fonts, layout, screen and device details. The raw report includes additional capability checks. WebRTC public-IP, cross-site storage and DRM key-system tests are optional and off by default.</p>
 <h2>Reading states</h2>
 <table><caption>How each result contributes</caption><thead><tr><th scope="col">State</th><th scope="col">Meaning</th></tr></thead><tbody>
 <tr><th scope="row">Shown</th><td>An observable value was returned.</td></tr>
-<tr><th scope="row">Blended</th><td>Output was masked or changed in repeated measurements.</td></tr>
+<tr><th scope="row">Blended</th><td>Output was masked or changed in repeated measurements, or, in the cross-site score, matched the standard value of a uniformizing browser family on both sites.</td></tr>
 <tr><th scope="row">Refused</th><td>An API is unsupported, access was explicitly denied, or a completed optional test returned no exposed value.</td></tr>
 <tr><th scope="row">Unknown</th><td>The measurement was missing, invalid, failed or did not finish. It receives no protection credit.</td></tr>
 </tbody></table>
+<h2>Two kinds of protection</h2>
+<p>A randomizer is credited when a reading differs between the two sites. A uniformizer is credited when a reading carries its family's fixed value on both sites. A plain browser that shows the same value on both earns neither. Uniformity credit applies to the cross-site score only, for Tor Browser, Mullvad Browser and Firefox with resistFingerprinting, and never to fonts, which the tool cannot verify.</p>
 <h2>Score and completeness</h2>
 <p>Readings have weights of 3, 2 or 1. Each category is worth its heaviest reading, and earns the share of reading weight classified as blended or refused. Unknowns remain in the denominator.</p>
 <pre>category earned = category weight × hidden reading weight / total reading weight

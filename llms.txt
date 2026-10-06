@@ -2,7 +2,7 @@
 
 > Open-source browser fingerprint diagnostics. Measurements run in the visitor's browser. No fingerprint is uploaded.
 
-Methodology 0.9.4 measures selected exposure, masking and variation. Unknown or failed readings receive no protection credit and make the result incomplete (grade I). Scores are not anonymity estimates or general browser privacy rankings. Historic 0.9.1-beta scores are not comparable.
+Methodology 0.9.5 measures selected exposure, masking and variation. Unknown or failed readings receive no protection credit and make the result incomplete (grade I). Scores are not anonymity estimates or general browser privacy rankings. Historic 0.9.1-beta scores are not comparable.
 
 The catalog contains 32 readings across 13 categories. WebRTC and storage checks are optional. AI API availability does not establish browser-assistant settings or data handling. Browser telemetry, network-layer fingerprinting and comprehensive tracker blocking are not measured by this score.
 

@@ -2,6 +2,11 @@
 
 Notable changes per release.
 
+## 0.9.5 - 2026-10-07
+
+- Credit uniformity on the cross-site score. A reading counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's fixed value on both origins. Randomizers keep their credit for readings that differ between the origins. A browser that merely shows the same value on both earns nothing, and nothing is credited on a single-site run.
+- Cross-site scores of Tor Browser, Mullvad Browser and LibreWolf are not comparable with 0.9.4.
+
 ## 0.9.4 - 2026-10-07
 
 - Treat a WebGL readback refused with NotSupportedError, as Mullvad Browser and Tor Browser do, as a refused reading. It was classed unknown, which made every run in those browsers incomplete.

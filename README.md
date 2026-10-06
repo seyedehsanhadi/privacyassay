@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: Brave, 0 of 100 hidden on this page, 25 on a second site, grade F](screenshot.png)
+![Privacyassay result: Brave, 0 of 100 hidden on this page, 19 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Brave 154, 0.9.3, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
+<div align="center"><sub>Brave 154, 0.9.4, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -37,9 +37,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 |---|---|
 | **Size** | one HTML file, 286 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
-| **Status** | 0.9.4; failed readings stay unknown; canvas compared on pixels |
+| **Status** | 0.9.5; failed readings stay unknown; canvas compared on pixels |
 
-Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
+Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). On the cross-site score a reading also counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's fixed value on both sites, which separates uniformity from randomization. Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
 Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
@@ -49,22 +49,24 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, 2026-10-06, 0.9.3 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each, both runs agreed. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, 2026-10-06, 0.9.4 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each, both runs agreed. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Score by browser: LibreWolf 26 (range 23-35), Firefox 9 (8-20), Brave 0 (0-13), Chrome 0, Edge 0">
+  <img src="chart-light.svg" width="756" alt="Score by browser: LibreWolf 26 (range 23-35), Tor Browser 20 (20-38), Mullvad Browser 20 (20-38), Firefox 9 (8-20), Brave 0 (0-13), Chrome 0, Edge 0">
 </picture>
 
 | Browser | Version | Score | Range | Cross-site |
 |---|---|---:|---:|---:|
 | LibreWolf | 152.0.6-1 | 26 | 23-35 | 26 |
+| Tor Browser | 140.17.0 | 20 | 20-38 | 20 |
+| Mullvad Browser | 140.15.0 | 20 | 20-38 | 20 |
 | Firefox | 154.0.1 | 9 | 8-20 | 9 |
-| Brave | 154.1.96.61 | 0 | 0-13 | 14-27 |
+| Brave | 154.1.96.61 | 0 | 0-13 | 14-29 |
 | Chrome | 154.0.8037.92 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. Cross-site is the score between the two origins. Brave re-seeds per session and keys per site, so its single-page score reads as exposed while its cross-site score varies by session. Mullvad Browser and Tor Browser did not complete a run: Mullvad 140.15.0 (NoScript moved aside) leaves one reading unknown and the second-site probe times out, so no score is published. Tor was not run (needs a bootstrapped network). Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.2 or 0.9.1-beta.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. Cross-site is the score between the two origins. Brave re-seeds per session and keys per site, so its single-page score reads as exposed while its cross-site score varies by session. Tor and Mullvad were measured with NoScript moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.3 or earlier.
 
 ## Run it
 
