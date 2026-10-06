@@ -156,7 +156,7 @@ async function captureOnce(key, { runs = 5, mode = "headful", timeout = 300000, 
   out.transport = "postback";
   out.serverHits = hits;
   out.optins = { webrtc: !!webrtc, storage: !!store };
-  fs.writeFileSync(path.join(OUT, `${key}-${mode}-postback-0.9.2${tag}.json`), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(OUT, `${key}-${mode}-postback-0.9.3${tag}.json`), JSON.stringify(out, null, 2));
   return out;
 }
 

@@ -18,16 +18,36 @@ test('storage: generic CookieStore errors require a positive control and a valid
     await runAudit(page);
     const written={tok:'pa123',wrote:{ok:{},refused:[],unsupported:[],stalled:['CookieStore'],errors:{CookieStore:'TypeError'}}};
     const apply=async(read,control)=>page.ev(`window.__paApplyPartition(${JSON.stringify(written)},${JSON.stringify(read)},'localhost',${JSON.stringify(control)});({row:window.__KIT.findability.rows.find(r=>r.label==='storage carried across sites'),category:window.__KIT.categories['How findable you are'].rows})`);
-    for(const [read,control] of [[{},1],[{CookieStore:null},1],[{CookieStore:''},null],[{CookieStore:''},0],[{CookieStore:'pa123'},1]]){
+    const ok={CookieStore:1};
+    for(const [read,control] of [[{},ok],[{CookieStore:null},ok],[{CookieStore:''},null],[{CookieStore:''},0],[{CookieStore:''},1],[{CookieStore:''},{CookieStore:0}],[{CookieStore:'pa123'},ok]]){
       const result=await apply(read,control);assert.equal(result.row.state,'unknown');
       assert.ok(result.category.some(r=>r[0].includes('ERR:storage-incomplete')));
       assert.ok(!result.category.some(r=>r[0].includes('no supercookie carried')));
     }
-    const result=await apply({CookieStore:''},1);assert.equal(result.row.state,'refused');
+    const result=await apply({CookieStore:''},ok);assert.equal(result.row.state,'refused');
     assert.ok(result.category.some(r=>r[0]==='cross-browser identity'));
     assert.ok(result.category.some(r=>r[0].includes('no supercookie carried')));
     assert.ok(!result.category.some(r=>r[0].includes('ERR:storage-incomplete')));
     assert.equal(await page.ev("window.__KIT.partitioning.cookieControl"),true);
+  }finally{await page.close();server.close();}
+});
+
+test('storage: a silent cookie readback failure needs a first-party control before it counts as refused',async()=>{
+  const server=await startServer(),page=await launch({port:server.port});
+  try{
+    await runAudit(page);
+    const k='cookie (document.cookie)';
+    const apply=async(written,read,control)=>page.ev(`window.__paApplyPartition(${JSON.stringify(written)},${JSON.stringify(read)},'localhost',${JSON.stringify(control)});({row:window.__KIT.findability.rows.find(r=>r.label==='storage carried across sites'),p:window.__KIT.partitioning})`);
+    const carried=await apply({tok:'pa123',wrote:{ok:{[k]:1},refused:[],unsupported:[],stalled:[],errors:{}}},{[k]:'pa123'},null);
+    assert.equal(carried.row.state,'shown');assert.deepEqual(carried.p.leaked,[k]);
+    const silent={tok:'pa123',wrote:{ok:{},refused:[],unsupported:[],stalled:[k],errors:{[k]:'ReadbackError'}}};
+    for(const control of [null,{},{[k]:0},{CookieStore:1}]){
+      const broken=await apply(silent,{[k]:''},control);
+      assert.equal(broken.row.state,'unknown');assert.ok(broken.p.unknown.includes(k));assert.ok(!broken.p.refusedWrite.includes(k));
+    }
+    const missingRead=await apply(silent,{},{[k]:1});assert.equal(missingRead.row.state,'unknown');
+    const refused=await apply(silent,{[k]:''},{[k]:1});
+    assert.equal(refused.row.state,'refused');assert.ok(refused.p.refusedWrite.includes(k));assert.deepEqual(refused.p.cookieReadbackControls,{[k]:1});
   }finally{await page.close();server.close();}
 });
 

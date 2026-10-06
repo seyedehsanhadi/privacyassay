@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.2","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.3","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -446,6 +446,7 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
     <div class="pa-checks" id="paChecks">
       <label class="pa-optin"><input type="checkbox" id="webrtcOptin"> <span class="pa-lg">Also test the WebRTC public-IP leak. Off by default so the audit stays fully local; turning it on opens one request to a public STUN server.</span><span class="pa-sm">WebRTC leak</span></label>
       <label class="pa-optin"><input type="checkbox" id="storageOptin"> <span class="pa-lg">Also test for supercookies: whether a tracker can plant an ID that survives across sites. Opens a brief second-site window to read storage as a first party.</span><span class="pa-sm">Supercookies</span></label>
+      <label class="pa-optin"><input type="checkbox" id="drmOptin"> <span class="pa-lg">Also test which DRM systems answer. Off by default because the browser may show a DRM permission or component-install prompt.</span><span class="pa-sm">DRM</span></label>
       <label class="pa-optin"><input type="checkbox" id="redactOptin" checked> <span class="pa-lg">Hide your raw values on screen and in any file you save, so screenshots and shared reports stay safe. On by default; turn it off to reveal your own values. The score is the same either way.</span><span class="pa-sm">Redact values</span></label>
     </div>
     <div class="pa-card-links" id="paCardLinks">
@@ -1134,25 +1135,31 @@ function collectInstrumentation(){
 }
 
 function collectMediaCaps(){
+  var drmOn=!!PAV.drmTest;
   return new Promise(function(res){
-    var rows=[],done=false;
-    function fin(){if(done)return;done=true;res(cat("Media Capabilities & DRM",rows,"Hardware-decode capability and DRM key systems, which reflect the OS and hardware."));}
-    setTimeout(fin,3500);
+    var rows=[],done=false,open={};
+    function fin(){if(done)return;done=true;Object.keys(open).forEach(function(k){rows.push([k,"timeout - no answer, not credited"]);});res(cat("Media Capabilities & DRM",rows,"Hardware-decode capability and DRM key systems, which reflect the OS and hardware. DRM key systems are requested only when you opt in, because the browser may show a permission or install prompt."));}
+    setTimeout(fin,drmOn?15000:3500);
     var cfgs=[],drm=[];
     if(navigator.mediaCapabilities&&navigator.mediaCapabilities.decodingInfo){
       cfgs=[["H.264",'video/mp4; codecs="avc1.42E01E"'],["AV1",'video/mp4; codecs="av01.0.04M.08"'],["HEVC",'video/mp4; codecs="hev1.1.6.L93.B0"']];
     }else rows.push(["mediaCapabilities.decodingInfo","unavailable"]);
-    if(navigator.requestMediaKeySystemAccess){
-      drm=[["Widevine","com.widevine.alpha"],["PlayReady","com.microsoft.playready.recommendation"],["FairPlay","com.apple.fps"]];
-      var cfg=[{initDataTypes:["cenc"],videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"',robustness:""}]}];
-      if(navigator.brave){rows.push(["DRM Widevine",["gated - this engine prompts to install the CDM, skipped to avoid the prompt","ok"]]);drm=drm.filter(function(d){return d[0]!=="Widevine";});}
-    }else rows.push(["requestMediaKeySystemAccess","unavailable"]);
+    if(!navigator.requestMediaKeySystemAccess)rows.push(["requestMediaKeySystemAccess","unavailable"]);
+    else if(!drmOn)rows.push(["DRM key systems","not run - opt in to test; the browser may prompt"]);
+    else drm=[["Widevine","com.widevine.alpha"],["PlayReady","com.microsoft.playready.recommendation"],["FairPlay","com.apple.fps"]];
+    var cfg=[{initDataTypes:["cenc"],videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"',robustness:""}]}];
     var pend=cfgs.length+drm.length;
-    function step(){if(--pend<=0)fin();}
-    cfgs.forEach(function(cc){try{navigator.mediaCapabilities.decodingInfo({type:"media-source",video:{contentType:cc[1],width:1920,height:1080,bitrate:2000000,framerate:30}}).then(function(r){rows.push(["decode "+cc[0],[(r.supported?"sup":"no")+"/"+(r.smooth?"smooth":"choppy")+"/"+(r.powerEfficient?"HW":"SW"),r.powerEfficient?"mid":"ok"]]);step();}).catch(function(){rows.push(["decode "+cc[0],"err"]);step();});}catch(e){step();}});
-    drm.forEach(function(d){try{navigator.requestMediaKeySystemAccess(d[1],cfg).then(function(){rows.push(["DRM "+d[0],["available","no"]]);step();}).catch(function(){rows.push(["DRM "+d[0],["absent","ok"]]);step();});}catch(e){step();}});
+    function settle(k,v){if(done||!open[k])return;delete open[k];rows.push([k,v]);if(--pend<=0)fin();}
+    function why(e,what){return what+" ("+String(e&&e.name||"Error")+") - not credited";}
+    cfgs.forEach(function(cc){var k="decode "+cc[0];open[k]=1;try{navigator.mediaCapabilities.decodingInfo({type:"media-source",video:{contentType:cc[1],width:1920,height:1080,bitrate:2000000,framerate:30}}).then(function(r){settle(k,[(r.supported?"sup":"no")+"/"+(r.smooth?"smooth":"choppy")+"/"+(r.powerEfficient?"HW":"SW"),r.powerEfficient?"mid":"ok"]);},function(e){settle(k,why(e,"error"));});}catch(e){settle(k,why(e,"error"));}});
+    drm.forEach(function(d){var k="DRM "+d[0];open[k]=1;try{navigator.requestMediaKeySystemAccess(d[1],cfg).then(function(){settle(k,["available","no"]);},function(e){settle(k,why(e,"rejected: unsupported or denied"));});}catch(e){settle(k,why(e,"error"));}});
     if(pend<=0)fin();
   });
+}
+function paMediaDrmScore(c){
+  if(!c)return 0;var t=0,ok=0;
+  c.rows.forEach(function(r){var v=r[1];if(Array.isArray(v)&&v.length===2&&/^(ok|no|mid)$/.test(v[1])){t++;if(v[1]==="ok")ok++;}else if(/^(DRM|decode) /.test(r[0]))t++;});
+  return t?ok/t:1;
 }
 function refreshRate(){
   return new Promise(function(res){
@@ -1200,7 +1207,15 @@ function paCacheApi(mode,tok){var u="/__pa_cache_probe";return caches.open(PA_SK
   return mode==="w"?c.put(new Request(u),new Response(tok)).then(function(){return 1;}):c.match(u).then(function(m){return m?m.text():"";});});}
 function paCookieStore(mode,tok){
   if(mode==="r")return cookieStore.get(PA_SK+"_cs").then(function(c){return c&&c.value;});
-  return cookieStore.set({name:PA_SK+"_cs",value:tok,sameSite:"none",path:"/"}).then(function(){return cookieStore.get(PA_SK+"_cs");}).then(function(c){if(!c||c.value!==tok){var e=new Error("cookie write not retained");e.name="NotAllowedError";throw e;}return 1;});
+  return cookieStore.set({name:PA_SK+"_cs",value:tok,sameSite:"none",path:"/"}).then(function(){return cookieStore.get(PA_SK+"_cs");}).then(function(c){if(!c||c.value!==tok){var e=new Error("cookie write not retained");e.name="ReadbackError";throw e;}return 1;});
+}
+
+function paCookieReadbackControls(tok){
+  var result={};
+  return Promise.all([
+    Promise.resolve().then(function(){document.cookie=PA_SK+"="+tok+";path=/;max-age=600;SameSite=None;Secure";if(document.cookie.split(";").some(function(c){return c.trim()===PA_SK+"="+tok;}))result["cookie (document.cookie)"]=1;}).catch(function(){}),
+    Promise.resolve().then(function(){return paCookieStore("w",tok);}).then(function(v){if(v===1)result.CookieStore=1;}).catch(function(){})
+  ]).then(function(){return result;});
 }
 
 /* - write, read back, clear across all mechanisms -------- */
@@ -1218,7 +1233,7 @@ function paStoreEach(mode,tok){
     }));}
   function NOSRV(){var e=new Error("unsupported");e.paUnsupported=1;return e;}
   J("cookie (document.cookie)",function(){return typeof document.cookie==="string";},function(){
-    if(mode==="w"){document.cookie=PA_SK+"="+tok+";path=/;max-age=600;SameSite=None;Secure";if(!document.cookie.split(";").some(function(c){return c.trim()===PA_SK+"="+tok;})){var e=new Error("cookie write not retained");if(location.protocol==="https:")e.name="NotAllowedError";throw e;}return 1;}
+    if(mode==="w"){document.cookie=PA_SK+"="+tok+";path=/;max-age=600;SameSite=None;Secure";if(!document.cookie.split(";").some(function(c){return c.trim()===PA_SK+"="+tok;})){var e=new Error("cookie write not retained");e.name="ReadbackError";throw e;}return 1;}
     var m=new RegExp("(?:^|;\\s*)"+PA_SK+"=([a-z0-9]+)(?:;|$)").exec(document.cookie);return m&&m[1];});
   J("localStorage",function(){return !!window.localStorage;},function(){if(mode==="w"){localStorage.setItem(PA_SK,tok);return 1;}return localStorage.getItem(PA_SK);});
   J("indexedDB",function(){return !!window.indexedDB;},function(){return paIdb(mode,tok);});
@@ -1371,7 +1386,7 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.2", dated:"2026-09-05",
+  version:"0.9.3", dated:"2026-10-06",
 
 
 /* - browser labels (informational only) ------------------ */
@@ -1540,7 +1555,7 @@ function observeVectors(){
     canvasHash:P(function(){var c=document.createElement("canvas");c.width=90;c.height=24;
       var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
       x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
-      return fnv(c.toDataURL());},""),
+      return fnvBytes(x.getImageData(0,0,c.width,c.height).data);},""),
     screenClass:P(function(){var w=screen.width,h=screen.height;
       return (w>=200&&h>=200)?(w+"x"+h):"";},""),
     innerSize:P(function(){var w=window.innerWidth,h=window.innerHeight;
@@ -1638,9 +1653,11 @@ function findabilityCross(obsA,obsB,familyKey){
     var a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
     if(!a||!b||a.state==="unknown"||b.state==="unknown"){merged[s.k]="ERR:comparison-incomplete";return;}
     if(a.state!=="shown"||b.state!=="shown")return;
-    compared.push(s.label);
     var key=s.hashKey||s.k,va=obsA[key],vb=obsB[key];
-    if(va!=null&&vb!=null&&String(va)!==""&&String(vb)!==""&&!/^(ERR|unsupported|blocked|unavailable|n\/a|undefined)/i.test(String(va))&&!/^(ERR|unsupported|blocked|unavailable|n\/a|undefined)/i.test(String(vb))&&String(va)!==String(vb)){
+    var comparable=function(v){return (typeof v==="string"||typeof v==="number")&&String(v)!==""&&!/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|unsupported|blocked(?::.*)?)$/i.test(String(v));};
+    if(!comparable(va)||!comparable(vb)){merged[s.k]="ERR:comparison-incomplete";return;}
+    compared.push(s.label);
+    if(String(va)!==String(vb)){
       merged._crossChanged[s.k]=true;changed.push(s.label);
     }
   });
@@ -1972,7 +1989,7 @@ function esc(s){return (""+s).replace(/[&<>"']/g,function(c){return {"&":"&amp;"
 /* RESULTS VIEW - verdict ring, score working, findings, cross-site ======= */
 
 /* - view state, persisted across re-renders -------------- */
-var PAV={open:{},acc:{},full:{},maskedOpen:false,redact:true,webrtcStun:false,storageTest:false,disp:0,raf:null,lastScore:null};
+var PAV={open:{},acc:{},full:{},maskedOpen:false,redact:true,webrtcStun:false,storageTest:false,drmTest:false,disp:0,raf:null,lastScore:null};
 var PASM={
   shown:{color:"var(--red)",bg:"var(--red-bg)",word:"handed over",icon:"✕"},
   blended:{color:"var(--amber)",bg:"var(--amber-bg)",word:"masked",icon:"~"},
@@ -2528,7 +2545,7 @@ async function runKit(){
   await _pTry(collectDeviceAccess);
   await _pTry(collectCodecs);
   await _pTry(collectCapabilities);
-  await _pTry(collectMediaCaps);
+  await paDeadline(collectMediaCaps,PAV.drmTest?16000:5000).catch(function(){return null;});
   var bat=await _pTry(batteryInfo);if(bat&&C["Sensors & Battery"]){
     var batId=!(bat.level===1&&bat.charging===true&&bat.chargingTime===0&&bat.dischargingTime===Infinity);
     C["Sensors & Battery"].rows.push(["battery level/charging",[Math.round(bat.level*100)+"% "+(bat.charging?"charging":"discharging")+(batId?" - identifying (fractional level / discharge time = rotating cross-site ID)":" - full + plugged, non-identifying"),batId?"no":"ok"]]);
@@ -2577,7 +2594,7 @@ async function runKit(){
     
     var _btm=/pabeacon=([a-z0-9]+)/i.exec(location.hash+location.search);
     var _st=null,_sc=null;if(/[&#?]pastoreRead=1(?:&|$)/.test(location.hash+location.search)){try{_st=await paStoreEach("r",_btm?_btm[1]:"");}catch(e){}
-      if(/[&#?]pacookieControl=1(?:&|$)/.test(location.hash+location.search)){try{_sc=await paDeadline(function(){return paCookieStore("w",_btm[1]);},PA_STORE_JOB_MS);}catch(e){}}
+      if(/[&#?]pacookieControl=1(?:&|$)/.test(location.hash+location.search)){try{_sc=await paDeadline(function(){return paCookieReadbackControls(_btm[1]+"c");},PA_STORE_JOB_MS);}catch(e){}}
       await paDeadline(paStoreClear,PA_STORE_JOB_MS).catch(function(){});}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
@@ -2750,7 +2767,7 @@ async function runKit(){
     {k:"cores",l:"CPU cores report a common value (4 and 8 are the largest real-world groups; a rare count such as 2 or 12 is itself identifying)",w:3,grp:"cover",v:(function(){var c=+hwv;return (c===4||c===8)?1:(c===2||c===16)?0.6:(c===12)?0.3:0;})()},
     {k:"mem",l:"deviceMemory masked to a uniform value (n/a on engines without deviceMemory)",w:2,grp:"cover",na:(!isChromium&&dmv==="undefined"),v:(dmv==="undefined"||[4,8].indexOf(+dmv)>=0)?1:0},
     {k:"sensors",l:"Motion sensors / battery do not leak device data",w:3,grp:"cover",v:fracOk("Sensors & Battery")},
-    {k:"mediadrm",l:"GPU HW-codec / DRM not device-revealing",w:3,grp:"cover",v:(function(){var c=C["Media Capabilities & DRM"];if(!c)return 1;var t=0;c.rows.forEach(function(r){var vv=r[1];if(Array.isArray(vv)&&vv.length===2&&(vv[1]==="ok"||vv[1]==="no"||vv[1]==="mid"))t++;});return t?fracOk("Media Capabilities & DRM"):1;})()},
+    {k:"mediadrm",l:"GPU HW-codec / DRM not device-revealing",w:3,grp:"cover",v:paMediaDrmScore(C["Media Capabilities & DRM"])},
     {k:"coherence",l:"Spoof carries no detectable lie - measured by the coherence battery",w:20,grp:"coh",v:cohPass/cohTot},
     {k:"webrtc",l:"WebRTC exposes no IP to JS (private or public via STUN)",w:10,grp:"coh",v:(priv||pubIP)?0:1},
     {k:"selfleak",l:"Defense invisible (no self-leak in Error.stack / DOM)",w:6,grp:"coh",v:fracOk("Instrumentation & Extension Leak")},
@@ -2795,12 +2812,15 @@ async function runKit(){
     if(!w||!w.tok)return;
     var wrote=(w.wrote&&w.wrote.ok)||{},refused=((w.wrote&&w.wrote.refused)||[]).slice(),unsup=(w.wrote&&w.wrote.unsupported)||[],read=readBack||{},names=Object.keys(wrote);
     var leaked=[],held=[],unknown=(w.wrote&&w.wrote.stalled||[]).slice();
-    if(cookieControl===1&&typeof read.CookieStore==="string"&&read.CookieStore!==w.tok&&/^(TypeError|UnknownError)$/.test(w.wrote&&w.wrote.errors&&w.wrote.errors.CookieStore)&&unknown.indexOf("CookieStore")>=0){unknown=unknown.filter(function(k){return k!=="CookieStore";});refused.push("CookieStore");}
+    var ctl=cookieControl&&typeof cookieControl==="object"?cookieControl:null,werr=(w.wrote&&w.wrote.errors)||{};
+    ["cookie (document.cookie)","CookieStore"].forEach(function(k){
+      if(ctl&&ctl[k]===1&&(werr[k]==="ReadbackError"||k==="CookieStore"&&/^(TypeError|UnknownError)$/.test(werr[k]))&&typeof read[k]==="string"&&read[k]!==w.tok&&unknown.indexOf(k)>=0){unknown=unknown.filter(function(n){return n!==k;});refused.push(k);}
+    });
     names.forEach(function(k){if(!Object.prototype.hasOwnProperty.call(read,k)||typeof read[k]!=="string"){unknown.push(k);return;}(read[k]===w.tok?leaked:held).push(k);});
     var CACHE_MECH={"script cache":1,"stylesheet cache":1,"image cache":1,"prefetch cache":1,"iframe cache":1,"XHR cache":1,"HTTP cache":1};
     var leakedPersistent=leaked.filter(function(k){return !CACHE_MECH[k];});
     var total=leaked.length+held.length+refused.length;
-    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup.concat(unknown),unknown:unknown,unknownPersistent:unknown.filter(function(k){return !CACHE_MECH[k];}),unsupported:unsup,writeErrors:w.wrote&&w.wrote.errors||{},cookieControl:cookieControl===1,tested:total,origin:w.origin};
+    R.partitioning={leaked:leaked,leakedPersistent:leakedPersistent,blocked:held,refusedWrite:refused,notMeasured:unsup.concat(unknown),unknown:unknown,unknownPersistent:unknown.filter(function(k){return !CACHE_MECH[k];}),unsupported:unsup,writeErrors:w.wrote&&w.wrote.errors||{},cookieControl:!!(ctl&&ctl.CookieStore===1),cookieReadbackControls:ctl,tested:total,origin:w.origin};
     try{
       if(R.findability&&R.findability.observed){
         var completeStores=held.concat(refused).filter(function(k){return !CACHE_MECH[k];});
@@ -2845,7 +2865,7 @@ function paRunCrossWindow(){
   try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){clean();K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="Could not open the second site. Press Measure to retry.";try{paRenderView(K);}catch(e){}}
   setTimeout(function(){if(!done){done=true;clean();if(window.__KIT!==runK)return;K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="The second-site window did not respond. Press Measure to try again.";try{paRenderView(K);}catch(_e){}}},PA_CROSS_MS);
 }
-(function(){var wo=document.getElementById("webrtcOptin");if(wo)wo.addEventListener("change",function(e){PAV.webrtcStun=!!e.target.checked;});var so=document.getElementById("storageOptin");if(so)so.addEventListener("change",function(e){PAV.storageTest=!!e.target.checked;});var ro=document.getElementById("redactOptin");if(ro){PAV.redact=!!ro.checked;ro.addEventListener("change",function(e){PAV.redact=!!e.target.checked;var K=window.__KIT;if(K&&K.findability){paRenderView(K);paRenderRaw(K,null);}});}})();
+(function(){var wo=document.getElementById("webrtcOptin");if(wo)wo.addEventListener("change",function(e){PAV.webrtcStun=!!e.target.checked;});var so=document.getElementById("storageOptin");if(so)so.addEventListener("change",function(e){PAV.storageTest=!!e.target.checked;});var dm=document.getElementById("drmOptin");if(dm)dm.addEventListener("change",function(e){PAV.drmTest=!!e.target.checked;});var ro=document.getElementById("redactOptin");if(ro){PAV.redact=!!ro.checked;ro.addEventListener("change",function(e){PAV.redact=!!e.target.checked;var K=window.__KIT;if(K&&K.findability){paRenderView(K);paRenderRaw(K,null);}});}})();
 
 /* RUN BUTTON - second-site channel choice, gesture, staleness guard ====== */
 document.getElementById("runBtn").addEventListener("click",function(){
@@ -2889,7 +2909,7 @@ document.getElementById("runBtn").addEventListener("click",function(){
         if(!storeDoneW&&e.source===pop){storeDoneW=true;var _sr=e.data.paStoreRead;SD.readKeys=_sr?Object.keys(_sr).length:-1;if(window.__paApplyPartition)window.__paApplyPartition(written,_sr,oh,e.data.paCookieControl);if(!written){window.__paStoreBlocked="The companion frame did not confirm its storage writes. Check that the companion is reachable and can be embedded, then re-run.";paRenderView(runK);}}
         if(crossDoneW&&storeDoneW){doneW=true;_cleanW();}}
       window.addEventListener("message",onMsgW);
-      try{pop.location.href=comp.url+"#pabeacon="+xTok+(wantStore?"&pastoreRead=1":"")+(written&&written.wrote&&/^(TypeError|UnknownError)$/.test(written.wrote.errors&&written.wrote.errors.CookieStore)?"&pacookieControl=1":"");}catch(x){}
+      try{pop.location.href=comp.url+"#pabeacon="+xTok+(wantStore?"&pastoreRead=1":"")+(written&&written.wrote&&(/^(TypeError|UnknownError|ReadbackError)$/.test(written.wrote.errors&&written.wrote.errors.CookieStore)||(written.wrote.errors&&written.wrote.errors["cookie (document.cookie)"]==="ReadbackError"))?"&pacookieControl=1":"");}catch(x){}
       
 
       setTimeout(function(){if(doneW)return;SD.timedOut=true;doneW=true;_cleanW();if(window.__KIT!==runK)return;runK.crossMeasuring=false;if(wantStore&&!storeDoneW&&!runK.partitioning)window.__paStoreBlocked="The supercookie test needs the second site to answer as a page of its own, and it never did. Your storage was not read back, so this requested reading remains unknown and receives no protection credit.";if(!crossDoneW){if(isBrave){runK.crossSkippedRandomizer=true;runK.crossCanMeasure=true;runK.crossFailed="The second-site window did not respond. Press Measure to try again.";}else if(paIsRand(runK)){runK.crossFailed="The second-site probe did not complete, so the cross-site number is not measurable here. A timeout does not distinguish a browser blocking the probe from the probe itself failing, so nothing is credited either way.";}else{runK.crossFailed="The second-site check did not respond. Press Re-run to try again.";}}try{paRenderView(runK);}catch(_e){}},PA_CROSS_MS);

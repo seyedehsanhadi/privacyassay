@@ -65,3 +65,41 @@ test('unavailable APIs are not counted as matching fingerprints',()=>{const f=fi
 test('WebGPU descriptions remain measured when the other identity fields are empty',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({gpu:{}},{},(c,n)=>n==='adapter description'?'test GPU':'',()=>'',()=>'',p=>p.filter(Boolean).join('|'),null);assert.equal(observe().webgpuAdapter,'test GPU');});
 test('an empty or blocked WebGPU identity is confirmed unavailable',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({gpu:{}},{},()=>'',(c,n)=>c==='WebGPU'&&n==='adapter vendor'?'(empty)':'',()=>'',p=>p.some(Boolean)?'hash':'ERR',null);assert.equal(observe().webgpuAdapter,'blocked');});
 test('disabled WebGL is unavailable instead of an incomplete reading',()=>{const observe=new Function('navigator','window','document','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({}, {},{createElement:()=>({getContext:()=>null})},()=>'',(c,n)=>c==='Active Rendering & GPU'&&n==='webgl'?'unavailable':'',()=>'',()=> 'ERR',null);for(const k of ['webglVendor','webglHash','webglRenderClass','webglExt','webglParams'])assert.equal(observe()[k],'blocked');});
+const withHashes=(o)=>({...o,...Object.fromEntries(PRIORS.surfaces.filter(s=>s.hashKey&&s.hashKey!==s.k).map(s=>[s.hashKey,'h-'+s.hashKey]))});
+test('a shown reading with an unusable comparison value stays unknown and uncompared',()=>{
+  const a=withHashes(observed());
+  for(const bad of ['','ERR:SecurityError',NaN,Infinity,undefined,null,'timeout','unsupported','n/a','blocked:x',{}]){
+    for(const [x,y] of [[a,{...a,canvasHash:bad}],[{...a,canvasHash:bad},a]]){
+      const f=findabilityCross(x,y,'other'),row=f.rows.find(r=>r.label==='canvas drawing');
+      assert.equal(row.state,'unknown',String(bad));assert.equal(f.complete,false);
+      assert.ok(!f.comparedAcrossOrigins.includes('canvas drawing'));assert.ok(!f.changedAcrossOrigins.includes('canvas drawing'));
+    }
+  }
+});
+test('valid comparison values, including zero, keep their match and change results',()=>{
+  const a={...withHashes(observed()),canvasHash:0};
+  const same=findabilityCross(a,{...a},'other');assert.ok(same.comparedAcrossOrigins.includes('canvas drawing'));assert.ok(!same.changedAcrossOrigins.includes('canvas drawing'));
+  const diff=findabilityCross(a,{...a,canvasHash:1},'other');assert.ok(diff.changedAcrossOrigins.includes('canvas drawing'));assert.equal(diff.rows.find(r=>r.label==='canvas drawing').state,'blended');
+});
+const mediaCaps=(navigator,drmTest)=>new Function('navigator','PAV','cat','setTimeout',grabFn('collectMediaCaps')+';return collectMediaCaps')(navigator,{drmTest},(name,rows)=>({name,rows}),(f,ms)=>setTimeout(f,Math.min(ms,20)));
+const drmScore=new Function(grabFn('paMediaDrmScore')+';return paMediaDrmScore')();
+test('the default audit never requests DRM key systems',async()=>{
+  let calls=0;const nav={requestMediaKeySystemAccess:()=>{calls++;return Promise.resolve();}};
+  const r=await mediaCaps(nav,false)();assert.equal(calls,0);
+  const row=r.rows.find(x=>/^DRM/.test(x[0]));assert.ok(row&&/not run/.test(row[1]));
+  assert.equal(drmScore(r),0);
+});
+test('opted-in DRM keeps available, rejected and timed-out key systems distinct and frozen',async()=>{
+  let late;const nav={requestMediaKeySystemAccess:k=>k==='com.widevine.alpha'?Promise.resolve():k==='com.apple.fps'?new Promise(r=>{late=r;}):Promise.reject(Object.assign(new Error('x'),{name:'NotSupportedError'}))};
+  const r=await mediaCaps(nav,true)(),before=JSON.stringify(r);
+  const v=l=>r.rows.find(x=>x[0]==='DRM '+l)[1];
+  assert.deepEqual(v('Widevine'),['available','no']);assert.match(v('PlayReady'),/NotSupportedError/);assert.match(v('FairPlay'),/timeout/);
+  late();await new Promise(x=>setTimeout(x,0));assert.equal(JSON.stringify(r),before);
+  assert.equal(drmScore(r),0);
+});
+test('missing or failed media rows never raise the media diagnostic',()=>{
+  assert.equal(drmScore(null),0);
+  assert.equal(drmScore({rows:[['decode H.264',['sup/smooth/SW','ok']]]}),1);
+  assert.equal(drmScore({rows:[['decode H.264',['sup/smooth/SW','ok']],['decode AV1','err'],['DRM Widevine','timeout - no answer, not credited']]}),1/3);
+  assert.equal(drmScore({rows:[['mediaCapabilities.decodingInfo','unavailable'],['requestMediaKeySystemAccess','unavailable']]}),1);
+});

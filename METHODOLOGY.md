@@ -1,6 +1,6 @@
-# Methodology 0.9.2
+# Methodology 0.9.3
 
-Updated 2026-09-05. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures.
+Updated 2026-10-06. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression.
 
 ## Outcomes
 
@@ -58,7 +58,9 @@ Some capability inventories are sampled once and remain informational. The tool 
 
 On the hosted pair, privacyassay.com opens privacyassay.github.io as a top-level window. Every browser uses the same context. Popup blocking, a missing companion, a mismatched build or a severed opener is reported as unmeasured; a third-party frame is not substituted for a first-party comparison.
 
-The companion must answer within forty-five seconds. Replies are checked against the origin, source window, run token, catalog version and observation shape. Failed or absent measurements cannot count as changes. Window and screen dimensions are not compared because the windows have different dimensions. The result states how many comparable readings changed, without claiming the visitor is recognized or anonymous.
+The companion must answer within forty-five seconds. Replies are checked against the origin, source window, run token, catalog version and observation shape. Failed or absent measurements cannot count as changes. A reading counts as compared only when both origins returned a usable comparison value: a missing, empty, non-finite, error, timeout, unsupported or blocked value leaves that reading unknown on the cross-site result. Zero is a usable value.
+
+Canvas is compared on the decoded pixels of the drawing (`getImageData`), not on the PNG that `toDataURL` encodes. A browser can return different PNG bytes for identical pixels, and that difference says nothing about what a tracker can read. Metadata-only variation therefore earns no canvas credit. Window and screen dimensions are not compared because the windows have different dimensions. The result states how many comparable readings changed, without claiming the visitor is recognized or anonymous.
 
 The CLI launches a fresh browser per run and serves 127.0.0.1 and localhost. This loopback pair is not equivalent to independent public domains. Compare runs with the same browser/OS versions, settings, opt-ins and context. Different configurations cannot be compared as equivalent.
 
@@ -70,7 +72,9 @@ WebRTC and cross-site storage are off by default. WebRTC opt-in contacts a publi
 
 Storage plants a token in a companion frame and reads it back with that origin top-level. Only confirmed writes and successful reads establish isolation or carryover. Missing readbacks and failed controls remain unknown. Persistent stores affect the score; HTTP-cache probes remain informational and need the local server. This is not a complete common-tracker-under-two-first-parties partitioning suite.
 
-Storage readback waits for the frame's write result. Explicit access denials and secure cookie writes that return no token are recorded as write refusals. A generic Cookie Store write error alone remains unknown: it counts as a context-specific refusal only when a successful top-level read finds no token and the same write/read control succeeds there afterward. That control runs after the carryover read so it cannot create a false carryover result. Both contexts then clear the test's storage. Cache probes require a working server counter before reporting a measured cache result; they never affect the persistent-storage score.
+Storage readback waits for the frame's write result. Explicit access denials are recorded as write refusals. A cookie write that silently does not read back is not a refusal on its own, because a cookie path broken everywhere looks the same. It stays unknown unless the companion's own first-party write and readback of the same cookie API succeeds, the first-party read of the third-party token completes, and that read finds no token. Only then is it a measured refusal. A generic Cookie Store write error alone remains unknown: it counts as a context-specific refusal only when a successful top-level read finds no token and the same write/read control succeeds there afterward. That control runs after the carryover read so it cannot create a false carryover result. Both contexts then clear the test's storage. Cache probes require a working server counter before reporting a measured cache result; they never affect the persistent-storage score.
+
+DRM key systems (Widevine, PlayReady, FairPlay) are requested only when the DRM opt-in is on, because the browser may show a permission or component-install prompt. The default run checks decode capabilities only and records the key systems as not run. When opted in, each key system ends as available, rejected (unsupported or denied, which the API does not distinguish), error or timeout; a late answer cannot change a finished result. Only DRM rows feed the secondary media diagnostic, never the findability score, and a not-run, rejected, failed or timed-out key system earns that diagnostic no credit.
 
 A completed WebGPU request returning no adapter establishes that neither its identity nor its limits were exposed. A failed request or an adapter whose limits cannot be read remains unknown for the affected reading.
 

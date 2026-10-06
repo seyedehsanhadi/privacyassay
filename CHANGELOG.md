@@ -2,6 +2,13 @@
 
 Notable changes per release.
 
+## 0.9.3 - 2026-10-06
+
+- Compare canvas across sites on decoded pixels instead of encoded PNG bytes. Firefox can return different PNG bytes for identical pixels, which earned cross-site canvas credit that nothing supported. Cross-site canvas results are not comparable with 0.9.2; lower scores remove false credit and are not browser regressions.
+- Count a reading as compared across sites only when both origins returned a usable comparison value. A missing, empty, non-finite, error or timeout value now leaves the reading unknown instead of completing the comparison.
+- Keep a cookie write that silently fails to read back unknown. It becomes a measured refusal only when the companion's first-party control for the same cookie API succeeds and the cross-site read completes with no token.
+- Stop requesting DRM key systems in the default run, which raised a native DRM prompt on Android Firefox. A new DRM opt-in runs them and keeps available, rejected, error and timeout distinct; late answers cannot change a finished result, and missing or failed key systems earn the media diagnostic no credit.
+
 ## 0.9.2 - 2026-09-05
 
 - Complete supercookie comparisons when third-party storage is explicitly refused, with a first-party Cookie Store control for ambiguous write errors.

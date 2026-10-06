@@ -37,13 +37,13 @@ Everything runs on your machine; the fingerprint is never uploaded.
 |---|---|
 | **Size** | one HTML file, 282 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
-| **Status** | 0.9.2; failed readings remain unknown; the browser figures below are historical |
+| **Status** | 0.9.3; failed readings remain unknown; canvas compared on pixels, so a lower score than 0.9.2 removes false credit; the browser figures below are historical |
 
 Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
 Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
 
-A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default.
+A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default. DRM key systems are opt-in too, because requesting them can make the browser show a permission or install prompt.
 
 A copy you run yourself contacts neither of those hosts: the second origin is resolved local-first, so a file opened from disk skips the comparison and a loopback copy pairs only with loopback. On the hosted copy the second origin is fetched like any page, so it sees the request the way any site you visit does. It is sent no reading; it measures in your browser and answers over `postMessage`.
 

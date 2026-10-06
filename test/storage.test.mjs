@@ -27,23 +27,23 @@ test('storage: an HTTP success without a valid counter is not a cache measuremen
   for(const value of [{},{n:'1'},{n:0}])assert.ok((await storageProbe({fetchResult:{ok:true,json:async()=>value}})('w','pa123')).unsupported.includes('HTTP cache'));
   assert.equal((await storageProbe({fetchResult:{ok:true,json:async()=>({n:1})}})('w','pa123')).ok['HTTP cache'],1);
 });
-test('storage: silently rejected secure cookies are measured refusals; insecure failures are unknown',async()=>{
+test('storage: silent cookie readback failure is unknown until a positive control',async()=>{
   const name='cookie (document.cookie)';
-  assert.ok((await storageProbe({silent:true})('w','pa123')).refused.includes(name));
+  assert.ok((await storageProbe({silent:true})('w','pa123')).stalled.includes(name));
   assert.ok((await storageProbe({silent:true,protocol:'http:'})('w','pa123')).stalled.includes(name));
   assert.equal((await storageProbe()('w','pa123')).ok[name],1);
 });
 test('storage: cookie controls match the exact cookie name and complete token',async()=>{
   const name='cookie (document.cookie)';
   for(const cookie of ['other=pa123','other_pa_partition=pa123','pa_partition=pa123suffix']){
-    const w=await storageProbe({cookie,silent:true})('w','pa123');assert.ok(w.refused.includes(name));
+    const w=await storageProbe({cookie,silent:true})('w','pa123');assert.ok(w.stalled.includes(name));assert.equal(w.errors[name],"ReadbackError");
   }
   assert.equal((await storageProbe({cookie:'other_pa_partition=pa123'})('r','pa123'))[name],'');
   assert.equal((await storageProbe({cookie:'x=1; pa_partition=pa123; y=2'})('r','pa123'))[name],'pa123');
 });
 test('storage: CookieStore success requires a matching readback',async()=>{
   const cookieStore={set:async()=>{},get:async()=>null};
-  assert.ok((await storageProbe({cookieStore})('w','pa123')).refused.includes('CookieStore'));
+  assert.ok((await storageProbe({cookieStore})('w','pa123')).stalled.includes('CookieStore'));
   cookieStore.get=async()=>({value:'pa123'});
   assert.equal((await storageProbe({cookieStore})('w','pa123')).ok.CookieStore,1);
 });
