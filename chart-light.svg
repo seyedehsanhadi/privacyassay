@@ -12,36 +12,36 @@
 <text x="580.0" y="25" fill="#57687f" font-size="12" text-anchor="middle" class="n">80</text>
 <line x1="692.0" y1="33" x2="692.0" y2="298" stroke="#e6ebf2" stroke-width="1"/>
 <text x="692.0" y="25" fill="#57687f" font-size="12" text-anchor="middle" class="n">100</text>
-<text x="118" y="60.5" fill="#101112" font-size="14" text-anchor="end">LibreWolf</text>
-<rect x="132" y="46" width="145.6" height="20" rx="3" fill="#2563EB"/>
-<line x1="260.8" y1="56.0" x2="328.0" y2="56.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="260.8" y1="51.0" x2="260.8" y2="61.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="328.0" y1="51.0" x2="328.0" y2="61.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<text x="340.0" y="60.5" fill="#57687f" font-size="13" class="n">23-35</text>
-<text x="118" y="97.5" fill="#101112" font-size="14" text-anchor="end">Tor Browser</text>
-<rect x="132" y="83" width="112.0" height="20" rx="3" fill="#2563EB"/>
-<line x1="244.0" y1="93.0" x2="344.8" y2="93.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="244.0" y1="88.0" x2="244.0" y2="98.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="344.8" y1="88.0" x2="344.8" y2="98.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<text x="356.8" y="97.5" fill="#57687f" font-size="13" class="n">20-38</text>
-<text x="118" y="134.5" fill="#101112" font-size="14" text-anchor="end">Mullvad Browser</text>
-<rect x="132" y="120" width="112.0" height="20" rx="3" fill="#2563EB"/>
-<line x1="244.0" y1="130.0" x2="344.8" y2="130.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="244.0" y1="125.0" x2="244.0" y2="135.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="344.8" y1="125.0" x2="344.8" y2="135.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<text x="356.8" y="134.5" fill="#57687f" font-size="13" class="n">20-38</text>
-<text x="118" y="171.5" fill="#101112" font-size="14" text-anchor="end">Firefox</text>
-<rect x="132" y="157" width="50.4" height="20" rx="3" fill="#2563EB"/>
-<line x1="176.8" y1="167.0" x2="244.0" y2="167.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="176.8" y1="162.0" x2="176.8" y2="172.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="244.0" y1="162.0" x2="244.0" y2="172.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<text x="256.0" y="171.5" fill="#57687f" font-size="13" class="n">8-20</text>
-<text x="118" y="208.5" fill="#101112" font-size="14" text-anchor="end">Brave</text>
-<rect x="132" y="194" width="2.5" height="20" rx="3" fill="#2563EB"/>
-<line x1="132.0" y1="204.0" x2="204.8" y2="204.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="132.0" y1="199.0" x2="132.0" y2="209.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<line x1="204.8" y1="199.0" x2="204.8" y2="209.0" stroke="#0b3ea8" stroke-width="1.6"/>
-<text x="216.8" y="208.5" fill="#57687f" font-size="13" class="n">0-13</text>
+<text x="118" y="60.5" fill="#101112" font-size="14" text-anchor="end">Tor Browser</text>
+<rect x="132" y="46" width="319.2" height="20" rx="3" fill="#2563EB"/>
+<line x1="451.2" y1="56.0" x2="507.2" y2="56.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="451.2" y1="51.0" x2="451.2" y2="61.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="507.2" y1="51.0" x2="507.2" y2="61.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<text x="519.2" y="60.5" fill="#57687f" font-size="13" class="n">57-67</text>
+<text x="118" y="97.5" fill="#101112" font-size="14" text-anchor="end">Mullvad Browser</text>
+<rect x="132" y="83" width="319.2" height="20" rx="3" fill="#2563EB"/>
+<line x1="451.2" y1="93.0" x2="507.2" y2="93.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="451.2" y1="88.0" x2="451.2" y2="98.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="507.2" y1="88.0" x2="507.2" y2="98.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<text x="519.2" y="97.5" fill="#57687f" font-size="13" class="n">57-67</text>
+<text x="118" y="134.5" fill="#101112" font-size="14" text-anchor="end">LibreWolf</text>
+<rect x="132" y="120" width="257.6" height="20" rx="3" fill="#2563EB"/>
+<line x1="356.0" y1="130.0" x2="423.2" y2="130.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="356.0" y1="125.0" x2="356.0" y2="135.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="423.2" y1="125.0" x2="423.2" y2="135.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<text x="435.2" y="134.5" fill="#57687f" font-size="13" class="n">40-52</text>
+<text x="118" y="171.5" fill="#101112" font-size="14" text-anchor="end">Brave</text>
+<rect x="132" y="157" width="106.4" height="20" rx="3" fill="#2563EB"/>
+<line x1="221.6" y1="167.0" x2="322.4" y2="167.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="221.6" y1="162.0" x2="221.6" y2="172.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="322.4" y1="162.0" x2="322.4" y2="172.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<text x="334.4" y="171.5" fill="#57687f" font-size="13" class="n">16-34</text>
+<text x="118" y="208.5" fill="#101112" font-size="14" text-anchor="end">Firefox</text>
+<rect x="132" y="194" width="50.4" height="20" rx="3" fill="#2563EB"/>
+<line x1="176.8" y1="204.0" x2="244.0" y2="204.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="176.8" y1="199.0" x2="176.8" y2="209.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<line x1="244.0" y1="199.0" x2="244.0" y2="209.0" stroke="#0b3ea8" stroke-width="1.6"/>
+<text x="256.0" y="208.5" fill="#57687f" font-size="13" class="n">8-20</text>
 <text x="118" y="245.5" fill="#101112" font-size="14" text-anchor="end">Chrome</text>
 <rect x="132" y="231" width="2.5" height="20" rx="3" fill="#2563EB"/>
 <text x="144.0" y="245.5" fill="#57687f" font-size="13" class="n">0</text>
@@ -49,5 +49,5 @@
 <rect x="132" y="268" width="2.5" height="20" rx="3" fill="#2563EB"/>
 <text x="144.0" y="282.5" fill="#57687f" font-size="13" class="n">0</text>
 <line x1="132" y1="33" x2="132" y2="298" stroke="#c9d4e3" stroke-width="1.5"/>
-<text x="132" y="318" fill="#57687f" font-size="12">Bar: both opt-ins off. Whisker: range across the four opt-in settings.</text>
+<text x="132" y="318" fill="#57687f" font-size="12">Bar: cross-site score, both opt-ins off. Whisker: range across the four opt-in settings.</text>
 </svg>

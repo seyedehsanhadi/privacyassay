@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: Brave, 0 of 100 hidden on this page, 19 on a second site, grade F](screenshot.png)
+![Privacyassay result: Brave, 0 of 100 hidden on this page, 25 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Brave 154, 0.9.4, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
+<div align="center"><sub>Brave 154, 0.9.5, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -49,24 +49,24 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, 2026-10-06, 0.9.4 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each, both runs agreed. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, 2026-10-06, 0.9.5 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Score by browser: LibreWolf 26 (range 23-35), Tor Browser 20 (20-38), Mullvad Browser 20 (20-38), Firefox 9 (8-20), Brave 0 (0-13), Chrome 0, Edge 0">
+  <img src="chart-light.svg" width="756" alt="Cross-site score by browser: Tor Browser 57 (range 57-67), Mullvad Browser 57 (57-67), LibreWolf 46 (40-52), Brave 19 (16-34), Firefox 9 (8-20), Chrome 0, Edge 0">
 </picture>
 
-| Browser | Version | Score | Range | Cross-site |
+| Browser | Version | Cross-site | Range | Single-site |
 |---|---|---:|---:|---:|
-| LibreWolf | 152.0.6-1 | 26 | 23-35 | 26 |
-| Tor Browser | 140.17.0 | 20 | 20-38 | 20 |
-| Mullvad Browser | 140.15.0 | 20 | 20-38 | 20 |
+| Tor Browser | 140.17.0 | 57 | 57-67 | 20 |
+| Mullvad Browser | 140.17.0 | 57 | 57-67 | 20 |
+| LibreWolf | 152.0.6-1 | 46 | 40-52 | 26 |
+| Brave | 154.1.96.61 | 19 | 16-34 | 0 |
 | Firefox | 154.0.1 | 9 | 8-20 | 9 |
-| Brave | 154.1.96.61 | 0 | 0-13 | 14-29 |
 | Chrome | 154.0.8037.92 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. Cross-site is the score between the two origins. Brave re-seeds per session and keys per site, so its single-page score reads as exposed while its cross-site score varies by session. Tor and Mullvad were measured with NoScript moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.3 or earlier.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Tor and Mullvad were measured with NoScript moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
 
 ## Run it
 
@@ -112,7 +112,7 @@ A confirmed refused reading receives credit; a broken probe stays unknown and re
 
 ## What it cannot do
 
-- **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity. Browsers that protect you by making everyone look the same, such as Tor and Mullvad, earn no credit for that, so their score understates it.
+- **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity. Uniformity credit covers only the fixed values of Tor, Mullvad and resistFingerprinting browsers, so a browser outside that list that hides you by blending in is understated.
 - **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
 - **See behaviour.** Mouse, typing and scroll are not measured.
 - **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The table above comes from `bench/live.mjs`, which drives each browser against the hosted pair.
