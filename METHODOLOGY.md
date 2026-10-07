@@ -62,7 +62,7 @@ Some capability inventories are sampled once and remain informational. The tool 
 
 On the hosted pair, privacyassay.com opens privacyassay.github.io as a top-level window. Every browser uses the same context. Popup blocking, a missing companion, a mismatched build or a severed opener is reported as unmeasured; a third-party frame is not substituted for a first-party comparison.
 
-The companion must answer within forty-five seconds. Replies are checked against the origin, source window, run token, catalog version and observation shape. Failed or absent measurements cannot count as changes. A reading counts as compared only when both origins returned a usable comparison value: a missing, empty, non-finite, error, timeout, unsupported or blocked value leaves that reading unknown on the cross-site result. Zero is a usable value.
+The companion must answer within forty-five seconds. The companion answers only a request from the expected origin and window, and replies over the private message channel that request carried; the reply is then checked against the run token, catalog version and observation shape. Failed or absent measurements cannot count as changes. A reading shown on both origins counts as compared only when both returned a usable comparison value; a missing, empty, non-finite, error or timeout value leaves it unknown on the cross-site result. A reading refused on both stays refused, and one refused or masked on one origin but readable on the other counts as shown. Zero is a usable value.
 
 Canvas is compared on the decoded pixels of the drawing (`getImageData`), not on the PNG that `toDataURL` encodes. A browser can return different PNG bytes for identical pixels, and that difference says nothing about what a tracker can read. Metadata-only variation therefore earns no canvas credit. Window and screen dimensions are not compared because the windows have different dimensions. The result states how many comparable readings changed, without claiming the visitor is recognized or anonymous.
 
@@ -80,7 +80,7 @@ Storage readback waits for the frame's write result. Explicit access denials are
 
 DRM key systems (Widevine, PlayReady, FairPlay) are requested only when the DRM opt-in is on, because the browser may show a permission or component-install prompt. The default run checks decode capabilities only and records the key systems as not run. When opted in, each key system ends as available, rejected (unsupported or denied, which the API does not distinguish), error or timeout; a late answer cannot change a finished result. Only DRM rows feed the secondary media diagnostic, never the findability score, and a not-run, rejected, failed or timed-out key system earns that diagnostic no credit.
 
-A completed WebGPU request returning no adapter establishes that neither its identity nor its limits were exposed. A failed request or an adapter whose limits cannot be read remains unknown for the affected reading.
+A completed WebGPU request returning no adapter, an API made unavailable, or a request denied with SecurityError or NotAllowedError is refused, unless a fresh frame recovers an adapter. Any other failed request, or an adapter whose limits cannot be read, remains unknown for the affected reading.
 
 Extension resource enumeration is not measured under the page's CSP. Positive page-visible extension evidence can be reported; no detected extension is not credited as protection.
 

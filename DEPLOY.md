@@ -17,8 +17,8 @@ var PA_HOME="https://your-domain.example/";
 
 `PA_HOME` redirects a direct visit to the companion back to the main site. Both ship set to this
 project's own pair, so a copy you host yourself has to change them or it gets no cross-site result:
-the companion answers only to the `PA_HOME` it was built with, and a reply addressed elsewhere is
-dropped by the browser. A page served from loopback ignores both values and pairs with loopback
+the companion answers only a request that comes from the `PA_HOME` origin it was built with, and
+ignores any other page. A page served from loopback ignores both values and pairs with loopback
 instead; opened from disk it pairs with nothing at all. Either way a local copy never contacts
 either host.
 

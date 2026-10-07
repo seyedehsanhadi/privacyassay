@@ -45,7 +45,7 @@ Redact is on by default, so values on screen and in any saved report are masked.
 
 A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default. DRM key systems are opt-in too, because requesting them can make the browser show a permission or install prompt.
 
-A copy you run yourself contacts neither of those hosts: the second origin is resolved local-first, so a file opened from disk skips the comparison and a loopback copy pairs only with loopback. On the hosted copy the second origin is fetched like any page, so it sees the request the way any site you visit does. It is sent no reading; it measures in your browser and answers over `postMessage`.
+A copy you run yourself contacts neither of those hosts: the second origin is resolved local-first, so a file opened from disk skips the comparison and a loopback copy pairs only with loopback. On the hosted copy the second origin is fetched like any page, so it sees the request the way any site you visit does. It is sent no reading; it measures in your browser and answers only the page that asked, over a private message channel that page opened.
 
 ## Results
 
@@ -66,7 +66,7 @@ One machine, Windows 11, 2026-10-07, 0.9.6 measured on the hosted pair (`privacy
 | Chrome | 154.0.8037.92 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Mullvad was measured with its bundled script-blocking extension moved aside, because it blocked the page's scripts; Tor ran with its own in place. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts never earn uniformity credit, because the tool cannot verify the bundled set. Mullvad was measured with its bundled script-blocking extension moved aside, because it blocked the page's scripts; Tor ran with its own in place. Raw captures stay out of the repository, because each one fingerprints the test machine. Scores are not comparable with 0.9.5 or earlier, although every browser above scored the same on 0.9.5.
 
 ## Run it
 
@@ -108,14 +108,14 @@ npm run test:browser  # a real browser, including deliberate probe sabotage
 npm run test:stress   # repeated runs, re-entrancy, viewport extremes
 ```
 
-A confirmed refused reading receives credit; a broken probe stays unknown and receives none. The browser suite deliberately breaks probes and checks that failures never become shown values or protection credit.
+A confirmed refused reading receives credit; a broken probe stays unknown and receives none. The browser suite deliberately breaks probes and checks that a failure never becomes protection credit, and becomes a shown value only when a second route actually read one.
 
 ## What it cannot do
 
 - **Tell you how rare you are in the real world.** That needs a live population; the weights are judgment, not measured rarity. Uniformity credit covers only the fixed values of Tor, Mullvad and resistFingerprinting browsers, so a browser outside that list that hides you by blending in is understated.
 - **See the network layer.** TLS, HTTP/2, TCP and DNS are sent before any script runs.
 - **See behaviour.** Mouse, typing and scroll are not measured.
-- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which browsers treat more permissively than two registered domains: Brave, for one, carries cookies across that pair but blocks them between real sites. The table above comes from `bench/live.mjs`, which drives each browser against the hosted pair.
+- **Give a real cross-site figure from a local copy.** Run locally, the two-origin test pairs `localhost` with `127.0.0.1`, which is not the same as two registered domains, and a browser may isolate that pair differently. The table above comes from `bench/live.mjs`, which drives each browser against the hosted pair.
 
 - **Audit browser AI settings or every privacy defense.** AI API availability cannot establish Firefox AI Controls or assistant data handling. Telemetry, comprehensive tracker blocking and all-browser compatibility are outside this score.
 
@@ -127,7 +127,7 @@ Browser fingerprinting has been measured in public for years, and this tool is n
 
 [EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than seven. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
 
-What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and a stated refusal to guess at anything it could not measure.
+What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and no credit for anything it could not measure. Its one assumption, that a privacy browser family's documented fixed values are shared by its users, is labelled as assumed and reported separately.
 
 ## Contributing
 
