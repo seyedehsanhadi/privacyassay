@@ -93,6 +93,10 @@
         "score": {
           "type": "integer"
         },
+        "measuredScore": {
+          "type": "integer",
+          "description": "The cross-site score without credit for uniformity that is only assumed from a browser family's documented values."
+        },
         "grade": {
           "type": "string"
         },

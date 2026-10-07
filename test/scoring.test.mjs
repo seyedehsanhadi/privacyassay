@@ -134,7 +134,7 @@ test("identity: a stock browser with no tell stays 'not identified'", () => {
 
 test("identity: an addon-only detection reads as base browser + addon, not the addon alone", () => {
   const { paIdentity } = makeIdentity("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/150.0.0.0 Safari/537.36");
-  assert.equal(paIdentity({ whoYouAre: [{ what: "Privacy Badger", kind: "addon" }] }), "Chrome, with Privacy Badger");
+  assert.equal(paIdentity({ whoYouAre: [{ what: "A script that rewrites Do Not Track", kind: "addon" }] }), "Chrome, with a script that rewrites Do Not Track");
 });
 
 test("identity: a browser detection is reported as-is", () => {
@@ -147,16 +147,16 @@ test("identity: browser and addons compose, multiple addons join with +", () => 
   assert.equal(
     paIdentity({ whoYouAre: [
       { what: "Firefox with resistFingerprinting active", kind: "browser" },
-      { what: "JShelter or JavaScript Restrictor", kind: "addon" },
-      { what: "Privacy Badger", kind: "addon" },
+      { what: "A script wrapper on built-in functions", kind: "addon" },
+      { what: "A script that rewrites Do Not Track", kind: "addon" },
     ] }),
-    "Firefox with resistFingerprinting active, with JShelter or JavaScript Restrictor + Privacy Badger",
+    "Firefox with resistFingerprinting active, with a script wrapper on built-in functions + a script that rewrites Do Not Track",
   );
 });
 
 test("identity: an addon under an unrecognised UA still names the addon", () => {
   const { paIdentity } = makeIdentity("something nonstandard");
-  assert.equal(paIdentity({ whoYouAre: [{ what: "Privacy Badger", kind: "addon" }] }), "an unrecognised browser, with Privacy Badger");
+  assert.equal(paIdentity({ whoYouAre: [{ what: "A script that rewrites Do Not Track", kind: "addon" }] }), "an unrecognised browser, with a script that rewrites Do Not Track");
 });
 
 // The verdict sentence branched on the colour string paBandFor returns, comparing it against

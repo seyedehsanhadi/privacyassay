@@ -105,8 +105,8 @@ test("linkability compares changed rows against the rows that could change", () 
 // with WebGL off, and were told an extension they do not have was installed.
 test("a WebGL-off pref is not reported as an extension", () => {
   const fn = grabFn("identify");
-  const m = /hit\("[^"]*NoScript[\s\S]*?\);/.exec(fn);
-  assert.ok(m, "the NoScript hit was not found");
+  const m = /hit\("WebGL turned off[\s\S]*?\);/.exec(fn);
+  assert.ok(m, "the WebGL-off hit was not found");
   assert.ok(!/,\s*"addon"\s*\)/.test(m[0]),
     "a pref-or-extension inference must not be classified as a confirmed addon");
   assert.ok(/pref|setting/i.test(m[0]),

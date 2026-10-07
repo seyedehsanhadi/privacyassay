@@ -66,7 +66,7 @@ One machine, Windows 11, 2026-10-06, 0.9.5 measured on the hosted pair (`privacy
 | Chrome | 154.0.8037.92 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Tor and Mullvad were measured with NoScript moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Tor and Mullvad were measured with their bundled script-blocking extension moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
 
 ## Run it
 

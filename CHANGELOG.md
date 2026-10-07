@@ -5,10 +5,13 @@ Notable changes per release.
 ## 0.9.6 - 2026-10-07
 
 - Read a client-hints answer that carries only brands, mobile and platform as withheld, which is how a browser restricts high-entropy hints. It was reported as an empty collector error and left the run incomplete. The page now names the withheld fields. A NotAllowedError rejection is refused; any other rejection, a malformed answer or a timeout stays unknown.
-- Keep the reason for a failed reading. A SecurityError or NotAllowedError thrown by a probe is a refusal, other exceptions stay unknown with their name, and a repeat that fails now records both attempts instead of replacing them with a bare marker.
+- Keep the reason for a failed reading. A SecurityError or NotAllowedError counts as a refusal whichever prefix the collector wrote, other exceptions stay unknown with their name, and the canvas, text-metrics and SVG collectors keep the exception instead of dropping it. A repeat that fails records both attempts.
+- Count a reading as exposed when it was refused on one read or one site and readable on the other, in either order. A refusal that does not hold is not protection.
 - Score WebGPU that is present but unavailable as unavailable, the same state a missing API or a null adapter gets, and keep the exception when requestAdapter rejects. Refused readings now say whether the API was unavailable, the request was denied or the hints were withheld, and the summary export counts each kind.
-- Check each hidden reading through a second route: the same read in a fresh same-origin frame, and hit-testing text with elementFromPoint for the font and layout readings. If that route recovers a stable value, the reading counts as exposed and the result names it. Across two sites the second route must also match on both. Cross-site and single-site scores can drop for browsers or extensions whose protection does not cover new frames or hit-testing.
-- Label uniformity credit as assumed from the family's documented values. Two sites on one machine cannot show that every user of the family reports the same value.
+- Check each hidden, failed or assumed-uniform reading through a second route before it earns credit. The same read runs in a fresh same-origin frame for canvas, text metrics, SVG text, WebGL, codecs, voices and navigator values, and WebGPU is checked with a real adapter request there. Element geometry and MathML size are checked by hit-testing with elementFromPoint. A stable recovered value counts as exposed and the result names it; uniformity credit stands only when the frame reports the same standard value. Across two sites the second route must also match on both. Scores can drop for browsers or extensions whose protection does not cover new frames or hit-testing.
+- Label uniformity credit as assumed from the family's documented values, and report the cross-site score without that assumption next to the headline. Two sites on one machine cannot show that every user of the family reports the same value.
+- Stop naming extensions. A detected wrapper, spoofing marker or rewritten Do Not Track getter is described by what was observed, because the same behavior can come from more than one product.
+- Say plainly when the host has no request-header echo or cache-probe endpoint, as on the public site; those checks are skipped, not failed.
 
 ## 0.9.5 - 2026-10-07
 

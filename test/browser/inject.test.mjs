@@ -330,7 +330,8 @@ async function injectOne(port, target, name, mode, label, clean, extra) {
   if (!after) return { label, verdict: "missing" };
   const moved = before && (before.value !== after.value || before.state !== after.state);
   if (!moved) return { label, verdict: "unproven" };
-  if (after.state === "shown") return { label, verdict: "still-shown", value: String(after.value).slice(0, 40) };
+  // A failed main read that a named second route recovered is real exposure, not a broken probe.
+  if (after.state === "shown") return after.bypass ? { label, verdict: "ok" } : { label, verdict: "still-shown", value: String(after.value).slice(0, 40) };
   if (after.state !== "unknown") return { label, verdict: "failure-credited", state: after.state };
   return { label, verdict: "ok" };
 }
