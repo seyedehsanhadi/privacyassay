@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.5","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.6","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -567,11 +567,12 @@ function collectGPU(){
 }
 
 /* COLLECTORS - audio, media codecs ======================================= */
+var PA_CODECS=["video/mp4;codecs=avc1.42E01E","video/webm;codecs=vp9","video/mp4;codecs=av01.0.05M.08","video/webm;codecs=vp8","audio/mpeg","audio/ogg;codecs=opus","video/mp4;codecs=hvc1"];
 function collectAudioSync(){
   var rows=[];
   var AC=window.AudioContext||window.webkitAudioContext;
   if(AC){try{var ac=new AC();rows.push(["AudioContext sampleRate",ac.sampleRate]);rows.push(["AudioContext state",ac.state]);rows.push(["AudioContext maxChannelCount",ac.destination.maxChannelCount]);rows.push(["AudioContext baseLatency",typeof ac.baseLatency==="number"?ac.baseLatency:"n/a"]);rows.push(["AudioContext outputLatency",typeof ac.outputLatency==="number"?ac.outputLatency:"n/a"]);try{ac.close();}catch(e){}}catch(e){rows.push(["AudioContext","ERR"]);}}
-  var codecs=["video/mp4;codecs=avc1.42E01E","video/webm;codecs=vp9","video/mp4;codecs=av01.0.05M.08","video/webm;codecs=vp8","audio/mpeg","audio/ogg;codecs=opus","video/mp4;codecs=hvc1"];
+  var codecs=PA_CODECS;
   var v=document.createElement("video");
   rows.push(["canPlayType (7 codecs)",fnv(codecs.map(function(c){return c+":"+v.canPlayType(c);}).join("|"))]);
   if(window.MediaSource)rows.push(["MediaSource.isTypeSupported",fnvParts(codecs.map(function(c){return c+":"+MediaSource.isTypeSupported(c);}))]);
@@ -1009,7 +1010,7 @@ function collectWebGPU(){
       if(ad.info)pushInfo(ad.info);
       else if(ad.requestAdapterInfo)ad.requestAdapterInfo().then(pushInfo).catch(function(){pushInfo({});});
       else pushInfo({});
-    }).catch(function(){rows.push(["WebGPU","ERR"]);fin();});}catch(e){rows.push(["WebGPU","ERR"]);fin();}
+    }).catch(function(e){rows.push(["WebGPU",[paErr(e),"no"]]);fin();});}catch(e){rows.push(["WebGPU",[paErr(e),"no"]]);fin();}
   });
 }
 
@@ -1386,7 +1387,7 @@ function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.5", dated:"2026-10-07",
+  version:"0.9.6", dated:"2026-10-07",
 
 
 /* - browser labels (informational only) ------------------ */
@@ -1400,61 +1401,61 @@ var PRIORS={
 
 /* - the scored readings: key, category, weight, label ---- */
   surfaces:[
-    {k:"canvasClass", group:"gpu", tier:3, label:"canvas drawing", hashKey:"canvasHash",
+    {k:"canvasClass", group:"gpu", tier:3, alt:"frame", label:"canvas drawing", hashKey:"canvasHash",
      verified:"one of the most identifying readings there is"},
     {k:"innerSize", group:"window", tier:3, label:"window size", noCrossDiff:true,
      verified:"the exact size of your browser window, shaped by your screen, taskbar, toolbars and"},
-    {k:"rects", group:"layout", tier:2, label:"element geometry (subpixel)", hashKey:"rects",
+    {k:"rects", group:"layout", tier:2, alt:"hit", label:"element geometry (subpixel)", hashKey:"rects",
      verified:"a real leak, but it shifts between visits, so we rate it medium rather than strong"},
     {k:"fontSet", group:"fonts", tier:3, label:"installed fonts", hashKey:"fontSet",
      verified:"stable and near-unique in combination: reveals the OS build and which applications are"},
-    {k:"webglVendor", group:"gpu", tier:2, label:"GPU name",
+    {k:"webglVendor", group:"gpu", tier:2, alt:"frame", label:"GPU name",
      verified:"names your graphics card and driver"},
     {k:"availFrame", group:"display", tier:2, label:"taskbar size",
      verified:"the gap between the screen and its usable area: exposes how the desktop is arranged"},
     {k:"webglRenderClass", group:"gpu", tier:2, label:"3D rendered image", hashKey:"webglHash",
      verified:"a rendered 3D image read back pixel by pixel, shaped by your GPU and driver"},
-    {k:"webglExt", group:"gpu", tier:2, label:"GPU feature list", hashKey:"webglExt",
+    {k:"webglExt", group:"gpu", tier:2, alt:"frame", label:"GPU feature list", hashKey:"webglExt",
      verified:"which WebGL extensions the GPU stack offers"},
-    {k:"speechVoices", group:"media", tier:2, label:"installed voices", hashKey:"speechVoices",
+    {k:"speechVoices", group:"media", tier:2, alt:"frame", label:"installed voices", hashKey:"speechVoices",
      verified:"exposes OS version and installed language packs, and survives a spoofed user agent"},
     {k:"screenClass", group:"display", tier:2, label:"screen size", noCrossDiff:true,
      verified:"Tor and Mullvad round the window so many users share one size"},
     {k:"audioRenderClass", group:"audio", tier:2, label:"rendered sound", hashKey:"audioHash",
      verified:"an audio buffer rendered offline and hashed, shaped by the audio stack"},
-    {k:"codecSupport", group:"media", tier:2, label:"media codecs", hashKey:"codecSupport",
+    {k:"codecSupport", group:"media", tier:2, alt:"frame", label:"media codecs", hashKey:"codecSupport",
      verified:"which codecs the system provides reflects the OS build and how the browser was packaged"},
     {k:"webglParams", group:"gpu", tier:2, label:"GPU limits", hashKey:"webglParams",
      verified:"driver capability limits, read straight from the GPU stack"},
-    {k:"webgpuAdapter", group:"gpu", tier:2, label:"WebGPU adapter",
+    {k:"webgpuAdapter", group:"gpu", tier:2, alt:"frame", label:"WebGPU adapter",
      verified:"vendor, architecture and device reported by the WebGPU adapter, which name the GPU independently of WebGL"},
-    {k:"webgpuLimits", group:"gpu", tier:2, label:"WebGPU limits",
+    {k:"webgpuLimits", group:"gpu", tier:2, alt:"frame", label:"WebGPU limits",
      verified:"the adapter limit set, which Firefox normalizes under RFPTarget WebGPULimits"},
-    {k:"devicePixelRatio", group:"display", tier:2, label:"display scaling",
+    {k:"devicePixelRatio", group:"display", tier:2, alt:"frame", label:"display scaling",
      verified:"resistFingerprinting reports exactly 2 at normal zoom, and the value tracks page zoom"},
-    {k:"svgMetrics", group:"layout", tier:2, label:"SVG text metrics", hashKey:"svgMetrics",
+    {k:"svgMetrics", group:"layout", tier:2, alt:"hit", label:"SVG text metrics", hashKey:"svgMetrics",
      verified:"how this engine draws SVG text, down to the subpixel"},
-    {k:"textMetrics", group:"fonts", tier:2, label:"text metrics", hashKey:"textMetrics",
+    {k:"textMetrics", group:"fonts", tier:2, alt:"hit", label:"text metrics", hashKey:"textMetrics",
      verified:"four glyph-geometry properties from TextMetrics"},
-    {k:"measureTextW", group:"fonts", tier:2, label:"font measurement", hashKey:"measureTextW",
+    {k:"measureTextW", group:"fonts", tier:2, alt:"hit", label:"font measurement", hashKey:"measureTextW",
      verified:"measured text width for a fixed string, shaped by the font stack and rasterizer"},
-    {k:"mathml", group:"layout", tier:2, label:"MathML render size", hashKey:"mathml",
+    {k:"mathml", group:"layout", tier:2, alt:"hit", label:"MathML render size", hashKey:"mathml",
      verified:"the rendered size of a MathML formula"},
-    {k:"maxTouchPoints", group:"os", tier:1, label:"touch points",
+    {k:"maxTouchPoints", group:"os", tier:1, alt:"frame", label:"touch points",
      verified:"resistFingerprinting reports 10 on Windows even on machines with no touchscreen, which"},
-    {k:"languages", group:"locale", tier:1, label:"language",
+    {k:"languages", group:"locale", tier:1, alt:"frame", label:"language",
      verified:"your accept-language list"},
-    {k:"cores", group:"hardware", tier:1, label:"CPU cores",
+    {k:"cores", group:"hardware", tier:1, alt:"frame", label:"CPU cores",
      verified:"real hardware, but only a handful of common values, so it is weak on its own"},
     {k:"audioRate", group:"audio", tier:1, label:"sound sample rate",
      verified:"resistFingerprinting reports 44100"},
-    {k:"platform", group:"os", tier:1, label:"platform",
+    {k:"platform", group:"os", tier:1, alt:"frame", label:"platform",
      verified:"both Firefox and Chromium froze this to a handful of fixed strings"},
-    {k:"colorDepth", group:"display", tier:1, label:"colour depth",
+    {k:"colorDepth", group:"display", tier:1, alt:"frame", label:"colour depth",
      verified:"nearly every screen reports 24 regardless"},
-    {k:"timezone", group:"locale", tier:1, label:"timezone",
+    {k:"timezone", group:"locale", tier:1, alt:"frame", label:"timezone",
      verified:"rated weak because whole countries share a zone, and more telling the smaller yours is"},
-    {k:"deviceMemory", group:"hardware", tier:1, label:"device memory",
+    {k:"deviceMemory", group:"hardware", tier:1, alt:"frame", label:"device memory",
      verified:"rated weak because Chromium reports only five possible values on desktop, 2 through 32"},
     {k:"webrtcIP", group:"network", tier:3, optional:true, label:"WebRTC IP leak", okLabel:"no public IP observed in the completed test",
      verified:"WebRTC can hand a page your real public IP, straight past a VPN, before any tunnel"},
@@ -1501,10 +1502,11 @@ function paLetterboxed(w,h){
 }
 function paTier(s){return s.tier||2;}
 function paIsLB(v){var m=/^(\d+)x(\d+)$/.exec(String(v));return !!m&&paLetterboxed(+m[1],+m[2]);}
-function paCanvasClass(){
+function paCanvasClass(doc){
+  doc=doc||document;
   try{
     var draw=function(){
-      var c=document.createElement("canvas");c.width=64;c.height=32;
+      var c=doc.createElement("canvas");c.width=64;c.height=32;
       var x=c.getContext("2d",{willReadFrequently:true});if(!x)return null;
       x.fillStyle="rgb(255,102,0)";x.fillRect(0,0,32,32);
       return x.getImageData(0,0,64,32).data;
@@ -1522,17 +1524,82 @@ function paCanvasClass(){
   }catch(err){return "";}
 }
 
+function paCanvasHash(doc){var c=doc.createElement("canvas");c.width=90;c.height=24;
+  var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
+  x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
+  return fnvBytes(x.getImageData(0,0,c.width,c.height).data);}
+function paHitWidths(){
+  var out={text:"",math:""},s=null;
+  try{
+    var b=document.body;if(!b||!document.elementFromPoint)return out;
+    var maxX=Math.floor(window.innerWidth)-1;
+    if(!(maxX>=100&&window.innerHeight>=120))return out;
+    s=document.createElement("div");
+    s.style.cssText="position:fixed;left:0;top:0;margin:0;padding:0;border:0;display:inline-block;white-space:nowrap;font-size:32px;line-height:40px;letter-spacing:normal;opacity:0;z-index:2147483647;pointer-events:auto";
+    b.appendChild(s);
+    var edge=function(y){var on=function(x){var e=document.elementFromPoint(x,y);return !!e&&(e===s||s.contains(e));};
+      if(!on(0.5)||on(maxX))return null;var lo=0.5,hi=maxX;for(var n=0;n<24;n++){var mid=(lo+hi)/2;if(on(mid))lo=mid;else hi=mid;}return Math.round(hi*64)/64;};
+    s.textContent="mmmmmmmmmmlli";
+    var fams=["sans-serif","serif","monospace","Arial","Times New Roman","Courier New"],w=[];
+    for(var i=0;i<fams.length;i++){s.style.fontFamily=/ /.test(fams[i])?'"'+fams[i]+'"':fams[i];var e=edge(20);if(e===null){w=null;break;}w.push(e);}
+    if(w)out.text=w.join(",");
+    s.style.fontFamily="";s.style.lineHeight="normal";
+    s.innerHTML='<math><mrow><munderover><mo>&#8721;</mo><mn>1</mn><mi>n</mi></munderover><msqrt><mfrac><mi>x</mi><mn>2</mn></mfrac></msqrt></mrow></math>';
+    var mw=edge(30);if(mw!==null)out.math=String(mw);
+  }catch(e){}finally{try{if(s&&s.parentNode)s.parentNode.removeChild(s);}catch(e){}}
+  return out;
+}
+function paAltVectors(){
+  var out={},f=null,put=function(k,fn){try{var v=fn();if(v!==undefined&&v!==null&&String(v)!=="")out[k]=String(v);}catch(e){}};
+  var hit=paHitWidths();if(hit.text)["rects","measureTextW","textMetrics","svgMetrics"].forEach(function(k){out[k]=hit.text;});if(hit.math)out.mathml=hit.math;
+  try{
+    f=document.createElement("iframe");f.style.cssText="position:absolute;left:-9999px;top:0;width:10px;height:10px;border:0";
+    (document.body||document.documentElement).appendChild(f);
+    var w=f.contentWindow,d=w&&w.document;if(!d)return out;
+    var nav=w.navigator;
+    put("cores",function(){return nav.hardwareConcurrency;});
+    put("deviceMemory",function(){return ("deviceMemory" in nav)?nav.deviceMemory:undefined;});
+    put("maxTouchPoints",function(){return nav.maxTouchPoints;});
+    put("platform",function(){return nav.platform;});
+    put("languages",function(){return (nav.languages||[])[0]||nav.language;});
+    put("timezone",function(){return w.Intl.DateTimeFormat().resolvedOptions().timeZone;});
+    put("colorDepth",function(){return w.screen.colorDepth;});
+    put("devicePixelRatio",function(){var r=w.devicePixelRatio;return (typeof r==="number"&&isFinite(r))?Math.round(r*1e4)/1e4:undefined;});
+    put("canvasClass",function(){return paCanvasClass(d)==="unique"?paCanvasHash(d):undefined;});
+    put("webglVendor",function(){var g=d.createElement("canvas").getContext("webgl");if(!g)return undefined;
+      var x=g.getExtension("WEBGL_debug_renderer_info"),v=String(x?g.getParameter(x.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER));
+      out.webglExt=fnv((g.getSupportedExtensions()||[]).slice().sort().join(","));glDone(g);return v;});
+    put("codecSupport",function(){return w.MediaSource&&w.MediaSource.isTypeSupported?fnvParts(PA_CODECS.map(function(c){return c+":"+w.MediaSource.isTypeSupported(c);})):undefined;});
+    put("speechVoices",function(){var vv=w.speechSynthesis&&w.speechSynthesis.getVoices();return vv&&vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v.name+v.lang;}),",")+")":undefined;});
+    put("webgpuAdapter",function(){return (!navigator.gpu&&nav.gpu)?"navigator.gpu present in a fresh frame":undefined;});
+    if(out.webgpuAdapter)out.webgpuLimits=out.webgpuAdapter;
+  }catch(e){}finally{try{if(f&&f.parentNode)f.parentNode.removeChild(f);}catch(e){}}
+  return out;
+}
+
 /* FINDABILITY - observe readings, score them, cross-origin merge ========= */
 
 /* - read every scored surface into one flat object ------- */
+function paErr(e){var n=e&&e.name||"Error";return (/^(SecurityError|NotAllowedError)$/.test(n)?"blocked:":"ERR:")+n;}
+function paRead(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return paErr(e);}}
+function paWebgpuVectors(rows){
+  rows=rows||[];
+  var get=function(lab,sub){for(var i=0;i<rows.length;i++){var n=String(rows[i][0]).toLowerCase();if(sub?n.indexOf(lab)>=0:n===lab){var v=rows[i][1];return String(Array.isArray(v)?v[0]:v);}}return "";};
+  var both=function(v){return {adapter:v,limits:v};};
+  var api=get("webgpu (navigator.gpu)"),req=get("webgpu");
+  if(/^unavailable/.test(api))return both("unsupported");
+  if(api==="ERR")return both("ERR:navigator.gpu");
+  if(get("gpuadapter")==="null (blocked)")return both("blocked");
+  if(/^(blocked:|ERR)/.test(req))return both(req);
+  var clean=function(v){return (v==="(empty)"||v==="absent"||v==="n/a")?"":v;};
+  var wa=fnvParts([get("adapter vendor"),get("adapter architecture"),get("adapter device"),get("adapter description")].map(clean));
+  if(wa==="ERR"&&get("adapter vendor")==="(empty)")wa="blocked";
+  return {adapter:wa,limits:clean(get("gpuadapter.limits",true))};
+}
 function observeVectors(){
-  
-  var P=function(f,d){try{var v=f();return (v===undefined||v===null)?d:v;}catch(e){return "ERR:"+(e&&e.name||"Error");}};
-  var W=function(needle){var v=paRow("WebGPU",needle);
-    return (v==="(empty)"||v==="absent"||v==="n/a"||v==="null (blocked)")?"":v;};
+  var P=paRead;
   var glOff=paRowExact("Active Rendering & GPU","webgl")==="unavailable";
-  var wai=[W("adapter vendor"),W("adapter architecture"),W("adapter device"),W("adapter description")];
-  var wa=fnvParts(wai);if(wa==="ERR"&&(paRowExact("WebGPU","adapter vendor")==="(empty)"||paRowExact("WebGPU","gpuadapter")==="null (blocked)"))wa="blocked";
+  var wg=paWebgpuVectors(C["WebGPU"]&&C["WebGPU"].rows);
   var out={
     cores:P(function(){return navigator.hardwareConcurrency;},""),
     deviceMemory:P(function(){return String(navigator.deviceMemory);},""),
@@ -1552,10 +1619,7 @@ function observeVectors(){
     webglHash:glOff?"blocked":paRow("Active Rendering & GPU","webgl render hash"),
     audioRenderClass:paRow("Audio & Media Codecs","audiocontext render hash"),
     webglRenderClass:glOff?"blocked":paRow("Active Rendering & GPU","webgl render hash"),
-    canvasHash:P(function(){var c=document.createElement("canvas");c.width=90;c.height=24;
-      var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
-      x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
-      return fnvBytes(x.getImageData(0,0,c.width,c.height).data);},""),
+    canvasHash:P(function(){return paCanvasHash(document);},""),
     screenClass:P(function(){var w=screen.width,h=screen.height;
       return (w>=200&&h>=200)?(w+"x"+h):"";},""),
     innerSize:P(function(){var w=window.innerWidth,h=window.innerHeight;
@@ -1575,10 +1639,11 @@ function observeVectors(){
     webglParams:glOff?"blocked":paRow("Active Rendering & GPU","webgl params"),
     speechVoices:paRow("Audio & Media Codecs","speechsynthesis voices"),
     codecSupport:paRow("Audio & Media Codecs","mediasource.istypesupported"),
-    webgpuAdapter:wa,
-    webgpuLimits:paRowExact("WebGPU","gpuadapter")==="null (blocked)"?"blocked":W("gpuadapter.limits"),
-    uaCh:P(function(){var u=PA_UACH;if(!u)return "unsupported";if(u.__paStatus)return u.__paStatus;var v=[u.model,u.platformVersion,u.architecture,u.bitness,u.uaFullVersion,u.fullVersionList&&JSON.stringify(u.fullVersionList),u.wow64,u.formFactors&&JSON.stringify(u.formFactors)].filter(function(x){return x!==undefined&&x!==null&&String(x)!=="";});return v.length?v.join(" | "):"ERR:empty-client-hints";},"")
+    webgpuAdapter:wg.adapter,
+    webgpuLimits:wg.limits,
+    uaCh:P(function(){return paUaChValue(PA_UACH);},"")
   };
+  out._alt=paAltVectors();
   [["deviceMemory",function(){return "deviceMemory" in navigator;}],["webgpuAdapter",function(){return "gpu" in navigator;}],["webgpuLimits",function(){return "gpu" in navigator;}],["speechVoices",function(){return "speechSynthesis" in window;}],["codecSupport",function(){return "MediaSource" in window;}],["audioRenderClass",function(){return !!(window.OfflineAudioContext||window.webkitOfflineAudioContext);}],["audioRate",function(){return !!(window.AudioContext||window.webkitAudioContext);}]].forEach(function(p){try{if(!p[1]())out[p[0]]="unsupported";}catch(e){out[p[0]]="ERR:availability";}});
   return out;
 }
@@ -1591,40 +1656,57 @@ function repeatVectors(){
   }).then(function(audio){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
     try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);}catch(e){}
-    var second=observeVectors(),a=findability(first,"other"),b=findability(second,"other"),noisy={};
-    PRIORS.surfaces.forEach(function(s){if(s.optional||s.noCrossDiff)return;var ar=a.rows.find(function(r){return r.label===s.label;}),br=b.rows.find(function(r){return r.label===s.label;});if(br&&br.state==="unknown"){first[s.k]="ERR:repeat-incomplete";return;}if(ar&&br&&ar.state==="shown"&&br.state==="shown"&&String(first[s.k])!==String(second[s.k]))noisy[s.k]=1;});
-    first._noisy=noisy;return first;
+    var second=observeVectors();
+    return paRepeatMerge(first,second,findability(first,"other"),findability(second,"other"));
   }).finally(function(){Object.keys(saved).forEach(function(k){if(saved[k])C[k]=saved[k];else delete C[k];});});
+}
+
+function paRepeatMerge(first,second,a,b){
+  var noisy={},alt={};
+  PRIORS.surfaces.forEach(function(s){if(s.optional||s.noCrossDiff)return;var ar=a.rows.find(function(r){return r.label===s.label;}),br=b.rows.find(function(r){return r.label===s.label;});
+    if(br&&br.state==="unknown"){if(!(ar&&ar.state==="unknown"))first[s.k]="ERR:repeat-incomplete (first read: "+String(first[s.k])+"; repeat: "+String(second[s.k])+")";return;}
+    if(ar&&br&&ar.state==="shown"&&br.state==="shown"&&String(first[s.k])!==String(second[s.k]))noisy[s.k]=1;});
+  Object.keys(first._alt||{}).forEach(function(k){var x=first._alt[k];if(x&&second._alt&&second._alt[k]===x)alt[k]=x;});
+  first._alt=alt;first._noisy=noisy;return first;
 }
 
 /* - classify each reading, then score by category sh ----- */
 var TIERWORD={3:"strong",2:"medium",1:"weak"};
 function findability(observed,familyKey){
   observed=observed||{};
+  var PA_REFUSAL_WHY={unavailable:"This API is not available here, so nothing could be read through it.",
+  denied:"The browser denied the request or returned no adapter.",
+  withheld:"The browser answered but withheld every requested high-entropy field.",
+  "no-value":"The completed test returned no exposed value."};
   var rows=[],groupShownTier={},groupTotalTier={},groupSum={},groupHid={},groupUnknown={};
   PRIORS.surfaces.forEach(function(s){
-    var v=observed[s.k],state,tier=0,why,mask="";
+    var v=observed[s.k],state,tier=0,why,mask="",how="",refusal="",basis="",bypass="";
     if(s.optional&&(v===undefined||v===null))return;
     var text=String(v==null?"":v);
     var unknown=v==null||(typeof v!=="string"&&typeof v!=="number")||text===""||/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|0 \(ERR\))$/i.test(text);
-    var refused=/^(unsupported|blocked(?::(?:SecurityError|NotAllowedError|NotSupportedError))?)$/.test(text)||
+    var refused=/^(unsupported|withheld|blocked(?::(?:SecurityError|NotAllowedError|NotSupportedError))?)$/.test(text)||
       (s.k==="webrtcIP"&&text==="not-exposed")||(s.k==="storageCarry"&&text==="not-carried");
     if(unknown){state="unknown";why="The measurement did not establish a result; no protection credit is awarded.";}
-    else if(refused){state="refused";why="This API is unsupported, explicitly denied, or the completed test returned no exposed value.";}
+    else if(refused){state="refused";how="refused";refusal=text==="unsupported"?"unavailable":text==="withheld"?"withheld":/^blocked/.test(text)?"denied":"no-value";why=PA_REFUSAL_WHY[refusal];}
     else if((s.k==="canvasClass"&&(text==="noise-per-read"||text==="uniform-masked"))||
       (!s.noCrossDiff&&observed._noisy&&observed._noisy[s.k])||
       (!s.noCrossDiff&&observed._crossChanged&&observed._crossChanged[s.k])){
-      state="blended";mask="varied";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
+      state="blended";mask="varied";how="varied";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
     }else if(observed._crossUniform&&observed._crossUniform[s.k]){
-      state="blended";mask="uniform";why="The same standard value of this browser family on both sites. Every user of the family reports it, so it identifies no one in particular; this is uniformity, not randomization.";
+      state="blended";mask="uniform";basis="assumed-uniform";why="Matched the fixed value this browser family is documented to report, on both sites. That other users report it too is assumed from the family's documentation; this test did not measure other devices.";
     }else{state="shown";tier=paTier(s);why="An observable value was returned; uniformity across users is not established by this test.";}
+    var alt=s.alt&&observed._alt&&observed._alt[s.k];
+    if(how&&typeof alt==="string"&&alt!==""&&(!observed._altCross||observed._altCross[s.k])){
+      state="shown";tier=paTier(s);mask="";refusal="";bypass=s.alt;
+      why="Hidden on the main read, but "+(s.alt==="hit"?"hit-testing the same text (document.elementFromPoint)":"the same read in a fresh same-origin frame")+" recovered a stable value, so a site can still read it.";
+    }
     var w=paTier(s);
     groupTotalTier[s.group]=Math.max(groupTotalTier[s.group]||0,w);
     groupSum[s.group]=(groupSum[s.group]||0)+w;
     if(state==="refused"||state==="blended")groupHid[s.group]=(groupHid[s.group]||0)+w;
     if(state==="unknown")groupUnknown[s.group]=(groupUnknown[s.group]||0)+w;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,mask:mask,why:why,src:s.verified||"",okLabel:s.okLabel||""});
+    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,mask:mask,refusal:refusal,basis:basis,bypass:bypass,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
   var groups=Object.keys(groupShownTier),totW=0,hidW=0,unknownW=0;
   var categories=Object.keys(groupTotalTier).map(function(g){
@@ -1639,7 +1721,10 @@ function findability(observed,familyKey){
   var top=shown.slice().sort(function(a,b){return b.tier-a.tier;})[0];
   return {score:score,grade:grade,complete:complete,upperBound:totW?Math.round(100*(hidW+unknownW)/totW):100,hiddenPct:score,
     coverage:rows.length?Math.round(100*(rows.length-unknown)/rows.length):0,
-    checks:{total:rows.length,held:rows.length-shown.length-unknown,exposed:shown.length,unknown:unknown},
+    checks:{total:rows.length,held:rows.length-shown.length-unknown,exposed:shown.length,unknown:unknown,
+      refusedUnavailable:rows.filter(function(r){return r.refusal==="unavailable";}).length,refusedDenied:rows.filter(function(r){return r.refusal==="denied";}).length,
+      refusedWithheld:rows.filter(function(r){return r.refusal==="withheld";}).length,assumedUniform:rows.filter(function(r){return r.basis==="assumed-uniform";}).length},
+    bypassed:rows.filter(function(r){return r.bypass;}).map(function(r){return r.label;}),
     strongest:top?top.label:"",exposedStrong:strong,shownCount:shown.length,
     exposedGroups:{high:groups.filter(function(g){return groupShownTier[g]>=3;}),medium:groups.filter(function(g){return groupShownTier[g]===2;}),low:groups.filter(function(g){return groupShownTier[g]===1;})},
     categories:categories,totalWeight:totW,earnedWeight:hidW,rows:rows,browser:familyKey,
@@ -1669,13 +1754,15 @@ var PA_STD={
 function findabilityCross(obsA,obsB,familyKey){
   var single=findability(obsA,familyKey),second=findability(obsB||{},familyKey),merged={},changed=[],compared=[];
   Object.keys(obsA||{}).forEach(function(k){merged[k]=obsA[k];});merged._crossChanged={};merged._crossUniform={};var uniform=[];
+  if(obsB){merged._altCross={};var altB=obsB._alt&&typeof obsB._alt==="object"?obsB._alt:{};Object.keys(merged._alt||{}).forEach(function(k){var x=merged._alt[k];if(typeof x==="string"&&x!==""&&altB[k]===x)merged._altCross[k]=true;});}
   PRIORS.surfaces.forEach(function(s){
     if(s.noCrossDiff||s.optional)return;
     var a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
     if(!a||!b||a.state==="unknown"||b.state==="unknown"){merged[s.k]="ERR:comparison-incomplete";return;}
-    if(a.state!=="shown"||b.state!=="shown")return;
-    var key=s.hashKey||s.k,va=obsA[key],vb=obsB[key];
     var comparable=function(v){return (typeof v==="string"||typeof v==="number")&&String(v)!==""&&!/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|unsupported|blocked(?::.*)?)$/i.test(String(v));};
+    var key=s.hashKey||s.k,va=obsA[key],vb=obsB[key];
+    if(a.bypass||b.bypass){va=(obsA._alt||{})[s.k];vb=(obsB._alt||{})[s.k];}
+    else if(a.state!=="shown"||b.state!=="shown")return;
     if(!comparable(va)||!comparable(vb)){merged[s.k]="ERR:comparison-incomplete";return;}
     compared.push(s.label);
     if(String(va)!==String(vb)){
@@ -2005,7 +2092,20 @@ function sharedWorkerCheck(){
 
 /* - client hints, awaited -------------------------------- */
 function highEntropy(){
-  return paDeadline(function(){if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues)return null;return Promise.resolve(navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"])).then(function(v){return v&&typeof v==="object"&&!Array.isArray(v)?v:{__paStatus:"ERR:empty-client-hints"};});},3500).catch(function(e){return {__paStatus:"ERR:"+(e&&e.message==="timeout"?"timeout":e&&e.name||"Error")};});
+  return paDeadline(function(){if(!navigator.userAgentData||!navigator.userAgentData.getHighEntropyValues)return null;return Promise.resolve(navigator.userAgentData.getHighEntropyValues(["architecture","bitness","model","platformVersion","uaFullVersion","fullVersionList","wow64","formFactors"])).then(paUaChShape);},3500).catch(function(e){return {__paStatus:e&&e.message==="timeout"?"ERR:timeout":paErr(e)};});
+}
+function paUaChShape(v){
+  if(!v||typeof v!=="object"||Array.isArray(v)||!Array.isArray(v.brands)||typeof v.mobile!=="boolean"||typeof v.platform!=="string")return {__paStatus:"ERR:malformed-client-hints"};
+  var want=["model","platformVersion","architecture","bitness","uaFullVersion","fullVersionList","wow64","formFactors"],o={};
+  for(var k in v)o[k]=v[k];
+  var miss=want.filter(function(k){return v[k]===undefined||v[k]===null||String(v[k])==="";});
+  Object.defineProperty(o,"__paWithheld",{value:miss});
+  return o;
+}
+function paUaChValue(u){
+  if(!u)return "unsupported";if(u.__paStatus)return u.__paStatus;
+  var v=[u.model,u.platformVersion,u.architecture,u.bitness,u.uaFullVersion,u.fullVersionList&&JSON.stringify(u.fullVersionList),u.wow64,u.formFactors&&JSON.stringify(u.formFactors)].filter(function(x){return x!==undefined&&x!==null&&String(x)!=="";});
+  return v.length?v.join(" | "):"withheld";
 }
 function headers(){
   if(!/^https?:$/.test(location.protocol))return Promise.resolve(null);
@@ -2160,7 +2260,7 @@ function paCrossData(R){
     pct:total?Math.round(anon/total*100):0,answer:Fc.complete===false?"Incomplete":!total?"No comparison":anon?"Changed":"Matched",
     tone:"var(--text-2)",bg:"var(--hover)",
     uni:(Fc.uniformAcrossOrigins||[]).length,
-    result:anon+" of "+total+" comparable readings differed"+((Fc.uniformAcrossOrigins||[]).length?"; "+(Fc.uniformAcrossOrigins||[]).length+" more matched the standard values of this browser family on both sites (uniformity)":"")+". This experiment does not determine whether a tracker can recognize you."};
+    result:anon+" of "+total+" comparable readings differed"+((Fc.uniformAcrossOrigins||[]).length?"; "+(Fc.uniformAcrossOrigins||[]).length+" more matched the documented standard values of this browser family on both sites (uniformity assumed from the family's documentation, not measured across devices)":"")+". This experiment does not determine whether a tracker can recognize you."};
   var p=R.partitioning;
   if(pb)cs.partitionBlocked=pb;
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),notMeasured:p.notMeasured||[],unknown:p.unknownPersistent||[],leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
@@ -2189,6 +2289,7 @@ function paRenderView(R){
     (strongN?(strongN===1?"One strong surface is still exposed.":strongN+" strong surfaces are still exposed."):"Nothing strong is exposed.")+
     (cs.pending?" The cross-site check is still running, its result appears below in a moment.":"");
   if(F.complete===false)supporting=(F.checks.total-F.checks.unknown)+" of "+F.checks.total+" readings measured ("+F.coverage+"%). Hidden-weight range: "+F.score+"–"+F.upperBound+"%. Not measured: "+F.rows.filter(function(r){return r.state==="unknown";}).map(function(r){return r.label;}).join(", ")+". "+(R.crossMeasuring?"The second-site test is still running.":"Check the test details below before re-running.");
+  if(F.bypassed&&F.bypassed.length)supporting+=" Recovered past the protection: "+F.bypassed.join(", ")+".";
   var groups=paGroupsFrom(F);
   var shown=groups.filter(function(g){return g.state==="shown";}).sort(function(a,b){return b.weight-a.weight;});
   var refused=groups.filter(function(g){return g.state==="refused";}).sort(function(a,b){return b.weight-a.weight;});
@@ -2481,7 +2582,8 @@ function paFindabilityCategory(F){
       F.checks.held+" masked, varied or unavailable; "+F.checks.exposed+" observable; "+F.checks.unknown+" unknown, out of "+F.checks.total+" readings."]);
     fRows.push(["Protection score",
       F.verdict+
-      (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")]);
+      (F.exposedStrong&&F.exposedStrong.length?" Still exposed: "+F.exposedStrong.slice(0,3).join(", ")+".":"")+
+      (F.bypassed&&F.bypassed.length?" Hidden on the main read but recovered another way: "+F.bypassed.join(", ")+".":"")]);
     F.rows.forEach(function(r){
       var tag=r.state==="shown"?(STATEWORD.shown+" ("+(TIERWORD[r.tier]||"")+" clue)"):STATEWORD[r.state];
       var dispVal=((r.state==="refused"||r.state==="blended")&&r.okLabel)?r.okLabel:String(r.value).slice(0,40);
@@ -2505,9 +2607,12 @@ function paSave(kind){
       cappedBy:F.strongest||null,topLeaks:(F.exposedStrong||[]),
       handedOver:groups.filter(function(g){return g.rows.some(function(r){return r.state==="shown";});}).sort(function(a,b){return b.weight-a.weight;})
         .map(function(g){return {surface:g.reading,weight:g.weight,exposed:g.exposedLabel};}),
+      bypassed:(F.bypassed||[]),
       counts:{unknown:F.checks.unknown,readingsHidden:F.checks.held,readingsTotal:F.checks.total,strongLeaks:(F.exposedStrong||[]).length,
         masked:(F.rows||[]).filter(function(r){return r.state==="blended";}).length,
-        notReadable:(F.rows||[]).filter(function(r){return r.state==="refused";}).length},
+        notReadable:(F.rows||[]).filter(function(r){return r.state==="refused";}).length,
+        notReadableUnavailable:F.checks.refusedUnavailable,notReadableDenied:F.checks.refusedDenied,notReadableWithheld:F.checks.refusedWithheld,
+        maskedByAssumedUniformity:(Fc||F).checks.assumedUniform},
       note:"Score is the share of what this tool checks that this browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. It summarizes observed exposure, not the probability of identification. Full method in METHODOLOGY.md."
     });return;
   }
@@ -2633,6 +2738,7 @@ async function runKit(){
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
   R.uaHigh=PA_UACH;if(R.uaHigh&&!R.uaHigh.__paStatus)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
+  if(R.uaHigh&&C["User-Agent Client Hints (JS)"]){var _wh=R.uaHigh.__paWithheld;C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues outcome",R.uaHigh.__paStatus?[R.uaHigh.__paStatus,/^blocked:/.test(R.uaHigh.__paStatus)?"ok":"no"]:_wh&&_wh.length?["withheld "+_wh.length+" of 8: "+_wh.join(", "),"ok"]:["all 8 requested hints returned","no"]]);}
   R.headers=await headers();
   R.leaks.webrtc=await webrtc();
   R.leaks.ext=await extScan();

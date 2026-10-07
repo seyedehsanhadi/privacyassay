@@ -2,6 +2,14 @@
 
 Notable changes per release.
 
+## 0.9.6 - 2026-10-07
+
+- Read a client-hints answer that carries only brands, mobile and platform as withheld, which is how a browser restricts high-entropy hints. It was reported as an empty collector error and left the run incomplete. The page now names the withheld fields. A NotAllowedError rejection is refused; any other rejection, a malformed answer or a timeout stays unknown.
+- Keep the reason for a failed reading. A SecurityError or NotAllowedError thrown by a probe is a refusal, other exceptions stay unknown with their name, and a repeat that fails now records both attempts instead of replacing them with a bare marker.
+- Score WebGPU that is present but unavailable as unavailable, the same state a missing API or a null adapter gets, and keep the exception when requestAdapter rejects. Refused readings now say whether the API was unavailable, the request was denied or the hints were withheld, and the summary export counts each kind.
+- Check each hidden reading through a second route: the same read in a fresh same-origin frame, and hit-testing text with elementFromPoint for the font and layout readings. If that route recovers a stable value, the reading counts as exposed and the result names it. Across two sites the second route must also match on both. Cross-site and single-site scores can drop for browsers or extensions whose protection does not cover new frames or hit-testing.
+- Label uniformity credit as assumed from the family's documented values. Two sites on one machine cannot show that every user of the family reports the same value.
+
 ## 0.9.5 - 2026-10-07
 
 - Credit uniformity on the cross-site score. A reading counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's fixed value on both origins. Randomizers keep their credit for readings that differ between the origins. A browser that merely shows the same value on both earns nothing, and nothing is credited on a single-site run.

@@ -29,7 +29,7 @@ test('companion messages bind source, origin, nonce, version and value shape',()
 });
 const fastDeadline=new Function('setTimeout','clearTimeout',grabFn('paDeadline')+';return paDeadline')((f,ms)=>setTimeout(f,Math.min(ms,20)),clearTimeout);
 test('never-settling client hints return an explicit timeout outcome',async()=>{
-  const high=new Function('navigator','paDeadline',grabFn('highEntropy')+';return highEntropy')({userAgentData:{getHighEntropyValues:()=>new Promise(()=>{})}},fastDeadline);
+  const high=new Function('navigator','paDeadline',grabFn('highEntropy')+grabFn('paUaChShape')+grabFn('paErr')+';return highEntropy')({userAgentData:{getHighEntropyValues:()=>new Promise(()=>{})}},fastDeadline);
   assert.equal((await high()).__paStatus,'ERR:timeout');
 });
 test('AI timeout results do not mutate when an API responds late',async()=>{
@@ -42,12 +42,12 @@ test('AI throwing accessors are isolated from other API probes',async()=>{
   const collect=new Function('window','paDeadline','cat',grabFn('collectAI')+';return collectAI')(win,fastDeadline,(name,rows)=>rows);const rows=await collect();assert.match(rows[0][1][0],/ERR/);assert.equal(rows[1][1][0],'available');
 });
 
-test('supported client hints resolving empty remain unknown',async()=>{for(const value of [undefined,null,[],"bad"]){const high=new Function('navigator','paDeadline',grabFn('highEntropy')+';return highEntropy')({userAgentData:{getHighEntropyValues:()=>Promise.resolve(value)}},fastDeadline);assert.equal((await high()).__paStatus,'ERR:empty-client-hints');}});
+test('supported client hints resolving malformed remain unknown',async()=>{for(const value of [undefined,null,[],"bad"]){const high=new Function('navigator','paDeadline',grabFn('highEntropy')+grabFn('paUaChShape')+grabFn('paErr')+';return highEntropy')({userAgentData:{getHighEntropyValues:()=>Promise.resolve(value)}},fastDeadline);assert.equal((await high()).__paStatus,'ERR:malformed-client-hints');}});
 
 test('failed repeat collectors do not leave undefined categories behind',async()=>{
   const C={},cat=(name,rows)=>(C[name]={rows});
   const fail=()=>{throw new Error('injected')};
-  const repeat=new Function('C','observeVectors','collectGPU','collectFonts','collectCSS','collectAudioSync','collectAudioAsync','paDeadline','cat','speechSynthesis','findability','PRIORS',grabFn('repeatVectors')+';return repeatVectors')(C,()=>({}),fail,fail,fail,fail,async()=>({hash:'ERR'}),fastDeadline,cat,{getVoices:()=>[]},()=>({rows:[]}),{surfaces:[]});
+  const repeat=new Function('C','observeVectors','collectGPU','collectFonts','collectCSS','collectAudioSync','collectAudioAsync','paDeadline','cat','speechSynthesis','findability','PRIORS',grabFn('repeatVectors')+grabFn('paRepeatMerge')+';return repeatVectors')(C,()=>({}),fail,fail,fail,fail,async()=>({hash:'ERR'}),fastDeadline,cat,{getVoices:()=>[]},()=>({rows:[]}),{surfaces:[]});
   await repeat();assert.deepEqual(Object.keys(C),[]);
 });
 
@@ -62,9 +62,9 @@ test('a single unknown reading uses a singular verdict',()=>{assert.match(findab
 test('an absent OPFS file proves it did not carry into this partition',async()=>{const e=Object.assign(new Error('absent'),{name:'NotFoundError'}),nav={storage:{getDirectory:async()=>({getFileHandle:async()=>{throw e;}})}};const fn=new Function('navigator','PA_SK',grabFn('paOpfs')+';return paOpfs')(nav,'pa_partition');assert.equal(await fn('r','token'),'');});
 test('unavailable APIs are not counted as matching fingerprints',()=>{const f=findabilityCross(observed('unsupported'),observed('unsupported'),'other');const a=Object.fromEntries(PRIORS.surfaces.filter(s=>!s.optional).map(s=>[s.k,'unsupported']));const g=findabilityCross(a,a,'other');assert.equal(g.comparedAcrossOrigins.length,0);assert.equal(g.changedAcrossOrigins.length,0);});
 
-test('WebGPU descriptions remain measured when the other identity fields are empty',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({gpu:{}},{},(c,n)=>n==='adapter description'?'test GPU':'',()=>'',()=>'',p=>p.filter(Boolean).join('|'),null);assert.equal(observe().webgpuAdapter,'test GPU');});
-test('an empty or blocked WebGPU identity is confirmed unavailable',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({gpu:{}},{},()=>'',(c,n)=>c==='WebGPU'&&n==='adapter vendor'?'(empty)':'',()=>'',p=>p.some(Boolean)?'hash':'ERR',null);assert.equal(observe().webgpuAdapter,'blocked');});
-test('disabled WebGL is unavailable instead of an incomplete reading',()=>{const observe=new Function('navigator','window','document','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH',grabFn('observeVectors')+';return observeVectors')({}, {},{createElement:()=>({getContext:()=>null})},()=>'',(c,n)=>c==='Active Rendering & GPU'&&n==='webgl'?'unavailable':'',()=>'',()=> 'ERR',null);for(const k of ['webglVendor','webglHash','webglRenderClass','webglExt','webglParams'])assert.equal(observe()[k],'blocked');});
+test('WebGPU descriptions remain measured when the other identity fields are empty',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH','C','paAltVectors',grabFn('observeVectors')+grabFn('paRead')+grabFn('paErr')+grabFn('paWebgpuVectors')+grabFn('paUaChValue')+';return observeVectors')({gpu:{}},{},()=>'',()=>'',()=>'',p=>p.filter(Boolean).join('|'),null,{WebGPU:{rows:[['adapter description','test GPU']]}},()=>({}));assert.equal(observe().webgpuAdapter,'test GPU');});
+test('an empty or blocked WebGPU identity is confirmed unavailable',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH','C','paAltVectors',grabFn('observeVectors')+grabFn('paRead')+grabFn('paErr')+grabFn('paWebgpuVectors')+grabFn('paUaChValue')+';return observeVectors')({gpu:{}},{},()=>'',()=>'',()=>'',p=>p.some(Boolean)?'hash':'ERR',null,{WebGPU:{rows:[['adapter vendor','(empty)']]}},()=>({}));assert.equal(observe().webgpuAdapter,'blocked');});
+test('disabled WebGL is unavailable instead of an incomplete reading',()=>{const observe=new Function('navigator','window','document','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH','C','paAltVectors',grabFn('observeVectors')+grabFn('paRead')+grabFn('paErr')+grabFn('paWebgpuVectors')+grabFn('paUaChValue')+';return observeVectors')({}, {},{createElement:()=>({getContext:()=>null})},()=>'',(c,n)=>c==='Active Rendering & GPU'&&n==='webgl'?'unavailable':'',()=>'',()=> 'ERR',null,{},()=>({}));for(const k of ['webglVendor','webglHash','webglRenderClass','webglExt','webglParams'])assert.equal(observe()[k],'blocked');});
 const withHashes=(o)=>({...o,...Object.fromEntries(PRIORS.surfaces.filter(s=>s.hashKey&&s.hashKey!==s.k).map(s=>[s.hashKey,'h-'+s.hashKey]))});
 test('a shown reading with an unusable comparison value stays unknown and uncompared',()=>{
   const a=withHashes(observed());

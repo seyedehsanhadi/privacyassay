@@ -7,5 +7,5 @@
 <text x="80" y="385" fill="#b3c2d8" font-size="26">Runs in your browser. Your fingerprint is not uploaded.</text>
 <path d="M80 470H1120" stroke="#30405a"/>
 <text x="80" y="535" fill="#78adff" font-size="25">privacyassay.com</text>
-<text x="1120" y="535" text-anchor="end" fill="#b3c2d8" font-size="23">0.9.5 · Apache-2.0</text>
+<text x="1120" y="535" text-anchor="end" fill="#b3c2d8" font-size="23">0.9.6 · Apache-2.0</text>
 </g></svg>

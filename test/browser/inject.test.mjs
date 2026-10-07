@@ -134,6 +134,18 @@ const PROP_SURFACES = [
   ["WebGPU limits", "navigator.gpu"],
 ];
 const PROP_LABELS = [...new Set(PROP_SURFACES.map((s) => s[0]))];
+// A navigator.gpu that reads as undefined is the API made unavailable, not a broken probe: it is
+// refused, the same state a missing API or a null adapter gets. Every other property stays unknown.
+const GPU_LABELS = ["WebGPU adapter", "WebGPU limits"];
+function assertUndefinedBatch(rows, cleanRows) {
+  for (const label of GPU_LABELS) {
+    const row = rows.find((r) => r.label === label);
+    assert.equal(row?.state, "refused", label);
+    assert.equal(row?.refusal, "unavailable", label);
+  }
+  const labels = PROP_LABELS.filter((l) => !GPU_LABELS.includes(l));
+  assertBatch("undefined", diffBatch(rows, cleanRows, labels), labels);
+}
 function propPreload(mode) {
   const paths = [...new Set(PROP_SURFACES.map((s) => s[1]))];
   return paths.map((p) => OVERRIDE(p, mode)).join("\n");
@@ -226,7 +238,8 @@ test("inject-matrix: a confirmed absent WebGPU adapter exposes neither identity 
   for (const mode of ["throw", "undefined"]) {
     const broken = await scoreWith(srv.port, noAdapter + propPreload(mode));
     assert.equal(broken.complete, false);
-    assertBatch(mode, diffBatch(broken.rows, clean.rows, PROP_LABELS), PROP_LABELS);
+    if (mode === "undefined") assertUndefinedBatch(broken.rows, clean.rows);
+    else assertBatch(mode, diffBatch(broken.rows, clean.rows, PROP_LABELS), PROP_LABELS);
   }
 });
 
@@ -239,13 +252,11 @@ test("inject-matrix: property surfaces (throw) - never shown, failed readings st
   assertBatch("throw", batch, PROP_LABELS);
 });
 
-test("inject-matrix: property surfaces (undefined) - never shown, failed readings stay unknown", async () => {
+test("inject-matrix: property surfaces (undefined) - never shown; failed readings unknown, an undefined navigator.gpu unavailable", async () => {
   const srv = await getServer();
   const clean = await getClean();
-  const { rows, score } = await scoreWith(srv.port, propPreload("undefined"));
-  const batch = diffBatch(rows, clean.rows, PROP_LABELS);
-
-  assertBatch("undefined", batch, PROP_LABELS);
+  const { rows } = await scoreWith(srv.port, propPreload("undefined"));
+  assertUndefinedBatch(rows, clean.rows);
 });
 
 // installed fonts (tier 3, the only tier-3 reading in its category) is measured through the

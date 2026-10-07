@@ -148,6 +148,13 @@
       ],
       "description": "In-page only: the heaviest reading still shown. Same value the CLI calls 'strongest'"
     },
+    "bypassed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Readings hidden on the main read that a fresh same-origin frame or hit-testing still recovered. They count as exposed."
+    },
     "topLeaks": {
       "type": "array",
       "items": {
@@ -191,6 +198,22 @@
         },
         "notReadable": {
           "type": "integer"
+        },
+        "notReadableUnavailable": {
+          "type": "integer",
+          "description": "Refused because the API is not available in this browser."
+        },
+        "notReadableDenied": {
+          "type": "integer",
+          "description": "Refused because the browser denied the request (SecurityError, NotAllowedError, NotSupportedError or a null adapter)."
+        },
+        "notReadableWithheld": {
+          "type": "integer",
+          "description": "Refused because the browser answered without any requested high-entropy client hint."
+        },
+        "maskedByAssumedUniformity": {
+          "type": "integer",
+          "description": "Blended readings credited only because they match a browser family's documented standard value; uniformity across users is assumed, not measured."
         },
         "unknown": {
           "type": "integer"

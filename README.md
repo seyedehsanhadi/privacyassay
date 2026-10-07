@@ -37,7 +37,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 |---|---|
 | **Size** | one HTML file, 286 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
-| **Status** | 0.9.5; failed readings stay unknown; canvas compared on pixels |
+| **Status** | 0.9.6; failed readings stay unknown; canvas compared on pixels; bypassed protections count as exposed |
 
 Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). On the cross-site score a reading also counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's fixed value on both sites, which separates uniformity from randomization. Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
