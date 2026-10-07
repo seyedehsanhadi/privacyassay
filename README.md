@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: Brave, 0 of 100 hidden on this page, 25 on a second site, grade F](screenshot.png)
+![Privacyassay result: Brave, 0 of 100 hidden on this page, 19 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Brave 154, 0.9.5, both opt-ins off, 2026-10-06, hosted pair. Your result will differ.</sub></div>
+<div align="center"><sub>Brave 155, 0.9.6, both opt-ins off, 2026-10-07, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -35,7 +35,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 | | |
 |---|---|
-| **Size** | one HTML file, 286 KB |
+| **Size** | one HTML file, 294 KB |
 | **Needs** | any current browser; Node 22+ for the CLI |
 | **Status** | 0.9.6; failed readings stay unknown; canvas compared on pixels; bypassed protections count as exposed |
 
@@ -49,7 +49,7 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, 2026-10-06, 0.9.5 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, 2026-10-07, 0.9.6 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
@@ -61,12 +61,12 @@ One machine, Windows 11, 2026-10-06, 0.9.5 measured on the hosted pair (`privacy
 | Tor Browser | 140.17.0 | 57 | 57-67 | 20 |
 | Mullvad Browser | 140.17.0 | 57 | 57-67 | 20 |
 | LibreWolf | 152.0.6-1 | 46 | 40-52 | 26 |
-| Brave | 154.1.96.61 | 19 | 16-34 | 0 |
+| Brave | 155.1.97.56 | 19 | 16-34 | 0 |
 | Firefox | 154.0.1 | 9 | 8-20 | 9 |
 | Chrome | 154.0.8037.92 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Tor and Mullvad were measured with their bundled script-blocking extension moved aside. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
+Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts are not credited for any browser, because the tool cannot verify the bundled set. Mullvad was measured with its bundled script-blocking extension moved aside, because it blocked the page's scripts; Tor ran with its own in place. Raw captures are in `bench/captures/`. Scores are not comparable with 0.9.4 or earlier.
 
 ## Run it
 
