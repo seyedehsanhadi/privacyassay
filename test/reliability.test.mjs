@@ -47,7 +47,7 @@ test('supported client hints resolving malformed remain unknown',async()=>{for(c
 test('failed repeat collectors do not leave undefined categories behind',async()=>{
   const C={},cat=(name,rows)=>(C[name]={rows});
   const fail=()=>{throw new Error('injected')};
-  const repeat=new Function('C','observeVectors','collectGPU','collectFonts','collectCSS','collectAudioSync','collectAudioAsync','paDeadline','cat','speechSynthesis','findability','PRIORS',grabFn('repeatVectors')+grabFn('paRepeatMerge')+';return repeatVectors')(C,()=>({}),fail,fail,fail,fail,async()=>({hash:'ERR'}),fastDeadline,cat,{getVoices:()=>[]},()=>({rows:[]}),{surfaces:[]});
+  const repeat=new Function('C','observeVectors','collectGPU','collectFonts','collectCSS','collectAudioSync','collectAudioAsync','collectWebGPU','paDeadline','cat','speechSynthesis','findability','PRIORS',grabFn('repeatVectors')+grabFn('paRepeatMerge')+';return repeatVectors')(C,()=>({}),fail,fail,fail,fail,async()=>({hash:'ERR'}),fail,fastDeadline,cat,{getVoices:()=>[]},()=>({rows:[]}),{surfaces:[]});
   await repeat();assert.deepEqual(Object.keys(C),[]);
 });
 

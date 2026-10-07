@@ -1289,15 +1289,15 @@ function paPartitionWrite(tok){
   return new Promise(function(res){
     var f=document.createElement("iframe");f.setAttribute("aria-hidden","true");
     f.style.cssText="position:absolute;left:-9999px;top:0;width:8px;height:8px;border:0";
-    var resolved=false,gone=false;
-    function drop(){if(gone)return;gone=true;window.removeEventListener("message",onM);try{document.body.removeChild(f);}catch(x){}}
-    function clear(){try{if(f.contentWindow)f.contentWindow.postMessage({paClear:tok,paToken:tok,paVersion:PRIORS.version},pOrigin);}catch(x){}setTimeout(drop,1500);}
-    function onM(e){if(!paMessageMatches(e,pOrigin,tok,[f.contentWindow]))return;
-      if(e.data.paStoreTok===tok&&!resolved){resolved=true;res({tok:tok,wrote:e.data.wrote||{},origin:oh,clear:clear});}
+    var resolved=false,gone=false,dial=null,port=null;
+    function drop(){if(gone)return;gone=true;if(dial)dial.stop();try{document.body.removeChild(f);}catch(x){}}
+    function clear(){try{if(port)port.postMessage({paClear:tok,paToken:tok,paVersion:PRIORS.version});}catch(x){}setTimeout(drop,1500);}
+    function onM(e,p){if(!paMessageMatches(e,pOrigin,tok,[f.contentWindow]))return;
+      if(e.data.paStoreTok===tok&&!resolved){resolved=true;port=p;if(dial)dial.halt();res({tok:tok,wrote:e.data.wrote||{},origin:oh,clear:clear});}
       else if(e.data.paStoreCleared===tok)drop();}
-    window.addEventListener("message",onM);
     f.src=comp.url+"?pa=w#pastore="+tok;
     document.body.appendChild(f);
+    dial=paDial(f.contentWindow,tok,function(d,p){onM({source:f.contentWindow,origin:pOrigin,data:d},p);});
     setTimeout(function(){if(!resolved){resolved=true;res(null);clear();}},PA_CROSS_MS);
   });
 }
@@ -1671,10 +1671,11 @@ function observeVectors(){
 }
 
 function repeatVectors(){
-  var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs"].forEach(function(k){saved[k]=C[k];});
+  var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs","WebGPU"].forEach(function(k){saved[k]=C[k];});
   return Promise.resolve().then(function(){
     [[collectGPU,"Active Rendering & GPU"],[collectFonts,"Font Enumeration"],[collectCSS,"CSS & Rendering"],[collectAudioSync,"Audio & Media Codecs"]].forEach(function(p){try{p[0]();}catch(e){cat(p[1],[["collector error","ERR"]]);}});
-    return paDeadline(collectAudioAsync,3500).catch(function(){return {hash:"ERR:repeat-timeout"};});
+    return Promise.all([paDeadline(collectAudioAsync,3500).catch(function(){return {hash:"ERR:repeat-timeout"};}),
+      paDeadline(collectWebGPU,7000).catch(function(){cat("WebGPU",[["WebGPU",["ERR:repeat-timeout","no"]]]);})]).then(function(r){return r[0];});
   }).then(function(audio){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
     try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);}catch(e){}
@@ -1687,8 +1688,8 @@ function paRepeatMerge(first,second,a,b){
   var noisy={},alt={},mixed={};
   PRIORS.surfaces.forEach(function(s){if(s.optional||s.noCrossDiff)return;var ar=a.rows.find(function(r){return r.label===s.label;}),br=b.rows.find(function(r){return r.label===s.label;});
     if(br&&br.state==="unknown"){if(!(ar&&ar.state==="unknown"))first[s.k]="ERR:repeat-incomplete (first read: "+String(first[s.k])+"; repeat: "+String(second[s.k])+")";return;}
-    if(ar&&br&&!ar.bypass&&!br.bypass&&ar.state!==br.state&&(ar.state==="refused"||br.state==="refused")&&(ar.state==="shown"||br.state==="shown")){
-      if(ar.state==="refused"){first[s.k]=second[s.k];if(s.hashKey)first[s.hashKey]=second[s.hashKey];}mixed[s.k]=1;return;}
+    if(ar&&br&&!ar.bypass&&!br.bypass&&((ar.state==="shown"&&/^(refused|masked)$/.test(br.how))||(br.state==="shown"&&/^(refused|masked)$/.test(ar.how)))){
+      if(ar.state!=="shown"){first[s.k]=second[s.k];if(s.hashKey)first[s.hashKey]=second[s.hashKey];}mixed[s.k]=1;return;}
     if(ar&&br&&ar.state==="shown"&&br.state==="shown"&&String(first[s.k])!==String(second[s.k]))noisy[s.k]=1;});
   Object.keys(first._alt||{}).forEach(function(k){var x=first._alt[k];if(x&&second._alt&&second._alt[k]===x)alt[k]=x;});
   first._alt=alt;first._noisy=noisy;first._mixed=mixed;return first;
@@ -1716,7 +1717,7 @@ function findability(observed,familyKey){
     else if((s.k==="canvasClass"&&(text==="noise-per-read"||text==="uniform-masked"))||
       (!s.noCrossDiff&&observed._noisy&&observed._noisy[s.k])||
       (!s.noCrossDiff&&observed._crossChanged&&observed._crossChanged[s.k])){
-      state="blended";mask="varied";how="varied";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
+      state="blended";mask="varied";how=(s.k==="canvasClass"&&(text==="noise-per-read"||text==="uniform-masked"))?"masked":"varied";why="Output was masked or changed in this experiment. This does not prove resistance to every linking technique.";
     }else if(observed._crossUniform&&observed._crossUniform[s.k]){
       state="blended";mask="uniform";basis="assumed-uniform";how="uniform";why="Matched the fixed value this browser family is documented to report, on both sites. That other users report it too is assumed from the family's documentation; this test did not measure other devices.";
     }else{state="shown";tier=paTier(s);why=observed._mixed&&observed._mixed[s.k]?"Refused on one read but readable on another, so the value was exposed.":"An observable value was returned; uniformity across users is not established by this test.";}
@@ -1732,7 +1733,7 @@ function findability(observed,familyKey){
     if((state==="refused"||state==="blended")&&!basis)groupHidMeasured[s.group]=(groupHidMeasured[s.group]||0)+w;
     if(state==="unknown")groupUnknown[s.group]=(groupUnknown[s.group]||0)+w;
     if(state==="shown")groupShownTier[s.group]=Math.max(groupShownTier[s.group]||0,tier);
-    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,mask:mask,refusal:refusal,basis:basis,bypass:bypass,why:why,src:s.verified||"",okLabel:s.okLabel||""});
+    rows.push({label:s.label,value:text,group:s.group,weight:w,tier:tier,state:state,how:bypass?"":how,mask:mask,refusal:refusal,basis:basis,bypass:bypass,why:why,src:s.verified||"",okLabel:s.okLabel||""});
   });
   var groups=Object.keys(groupShownTier),totW=0,hidW=0,unknownW=0,hidMW=0;
   var categories=Object.keys(groupTotalTier).map(function(g){
@@ -1786,8 +1787,8 @@ function findabilityCross(obsA,obsB,familyKey){
     var a=single.rows.find(function(r){return r.label===s.label;}),b=second.rows.find(function(r){return r.label===s.label;});
     if(!a||!b||a.state==="unknown"||b.state==="unknown"){merged[s.k]="ERR:comparison-incomplete";return;}
     var comparable=function(v){return (typeof v==="string"||typeof v==="number")&&String(v)!==""&&!/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|unsupported|blocked(?::.*)?)$/i.test(String(v));};
-    if(!a.bypass&&!b.bypass&&a.state!==b.state&&(a.state==="refused"||b.state==="refused")&&(a.state==="shown"||b.state==="shown")){
-      if(a.state==="refused"){merged[s.k]=obsB[s.k];if(s.hashKey)merged[s.hashKey]=obsB[s.hashKey];}merged._mixed[s.k]=true;return;}
+    if(!a.bypass&&!b.bypass&&((a.state==="shown"&&/^(refused|masked)$/.test(b.how))||(b.state==="shown"&&/^(refused|masked)$/.test(a.how)))){
+      if(a.state!=="shown"){merged[s.k]=obsB[s.k];if(s.hashKey)merged[s.hashKey]=obsB[s.hashKey];}merged._mixed[s.k]=true;return;}
     var key=s.hashKey||s.k,va=obsA[key],vb=obsB[key];
     if(a.bypass||b.bypass){va=(obsA._alt||{})[s.k];vb=(obsB._alt||{})[s.k];}
     else if(a.state!=="shown"||b.state!=="shown")return;
@@ -2761,8 +2762,9 @@ async function runKit(){
       await paDeadline(paStoreClear,PA_STORE_JOB_MS).catch(function(){});}
     window.__KIT={linkVec:_lv,host:location.host};window.__KIT_DONE=true;
     var _bobs=null;try{_bobs=observeVectors();}catch(e){}
-    try{var _tgt=(window.parent&&window.parent!==window)?window.parent:window.opener;var _to=paBackOrigin();if(_tgt&&_to)paPostBack(_tgt,{paToken:_btm?_btm[1]:"",paVersion:PRIORS.version,paLink:_lv,host:location.host,paStoreRead:_st,paCookieControl:_sc,paObs:_bobs},_to);}catch(e){}
-    setTimeout(function(){try{window.close();}catch(e){}},150);return;}
+    var _bye=function(){setTimeout(function(){try{window.close();}catch(e){}},150);};
+    try{if(window.__paAns)window.__paAns.send({paLink:_lv,host:location.host,paStoreRead:_st,paCookieControl:_sc,paObs:_bobs},_bye);else _bye();}catch(e){_bye();}
+    return;}
 
 /* - phase 3: headers, leaks, identity, coherence --------- */
   R.uaHigh=PA_UACH;if(R.uaHigh&&!R.uaHigh.__paStatus)C["User-Agent Client Hints (JS)"].rows.push(["getHighEntropyValues",fnv(JSON.stringify(R.uaHigh))+" "+j(R.uaHigh).slice(0,90)]);
@@ -3006,7 +3008,21 @@ async function runKit(){
 function paMessageMatches(e,origin,token,sources){return !!(e&&e.source&&e.origin===origin&&sources.indexOf(e.source)>=0&&e.data&&typeof e.data==="object"&&e.data.paToken===token&&e.data.paVersion===PRIORS.version);}
 function paCrossMessage(e,origin,token,sources){if(!paMessageMatches(e,origin,token,sources)||!e.data.paLink||!e.data.paObs||typeof e.data.paObs!=="object"||Array.isArray(e.data.paObs))return false;return PRIORS.surfaces.filter(function(s){return !s.optional;}).every(function(s){var v=e.data.paObs[s.k];return (typeof v==="string"&&v.length<=20000)||(typeof v==="number"&&isFinite(v));});}
 function paBackOrigin(){var o=otherOrigin();if(o)return location.protocol+"//"+o;try{if(PA_HOME&&/^https?:/i.test(PA_HOME)&&!paIsLocalPage())return new URL(PA_HOME).origin;}catch(e){}return "";}
-function paPostBack(t,m,o){try{t.postMessage(m,o);}catch(e){}try{t.postMessage(m,"*");}catch(e){}}
+function paDial(win,tok,onData){
+  var ports=[],stopped=false,t=null;
+  function hello(){if(stopped||!win)return;try{var ch=new MessageChannel();ch.port1.onmessage=function(ev){if(!stopped)onData(ev.data,ch.port1);};ports.push(ch.port1);win.postMessage({paHello:tok},"*",[ch.port2]);}catch(e){}}
+  hello();t=setInterval(hello,400);
+  return {halt:function(){clearInterval(t);},stop:function(){stopped=true;clearInterval(t);ports.forEach(function(p){try{p.close();}catch(e){}});}};
+}
+function paAnswer(tok,origin,peers,onPort){
+  var port=null,queue=[];
+  window.addEventListener("message",function(e){
+    if(port||!origin||!e||!e.source||e.origin!==origin||peers.indexOf(e.source)<0||!e.data||e.data.paHello!==tok||!e.ports||!e.ports[0])return;
+    port=e.ports[0];if(onPort)port.onmessage=function(ev){onPort(ev.data);};
+    queue.splice(0).forEach(function(q){port.postMessage(q[0]);if(q[1])q[1]();});
+  });
+  return {send:function(m,after){m.paToken=tok;m.paVersion=PRIORS.version;if(port){port.postMessage(m);if(after)after();}else queue.push([m,after]);}};
+}
 function otherOrigin(){if(!/^https?:$/.test(location.protocol))return null;var hn=location.hostname,pt=location.port?":"+location.port:"";if(hn==="localhost")return "127.0.0.1"+pt;if(hn==="127.0.0.1")return "localhost"+pt;return null;}
 function paIsLocalPage(){return !/^https?:$/.test(location.protocol)||/^(localhost|\[?::1\]?|127(\.\d{1,3}){3})$/i.test(location.hostname);}
 function paCompanion(){var oh=otherOrigin();if(oh)return {host:oh,origin:location.protocol+"//"+oh,url:location.protocol+"//"+oh+location.pathname};try{if(PA_COMPANION&&/^https?:\/\//i.test(PA_COMPANION)&&PA_HOME&&location.origin===new URL(PA_HOME).origin){var u=new URL(PA_COMPANION);if(u.origin!==location.origin)return {host:u.host,origin:u.origin,url:PA_COMPANION.replace(/#.*$/,"")};}}catch(e){}return null;}
@@ -3022,11 +3038,12 @@ function paRunCrossWindow(){
   try{pop.document.write('<!doctype html><meta charset="utf-8"><title>Privacyassay - second site</title><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;font:14px system-ui,sans-serif;background:#0f1420;color:#dbe4f0"><div style="max-width:300px;padding:24px">Measuring this browser on a second site, then closing on its own.</div></body>');pop.document.close();}catch(e){}
   K.crossMeasuring=true;K.crossFailed="measuring";try{paRenderView(K);}catch(e){}
   var done=false;
-  function clean(){window.removeEventListener("message",onMsg);try{if(pop)pop.close();}catch(x){}}
+  var dial=null;
+  function clean(){if(dial)dial.stop();try{if(pop)pop.close();}catch(x){}}
   function onMsg(e){if(done||window.__KIT!==runK||!paCrossMessage(e,comp.origin,xTok,[pop]))return;done=true;clean();
     K.crossMeasuring=false;K.crossFailed=null;K.crossSkippedRandomizer=false;K.crossCanMeasure=false;
     if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
-  window.addEventListener("message",onMsg);
+  dial=paDial(pop,xTok,function(d){onMsg({source:pop,origin:comp.origin,data:d});});
   try{pop.location.href=comp.url+"#pabeacon="+xTok;}catch(x){clean();K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="Could not open the second site. Press Measure to retry.";try{paRenderView(K);}catch(e){}}
   setTimeout(function(){if(!done){done=true;clean();if(window.__KIT!==runK)return;K.crossMeasuring=false;K.crossCanMeasure=true;K.crossFailed="The second-site window did not respond. Press Measure to try again.";try{paRenderView(K);}catch(_e){}}},PA_CROSS_MS);
 }
@@ -3064,7 +3081,8 @@ document.getElementById("runBtn").addEventListener("click",function(){
       var written=await storeWrite;
       var doneW=false,crossDoneW=false,storeDoneW=!wantStore,fbIfr=null;
       if(runK){if(isBrave)runK.crossSkippedRandomizer=true;runK.crossMeasuring=true;runK.crossFailed="measuring";try{paRenderView(runK);}catch(_e){}}
-      function _cleanW(){window.removeEventListener("message",onMsgW);if(window.__KIT===runK)btn.disabled=false;if(written&&written.clear)written.clear();try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
+      var dialW=null;
+      function _cleanW(){if(dialW)dialW.stop();if(window.__KIT===runK)btn.disabled=false;if(written&&written.clear)written.clear();try{if(pop)pop.close();}catch(x){}try{if(fbIfr&&fbIfr.parentNode)fbIfr.parentNode.removeChild(fbIfr);}catch(x){}}
       function onMsgW(e){
         if(doneW||window.__KIT!==runK||!paCrossMessage(e,comp.origin,xTok,[pop]))return;
         if(e.source===pop)SD.fromPop=true;else SD.fromFrame=true;
@@ -3073,7 +3091,7 @@ document.getElementById("runBtn").addEventListener("click",function(){
           if(window.__paApplyCross)window.__paApplyCross(e.data.paObs);}
         if(!storeDoneW&&e.source===pop){storeDoneW=true;var _sr=e.data.paStoreRead;SD.readKeys=_sr?Object.keys(_sr).length:-1;if(window.__paApplyPartition)window.__paApplyPartition(written,_sr,oh,e.data.paCookieControl);if(!written){window.__paStoreBlocked="The companion frame did not confirm its storage writes. Check that the companion is reachable and can be embedded, then re-run.";paRenderView(runK);}}
         if(crossDoneW&&storeDoneW){doneW=true;_cleanW();}}
-      window.addEventListener("message",onMsgW);
+      dialW=paDial(pop,xTok,function(d){onMsgW({source:pop,origin:comp.origin,data:d});});
       try{pop.location.href=comp.url+"#pabeacon="+xTok+(wantStore?"&pastoreRead=1":"")+(written&&written.wrote&&(/^(TypeError|UnknownError|ReadbackError)$/.test(written.wrote.errors&&written.wrote.errors.CookieStore)||(written.wrote.errors&&written.wrote.errors["cookie (document.cookie)"]==="ReadbackError"))?"&pacookieControl=1":"");}catch(x){}
       
 
@@ -3094,14 +3112,13 @@ document.getElementById("runBtn").addEventListener("click",function(){
 document.getElementById("runBtn").disabled=false;
 document.getElementById("scriptStatus").remove();
 if(/pabeacon/.test(location.hash)||/pabeacon/.test(location.search)){
+  var _bt=/pabeacon=([a-z0-9]+)/i.exec(location.hash+location.search);
+  window.__paAns=paAnswer(_bt?_bt[1]:"",paBackOrigin(),[window.parent!==window?window.parent:null,window.opener].filter(Boolean));
   try{runKit();}catch(e){}}
 else{var _sm=/[#?&]pastore=([a-z0-9]+)/i.exec(location.hash+location.search);
   if(_sm){var _tk=_sm[1];
-    var _po=paBackOrigin();
-    var _tgt=window.parent||window.opener;
-    var _post=function(m){m.paToken=_tk;m.paVersion=PRIORS.version;if(_po)paPostBack(_tgt,m,_po);};
-    paStoreEach("w",_tk).then(function(w){_post({paStoreTok:_tk,wrote:w});},function(){_post({paStoreTok:_tk,wrote:{}});});
-    window.addEventListener("message",function(e){if(!e.data||e.data.paClear!==_tk)return;if(!_po||!paMessageMatches(e,_po,_tk,[window.parent,window.opener]))return;paStoreClear().then(function(){_post({paStoreCleared:_tk});});});}}
+    var _ans=paAnswer(_tk,paBackOrigin(),[window.parent!==window?window.parent:null,window.opener].filter(Boolean),function(d){if(d&&d.paClear===_tk)paStoreClear().then(function(){_ans.send({paStoreCleared:_tk});});});
+    paStoreEach("w",_tk).then(function(w){_ans.send({paStoreTok:_tk,wrote:w});},function(){_ans.send({paStoreTok:_tk,wrote:{}});});}}
 })();
 </script>
 <script>

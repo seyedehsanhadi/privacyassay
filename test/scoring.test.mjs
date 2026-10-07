@@ -71,7 +71,7 @@ test("cross: a reading shown on one site and differing on the other is credited"
   assert.ok(cross.score >= findability(a, "other").score, "crediting a change cannot lower the cross score");
 });
 
-test("cross comparison preserves measured masks",()=>{const a={...allShown(),canvasClass:"uniform-masked"};const b={...allShown(),canvasHash:"different"};const f=findabilityCross(a,b,"other");assert.equal(f.rows.find(r=>r.label==="canvas drawing").state,"blended");assert.ok(!f.changedAcrossOrigins.includes("canvas drawing"));});
+test("cross comparison: a canvas masked on one site and readable on the other is exposed, in either order",()=>{const a={...allShown(),canvasClass:"uniform-masked"};const b={...allShown(),canvasHash:"different"};for(const [x,y] of [[a,b],[b,a]]){const f=findabilityCross(x,y,"other");assert.equal(f.rows.find(r=>r.label==="canvas drawing").state,"shown");assert.ok(!f.changedAcrossOrigins.includes("canvas drawing"));}const m={...allShown(),canvasClass:"uniform-masked"};assert.equal(findabilityCross(m,{...m},"other").rows.find(r=>r.label==="canvas drawing").state,"blended","masked on both sites keeps its credit");});
 
 // ---- redaction: decides what survives into a report the user is invited to share ----
 // paRedactVal is default-deny. Only recognised safe primitives pass; anything else is masked,

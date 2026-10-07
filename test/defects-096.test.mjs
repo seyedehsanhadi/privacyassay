@@ -1,7 +1,7 @@
 // 0.9.6: an outside audit found five classification defects. Each test fails on 0.9.5.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { grabVar, grabFn } from "./helpers/extract.mjs";
+import { grabVar, grabFn, SRC as INDEX_SRC } from "./helpers/extract.mjs";
 
 const core = [grabVar("PRIORS"), grabVar("PA_STD"), grabFn("fnv"), grabFn("fnvDead"), grabFn("fnvParts"),
   grabFn("paDeadline"), grabFn("paErr"), grabFn("paTier"), grabFn("paLetterboxed"), grabFn("paIsLB"), grabFn("findability"),
@@ -263,4 +263,57 @@ test("measured score leaves out assumed uniformity; the headline keeps it", () =
   const G = N.findabilityCross(RFP, { ...RFP }, "firefox");
   assert.equal(G.score, F.measuredScore, "the measured score does not depend on the family label");
   assert.equal(G.measuredScore, G.score);
+});
+
+// ---- third audit: wildcard disclosure, masked-vs-readable order, WebGPU repeat ----
+test("disclosure: results are never posted to a window, only over a verified port", () => {
+  assert.doesNotMatch(INDEX_SRC, /function paPostBack/, "the wildcard sender is gone");
+  assert.doesNotMatch(INDEX_SRC, /postMessage\([^;]*,\s*"\*"(?![^;]*\[ch\.port2\])/, "a wildcard target may only carry the hello port");
+});
+
+test("disclosure: the companion answers only a hello from the trusted origin and window, and only over its port", () => {
+  const listeners = [];
+  const win = { addEventListener: (t, f) => listeners.push(f) };
+  const parent = {}, stranger = {};
+  const { paAnswer } = new Function("window", "PRIORS", grabFn("paAnswer") + ";return { paAnswer };")(win, { version: "v" });
+  const ans = paAnswer("tok", "https://home.example", [parent]);
+  ans.send({ paObs: { cores: 8 } });
+  const sent = [];
+  const port = { postMessage: (m) => sent.push(m) };
+  const fire = (e) => listeners.forEach((f) => f(e));
+  fire({ origin: "https://evil.example", source: parent, data: { paHello: "tok" }, ports: [port] });
+  fire({ origin: "https://home.example", source: stranger, data: { paHello: "tok" }, ports: [port] });
+  fire({ origin: "https://home.example", source: parent, data: { paHello: "other" }, ports: [port] });
+  assert.equal(sent.length, 0, "nothing goes to a wrong origin, window or token");
+  fire({ origin: "https://home.example", source: parent, data: { paHello: "tok" }, ports: [port] });
+  assert.equal(sent.length, 1);
+  assert.deepEqual(sent[0].paObs, { cores: 8 });
+  assert.equal(sent[0].paToken, "tok");
+  ans.send({ paStoreCleared: "tok" });
+  assert.equal(sent.length, 2, "later messages reuse the verified port");
+});
+
+test("disclosure: with no trusted origin the companion never answers", () => {
+  const listeners = [];
+  const { paAnswer } = new Function("window", "PRIORS", grabFn("paAnswer") + ";return { paAnswer };")({ addEventListener: (t, f) => listeners.push(f) }, { version: "v" });
+  const ans = paAnswer("tok", "", [{}]);
+  ans.send({ paObs: {} });
+  const sent = [];
+  listeners.forEach((f) => f({ origin: "", source: {}, data: { paHello: "tok" }, ports: [{ postMessage: (m) => sent.push(m) }] }));
+  assert.equal(sent.length, 0);
+});
+
+test("A3: masked on one read and readable on the other is exposed in either order", () => {
+  for (const [x, y] of [["noise-per-read", "unique"], ["unique", "noise-per-read"]]) {
+    const first = { canvasClass: x, canvasHash: "h1" }, second = { canvasClass: y, canvasHash: "h1" };
+    const out = N.paRepeatMerge(first, second, N.findability(first, "other"), N.findability(second, "other"));
+    assert.equal(row(N.findability(out, "other"), "canvasClass").state, "shown", `${x} then ${y}`);
+    const F = N.findabilityCross({ canvasClass: x, canvasHash: "h1" }, { canvasClass: y, canvasHash: "h2" }, "other");
+    assert.equal(row(F, "canvasClass").state, "shown", `cross ${x} / ${y}`);
+  }
+});
+
+test("A3: variation seen only by repeating on one site is not overruled by a single read on the other", () => {
+  const F = N.findabilityCross({ cores: "8", _noisy: { cores: 1 } }, { cores: "8" }, "other");
+  assert.equal(row(F, "cores").state, "blended");
 });

@@ -55,6 +55,7 @@ function profileFor(key) {
   fs.writeFileSync(path.join(d, "user.js"), [
     'user_pref("browser.shell.checkDefaultBrowser", false);',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
+    'user_pref("dom.disable_open_during_load", false);',
   ].join("\n"));
   return d;
 }
