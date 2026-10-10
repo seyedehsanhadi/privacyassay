@@ -7,7 +7,7 @@ import { startServer } from "./helpers/server.mjs";
 import { launch, runAudit } from "./helpers/browser.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-const ROOT = path.resolve(HERE, "..");
+const ROOT = process.env.PRIVACYASSAY_TEST_ROOT || path.resolve(HERE, "..");
 const results = [];
 const record = (name, pass, detail) => { results.push({ name, pass, detail }); console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  -> " + detail : ""}`); };
 

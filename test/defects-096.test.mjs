@@ -62,11 +62,11 @@ test("read: an explicit denial is refused, an unexpected exception is unknown", 
   assert.equal(M.paRead(() => undefined, "d"), "d");
 });
 
-test("repeat: an incomplete repeat keeps both attempts instead of a bare marker", () => {
+test("repeat: an incomplete repeat preserves exposure and records incomplete comparison", () => {
   const first = { cores: "8" }, second = { cores: "ERR:timeout" };
   const out = M.paRepeatMerge(first, second, M.findability(first, "other"), M.findability(second, "other"));
-  assert.match(out.cores, /^ERR:repeat-incomplete/);
-  assert.ok(out.cores.includes("8") && out.cores.includes("ERR:timeout"), out.cores);
+  assert.equal(out.cores, "8");assert.equal(out._incomplete.cores, true);
+  assert.equal(M.findability(out, "other").complete, false);
 });
 
 test("repeat: a reading that already failed keeps its own reason", () => {
@@ -85,7 +85,7 @@ test("repeat: a value that changes between reads is marked noisy, a stable one i
 const gpuRows = (pairs) => pairs.map(([l, v]) => [l, v]);
 test("webgpu: an API that is present but unavailable is refused as unavailable, not unknown", () => {
   const v = M.paWebgpuVectors(gpuRows([["WebGPU (navigator.gpu)", ["unavailable / disabled", "ok"]]]));
-  assert.deepEqual(v, { adapter: "unsupported", limits: "unsupported" });
+  assert.deepEqual(v, { adapter: "unsupported", limits: "unsupported", features: "unsupported" });
   const r = row(M.findability({ webgpuAdapter: v.adapter }, "chromium"), "webgpuAdapter");
   assert.equal(r.state, "refused");
   assert.equal(r.refusal, "unavailable");
@@ -93,13 +93,13 @@ test("webgpu: an API that is present but unavailable is refused as unavailable, 
 
 test("webgpu: a null adapter is a denial, and both routes get the same state", () => {
   const nul = M.paWebgpuVectors(gpuRows([["GPUAdapter", ["null (blocked)", "ok"]]]));
-  assert.deepEqual(nul, { adapter: "blocked", limits: "blocked" });
+  assert.deepEqual(nul, { adapter: "blocked", limits: "blocked", features: "blocked" });
   assert.equal(row(M.findability({ webgpuAdapter: nul.adapter }, "chromium"), "webgpuAdapter").refusal, "denied");
 });
 
 test("webgpu: a rejected requestAdapter keeps its exception; only a denial is refused", () => {
-  assert.deepEqual(M.paWebgpuVectors(gpuRows([["WebGPU", ["ERR:OperationError", "no"]]])), { adapter: "ERR:OperationError", limits: "ERR:OperationError" });
-  assert.deepEqual(M.paWebgpuVectors(gpuRows([["WebGPU", ["blocked:NotAllowedError", "ok"]]])), { adapter: "blocked:NotAllowedError", limits: "blocked:NotAllowedError" });
+  assert.deepEqual(M.paWebgpuVectors(gpuRows([["WebGPU", ["ERR:OperationError", "no"]]])), { adapter: "ERR:OperationError", limits: "ERR:OperationError", features: "ERR:OperationError" });
+  assert.deepEqual(M.paWebgpuVectors(gpuRows([["WebGPU", ["blocked:NotAllowedError", "ok"]]])), { adapter: "blocked:NotAllowedError", limits: "blocked:NotAllowedError", features: "blocked:NotAllowedError" });
 });
 
 test("webgpu: a timeout before the adapter answered stays unknown", () => {
@@ -156,7 +156,7 @@ test("bypass: across two sites the alternate route must also match, or the varia
   const diff = M.findabilityCross(A, { measureTextW: "1.2", _alt: { measureTextW: "201.0" } }, "chromium");
   assert.equal(row(diff, "measureTextW").state, "blended", "the alternate route varies too");
   const none = M.findabilityCross(A, { measureTextW: "1.2" }, "chromium");
-  assert.equal(row(none, "measureTextW").state, "blended", "the second site could not measure the route");
+  assert.equal(row(none, "measureTextW").state, "shown", "missing alternate evidence cannot establish that this exposure varies by site");
 });
 
 test("bypass: uniformity is never overruled, because the frame reads the same standard value", () => {
@@ -166,10 +166,11 @@ test("bypass: uniformity is never overruled, because the frame reads the same st
   assert.equal(row(F, "cores").mask, "uniform");
 });
 
-test("repeat: an alternate route that changes between reads is not a recovery", () => {
+test("repeat: changing alternate reads retain exposure without claiming stability", () => {
   const first = { rects: "a", _alt: { rects: "1", canvasClass: "c" } }, second = { rects: "b", _alt: { rects: "2", canvasClass: "c" } };
   const out = M.paRepeatMerge(first, second, M.findability(first, "other"), M.findability(second, "other"));
-  assert.deepEqual(out._alt, { canvasClass: "c" });
+  assert.deepEqual(out._alt, { rects: "1", canvasClass: "c" });
+  assert.deepEqual(out._altUnstable, { rects: true });
 });
 
 // ---- 5. assumed uniformity is labelled as assumed ----
@@ -195,7 +196,7 @@ test("bypass: across two sites a recovered reading is compared on the recovered 
   assert.equal(row(same, "webglVendor").state, "shown");
   assert.equal(row(same, "webglVendor").bypass, "frame");
   const missing = M.findabilityCross(A, { webglVendor: "blocked:SecurityError" }, "chromium");
-  assert.equal(row(missing, "webglVendor").state, "unknown", "one site recovered it and the other could not run the route");
+  assert.equal(row(missing, "webglVendor").state, "shown", "the recovered value remains exposure without proof of cross-site variation");
 });
 
 // ---- second audit (A1-A7 and the measured/assumed split) ----

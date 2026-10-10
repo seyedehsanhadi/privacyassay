@@ -152,10 +152,9 @@ test("export: with Redact on, no saved value looks like a fingerprint", async ()
 });
 
 // An earlier version of this asserted the summary differs with Redact off. It passed, but only on
-// the `generated` timestamp: the two files are otherwise byte-identical, because the summary holds
-// labels, weights, counts and grades and never a raw value. That is the property worth pinning.
-// Redaction has to bite somewhere though, and where it bites is the full report and the filename.
-test("export: the summary is safe by construction, identical with Redact on or off", async () => {
+// the `generated` timestamp. The summary now also hides browser/extension identity, while
+// labels, weights, counts and grades stay unchanged. Full report values and filenames are masked too.
+test("export: redaction hides identity and preserves summary arithmetic", async () => {
   const srv = await startServer();
   const page = await launch({ port: srv.port, preload: CAPTURE });
   try {
@@ -164,9 +163,10 @@ test("export: the summary is safe by construction, identical with Redact on or o
     await page.ev(`document.querySelector('[data-pa="redact"]').click();"ok"`);
     await new Promise((r) => setTimeout(r, 400));
     const off = await saveAndRead(page, "savesum");
-    const strip = (o) => { const c = { ...o.json }; delete c.generated; return c; };
+    const strip = (o) => { const c = { ...o.json }; delete c.generated; delete c.browser; delete c.redacted; return c; };
     assert.deepEqual(strip(off), strip(on),
-      "the summary must carry nothing that redaction could need to remove");
+      "redaction must preserve non-identity summary fields");
+    assert.equal(on.json.browser, "[redacted]");
     assert.equal(off.json.score, on.json.score, "redaction must never change the score");
     assert.notEqual(off.name, on.name, "with Redact off the filename must stop hiding the fingerprint");
   } finally { await page.close(); srv.close(); }
@@ -189,6 +189,6 @@ test("export: the full report is where redaction actually bites", async () => {
 });
 
 test("export: a timed-out reading remains incomplete in the saved report",async()=>{
-  const srv=await startServer();const preload=CAPTURE+';window.__paSkipCross=true;Object.defineProperty(NavigatorUAData.prototype,"getHighEntropyValues",{value:function(){return new Promise(function(){});},configurable:true});';
+  const srv=await startServer();const preload=CAPTURE+';window.__paSkipCross=true;Object.defineProperty(Navigator.prototype,"userAgentData",{get:function(){return {getHighEntropyValues:function(){return new Promise(function(){});}};},configurable:true});';
   const page=await launch({port:srv.port,preload});try{const kit=await runAudit(page);assert.equal(kit.findability.grade,"I");const {json:summary}=await saveAndRead(page,"savesum");assert.equal(summary.complete,false);assert.equal(summary.grade,"I");assert.ok(summary.counts.unknown>0);assert.ok(summary.coverage<100);assert.ok(summary.upperBound>=summary.score);assert.deepEqual(validate(summary,SCHEMA),[]);}finally{await page.close();srv.close();}
 });

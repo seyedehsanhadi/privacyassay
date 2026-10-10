@@ -242,6 +242,17 @@
       "minimum": 0,
       "maximum": 100,
       "description": "Maximum hidden percentage if all unknown readings were protected. Score is the lower bound."
+    },
+    "comparisonCoverage": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Catalog share with established repeat/cross comparison outcomes. Exposure coverage may be higher."
+    },
+    "comparisonIncomplete": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Known exposures whose repeat or cross-site comparison did not complete. These do not receive protection credit."
     }
   }
 }

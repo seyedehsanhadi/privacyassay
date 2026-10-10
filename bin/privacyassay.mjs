@@ -40,7 +40,7 @@ Usage: privacyassay [options]
   --headful       run with a visible window (default: headless)
   --browser PATH  Chrome/Chromium/Brave/Edge binary (or set PRIVACYASSAY_BROWSER)
   --runs N        run N times and report the median score (default 1; farbling browsers like Brave vary run to run)
-  --timeout MS    max run time per run (default 90000)
+  --timeout MS    total run budget, including startup and comparison (default 90000)
   --no-cross      skip the two-origin cross-site comparison
   --cross-timeout MS  how long to wait for the second origin (default 50000)
   --quiet         suppress progress on stderr
@@ -57,11 +57,11 @@ function num(name, dflt, { min = -Infinity, integer = false } = {}) {
   const raw = val(name, dflt);
   if (raw == null) return null;
   const n = Number(raw);
-  if (!Number.isFinite(n) || n < min) {
+  if (String(raw).trim() === "" || !Number.isFinite(n) || n < min || (integer && !Number.isInteger(n))) {
     process.stderr.write(`${name} needs a number${min > -Infinity ? ` >= ${min}` : ""}, got "${raw}"\n`);
     process.exit(2);
   }
-  return integer ? Math.floor(n) : n;
+  return n;
 }
 
 const MIN = num("--min-score", null, { min: 0 });
@@ -79,7 +79,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function findBrowser() {
   const env = val("--browser", process.env.PRIVACYASSAY_BROWSER || process.env.CHROME_PATH);
-  if (env && fs.existsSync(env)) return env;
+  if (env !== undefined && env !== null) {
+    if (fs.existsSync(env) && fs.statSync(env).isFile()) return env;
+    throw new Error("Requested browser does not exist: " + env);
+  }
   const P = process.platform;
   const cands = P === "win32"
     ? ["C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -97,24 +100,31 @@ function findBrowser() {
 }
 // ---- one audit: launch, connect, run, read the result ----
 
-async function cdp(wsUrl) {
+async function cdp(wsUrl, deadline = Infinity) {
   const ws = new WebSocket(wsUrl);
   let id = 0; const pending = new Map();
   ws.addEventListener("message", (e) => {
     let m; try { m = JSON.parse(e.data); } catch { return; }
     if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer); m.error ? p.rej(new Error(m.error.message)) : p.res(m.result); }
   });
-  await new Promise((r, j) => { ws.addEventListener("open", r); ws.addEventListener("error", () => j(new Error("cdp socket error"))); });
+  await new Promise((r, j) => {
+    const timer = setTimeout(() => { ws.close(); j(new Error("timeout connecting to browser")); }, Math.min(60000, Math.max(1, deadline - Date.now())));
+    ws.addEventListener("open", () => { clearTimeout(timer); r(); });
+    ws.addEventListener("error", () => { clearTimeout(timer); j(new Error("cdp socket error")); });
+  });
   const send = (method, params = {}) => new Promise((res, rej) => {
     const i = ++id; pending.set(i, { res, rej });
     ws.send(JSON.stringify({ id: i, method, params }));
-    pending.get(i).timer = setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, 60000);
+    pending.get(i).timer = setTimeout(() => { if (pending.has(i)) { pending.delete(i); rej(new Error("timeout " + method)); } }, Math.min(60000, Math.max(1, deadline - Date.now())));
   });
   return { ws, send };
 }
 
 // One audit against the shared server. Fresh browser + throwaway profile each time so runs are independent (a farbling browser re-seeds per launch).
 async function runOnce(browser, port) {
+  const deadline = Date.now() + TIMEOUT;
+  const remaining = () => { const ms = deadline - Date.now(); if (ms <= 0) throw new Error("audit exceeded --timeout"); return ms; };
+  const pause = (ms) => sleep(Math.min(ms, remaining()));
   const udd = fs.mkdtempSync(path.join(os.tmpdir(), "pa-run-"));
   const args = [
     ...(HEADFUL ? [] : ["--headless=new"]),
@@ -123,44 +133,49 @@ async function runOnce(browser, port) {
     `http://127.0.0.1:${port}/index.html`,
   ];
   const proc = spawn(browser, args, { stdio: "ignore" });
+  let launchError = null;
+  proc.on("error", (error) => { launchError = error; });
   try {
     const portFile = path.join(udd, "DevToolsActivePort");
     let cdpPort = null;
-    for (let i = 0; i < 100; i++) { try { const l=fs.readFileSync(portFile,"utf8").split("\n");if(/^\d+$/.test(l[0])){cdpPort=l[0].trim();break;} } catch(e) { if(!["ENOENT","EBUSY","EACCES"].includes(e.code))throw e; } await sleep(150); }
+    for (let i = 0; i < 100; i++) { remaining(); if (launchError) throw launchError; try { const l=fs.readFileSync(portFile,"utf8").split("\n");if(/^\d+$/.test(l[0])){cdpPort=l[0].trim();break;} } catch(e) { if(!["ENOENT","EBUSY","EACCES"].includes(e.code))throw e; } await pause(150); }
     if (!cdpPort) throw new Error("browser did not expose a debugging port");
 
     let target = null;
-    for (let i = 0; i < 60; i++) { try { const list = await (await fetch(`http://127.0.0.1:${cdpPort}/json/list`)).json(); target = list.find((t) => t.type === "page" && t.webSocketDebuggerUrl); if (target) break; } catch {} await sleep(200); }
+    for (let i = 0; i < 60; i++) { remaining(); try { const list = await (await fetch(`http://127.0.0.1:${cdpPort}/json/list`, { signal: AbortSignal.timeout(remaining()) })).json(); target = list.find((t) => t.type === "page" && t.webSocketDebuggerUrl); if (target) break; } catch {} await pause(200); }
     if (!target) throw new Error("no page target");
 
-    const { ws, send } = await cdp(target.webSocketDebuggerUrl);
+    const { ws, send } = await cdp(target.webSocketDebuggerUrl, deadline);
     try {
       await send("Runtime.enable"); await send("Page.enable");
       const ev = async (expr) => { const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true, userGesture: true }); if (r.exceptionDetails) throw new Error("page error: " + (r.exceptionDetails.text || "")); return r.result.value; };
 
-      const deadline = Date.now() + TIMEOUT;
-      await sleep(1200);
+      await pause(1200);
       if (NOCROSS) await ev("window.__paSkipCross=true");
       if (WEBRTC) await ev(`(function(){var w=document.getElementById("webrtcOptin");if(w){w.checked=true;w.dispatchEvent(new Event("change"));}return 1;})()`);
       await ev(`document.getElementById("runBtn").click();"go"`);
-      while (Date.now() < deadline) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) break; }
-      await sleep(600);
+      let done = false;
+      while (Date.now() < deadline) { await pause(500); if (await ev("!!window.__KIT_DONE")) { done = true; break; } }
+      if (!done) throw new Error("audit exceeded --timeout before measurements completed");
 
       // The page starts the two-origin comparison itself once the audit finishes and gives it
       // PA_CROSS_MS. This wait must outlast that, or the CLI reports not measurable for a run the
       // page went on to finish. Wait for the result or the page's own failure message; neither is
       // reported as not measurable, never as a zero.
+      let crossTimedOut = false;
       if (!NOCROSS) {
-        const crossDeadline = Date.now() + CROSS_TIMEOUT;
+        crossTimedOut = true;
+        const crossDeadline = Math.min(deadline, Date.now() + CROSS_TIMEOUT);
         while (Date.now() < crossDeadline) {
-          if (await ev("!!(window.__KIT&&(window.__KIT.findabilityCross||window.__KIT.crossFailed&&window.__KIT.crossFailed!=='measuring'))")) break;
-          await sleep(500);
+          if (await ev("!!(window.__KIT&&(window.__KIT.findabilityCross||window.__KIT.crossFailed&&window.__KIT.crossFailed!=='measuring'))")) { crossTimedOut = false; break; }
+          await pause(250);
         }
       }
 
+      remaining();
       const data = await ev(`(function(){var K=window.__KIT||{},F=K.findability||{},Fc=K.findabilityCross||null;
         return JSON.stringify({version:K.version||null,userAgent:navigator.userAgent,
-          score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,upperBound:F.upperBound,verdict:F.verdict||null,strongest:F.strongest||null,
+          score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,comparisonCoverage:F.comparisonCoverage,comparisonIncomplete:F.checks&&F.checks.incomplete||0,upperBound:F.upperBound,verdict:F.verdict||null,strongest:F.strongest||null,
           exposedStrong:F.exposedStrong||[],shownCount:F.shownCount,readingsTotal:(F.checks&&F.checks.total)||null,
           crossSite:(function(){try{
             if(!Fc)return null;
@@ -173,8 +188,9 @@ async function runOnce(browser, port) {
           }catch(e){return null;}})(),
           crossSiteNote:(K.crossFailed&&K.crossFailed!=="measuring")?String(K.crossFailed):null,
           randomizer:(function(){try{return typeof window.__paIsRand==="function"?!!window.__paIsRand(K):null;}catch(e){return null;}})(),
-          full:${FULL ? "true" : "false"}?{findability:F,fingerprint:K.fingerprint,stableHash:K.stableHash,crossBrowser:K.crossBrowser,coherence:K.coherence,categories:K.categories}:null});})()`);
+          full:${FULL ? "true" : "false"}?{version:K.version,findability:F,findabilityCross:Fc,crossSiteNote:K.crossFailed||null,fingerprint:K.fingerprint,stableHash:K.stableHash,crossBrowser:K.crossBrowser,coherence:K.coherence,categories:K.categories}:null});})()`);
       const parsed = JSON.parse(data || "{}");
+      if (crossTimedOut && !parsed.crossSite) parsed.crossSiteNote = "comparison exceeded --cross-timeout; no cross-site result";
       if (parsed.score == null) throw new Error("audit produced no score");
       return parsed;
     } finally { try { ws.close(); } catch {} }
@@ -226,9 +242,9 @@ async function main() {
   const med = results[Math.floor((results.length - 1) / 2)];
   const scores = results.map((r) => r.score);
 
-  const out = FULL ? med.full : {
+  const out = FULL ? { ...med.full, crossSite: med.crossSite || null, crossSiteNote: med.crossSiteNote || (NOCROSS ? "skipped (--no-cross)" : med.crossSite ? null : "not measurable") } : {
     schema: "privacyassay-summary/1.1", tool: "privacyassay", version: med.version,
-    userAgent: med.userAgent, score: med.score, grade: med.grade, complete: med.complete, coverage: med.coverage, upperBound: med.upperBound, verdict: med.verdict,
+    userAgent: med.userAgent, score: med.score, grade: med.grade, complete: med.complete, coverage: med.coverage, comparisonCoverage: med.comparisonCoverage, comparisonIncomplete: med.comparisonIncomplete, upperBound: med.upperBound, verdict: med.verdict,
     strongest: med.strongest, exposedStrong: med.exposedStrong,
     shownCount: med.shownCount, readingsTotal: med.readingsTotal,
     randomizer: !!med.randomizer, crossSite: med.crossSite || null,

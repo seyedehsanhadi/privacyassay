@@ -1,5 +1,5 @@
 // Chromium over CDP: launch a throwaway profile, run an audit, evaluate in the page.
-// Gecko cannot be driven here; Firefox dropped CDP, and those browsers go through the harness.
+// Gecko uses the same page interface through WebDriver BiDi.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -96,16 +96,31 @@ export function launchArgs(udd, headful = false, env = process.env) {
   return [
     ...(headful ? [] : ["--headless=new"]),
     ...(env.CI ? ["--no-sandbox", "--disable-dev-shm-usage"] : []),
+    // Exercise opt-in UI locally without contacting the public STUN service.
+    "--host-resolver-rules=MAP stun.l.google.com ~NOTFOUND",
+    "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
     "--remote-debugging-port=0", `--user-data-dir=${udd}`,
     "--no-first-run", "--no-default-browser-check", "--disable-extensions", "about:blank",
   ];
 }
 
-export async function launch({ port, preload = null, headful = false } = {}) {
+export async function launch({ port, preload = null, headful = false, url = null, extraArgs = [] } = {}) {
+  if(process.env.PRIVACYASSAY_ENGINE==='safari') {
+    const {launchSafari}=await import('./safari.mjs');
+    return launchSafari({port,preload,url});
+  }
+  if(process.env.PRIVACYASSAY_ENGINE==='gecko') {
+    const {launchGecko}=await import('./gecko.mjs');
+    return launchGecko({port,preload,url});
+  }
+  if(process.env.PRIVACYASSAY_ENGINE==='webkit') {
+    const {launchWebKit}=await import('./webkit.mjs');
+    return launchWebKit({port,preload,url});
+  }
   sweepStaleProfiles();
   const binary = findBrowser();
   const udd = fs.mkdtempSync(path.join(os.tmpdir(), "pa-test-"));
-  const proc = spawn(binary, launchArgs(udd, headful), { stdio: ["ignore", "ignore", "pipe"] });
+  const proc = spawn(binary, [...launchArgs(udd, headful), ...extraArgs], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = "";
   if (proc.stderr) proc.stderr.on("data", (d) => { stderr = (stderr + d).slice(-1200); });
 
@@ -142,7 +157,7 @@ export async function launch({ port, preload = null, headful = false } = {}) {
     return r.result.value;
   };
 
-  await send("Page.navigate", { url: `http://127.0.0.1:${port}/index.html` });
+  await send("Page.navigate", { url: url || `http://127.0.0.1:${port}/index.html` });
   for (let i = 0; i < 100; i++) {
     await sleep(100);
     if (await ev("document.readyState === 'complete'").catch(() => false)) break;
@@ -169,7 +184,8 @@ export async function launch({ port, preload = null, headful = false } = {}) {
 // ---- drive a full audit ----
 
 export async function runAudit(page, { timeout = 90000 } = {}) {
-  await page.ev(`document.getElementById("runBtn").click();"go"`);
+  if(page.clickRun)await page.clickRun();
+  else await page.ev(`document.getElementById("runBtn").click();"go"`);
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     await sleep(500);

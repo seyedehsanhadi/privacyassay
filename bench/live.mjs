@@ -23,6 +23,7 @@ import {overrideSource} from './cdp-source.mjs';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
 const OUT = path.join(HERE, "captures");
+const VERSION = process.env.PA_VERSION || JSON.parse(fs.readFileSync(path.join(HERE, '..', 'package.json'), 'utf8')).version;
 const MANIFEST = JSON.parse(fs.readFileSync(path.join(OUT, "browsers.json"), "utf8"));
 const URL_ = process.env.PA_URL || "https://privacyassay.com/";
 const BROWSERS = process.env.PA_BROWSERS ? process.env.PA_BROWSERS.split(",") : Object.keys(MANIFEST);
@@ -47,6 +48,8 @@ function profileFor(key) {
     'user_pref("browser.aboutwelcome.enabled", false);',
     'user_pref("datareporting.policy.firstRunURL", "");',
     'user_pref("browser.startup.homepage_override.mstone", "ignore");',
+    // Empty Gecko profiles need the shipped Standard security level to initialize NoScript.
+    ...(MANIFEST[key]?.engine === 'gecko' ? ['user_pref("browser.security_level.security_slider", 4);'] : []),
     ...(key === "tor" ? ['user_pref("torbrowser.settings.quickstart.enabled", true);','user_pref("network.proxy.no_proxies_on", "127.0.0.1,localhost");'] : []),
   ].join("\n"));
   return d;
@@ -58,6 +61,16 @@ function stopBrowser(proc,binary,profile){
     try{execFileSync("powershell",["-NoProfile","-Command", "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "+quote(path.basename(binary))+" -and $_.CommandLine -and $_.CommandLine.Contains("+quote(profile)+") } | ForEach-Object { & taskkill /F /PID $_.ProcessId /T | Out-Null }"],{stdio:"ignore",timeout:20000});}catch{}
   }
   try{proc.kill();}catch{}
+  proc.stdout?.destroy();proc.stderr?.destroy();proc.unref();
+}
+
+async function closeSocket(ws){
+  if(!ws||ws.readyState!==WebSocket.OPEN)return;
+  await new Promise(resolve=>{
+    const timer=setTimeout(resolve,1000);
+    ws.addEventListener('close',()=>{clearTimeout(timer);resolve();},{once:true});
+    try{ws.close();}catch{clearTimeout(timer);resolve();}
+  });
 }
 
 const READ_KIT = `(async function(){
@@ -93,7 +106,7 @@ async function runChromium(key) {
   if(key==="vivaldi"){fs.mkdirSync(path.join(udd,"Default"));fs.writeFileSync(path.join(udd,"Default","Preferences"),JSON.stringify({vivaldi:{startup:{has_seen_welcome_page:true}}}));}
   const proc = spawn(MANIFEST[key].path,
     [...(HEADLESS?["--headless=new"]:[]),"--no-first-run", "--no-default-browser-check", "--remote-debugging-port=0",...(BLOCK_3PC?["--test-third-party-cookie-phaseout"]:[]), `--user-data-dir=${udd}`, URL_],
-    { stdio: "ignore" });
+    { stdio: "ignore", windowsHide: true });
   let ws, override;
   try {
   const portFile = path.join(udd, "DevToolsActivePort");
@@ -133,7 +146,7 @@ async function runChromium(key) {
     if(process.env.PA_SCREENSHOT){const shot=(await cmd('Page.captureScreenshot',{format:'png',captureBeyondViewport:false})).result;fs.writeFileSync(`${process.env.PA_SCREENSHOT}-${key}.png`,Buffer.from(shot.data,'base64'));}
     return out;
   } finally {
-    try { ws.close(); } catch {}
+    await closeSocket(ws);
     try { override?.close(); } catch {}
     stopBrowser(proc,MANIFEST[key].path,udd);
     await sleep(1200);
@@ -145,8 +158,8 @@ async function runGecko(key) {
   if(SOURCE)throw new Error('candidate response override is Chromium-only; use loopback for Gecko candidate checks');
   const profile = profileFor(key);
   const proc = spawn(MANIFEST[key].path,
-    [...(HEADLESS?["-headless"]:[]),"-no-remote", "-profile", profile, "--remote-debugging-port=0", "--width=1600", "--height=1100", URL_],
-    { stdio: ["ignore", "pipe", "pipe"] });
+    [...(HEADLESS?["-headless"]:[]),"-no-remote", "-profile", profile, "--remote-debugging-port=0", "--width=1600", "--height=1100", "about:blank"],
+    { stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
   let ws;
   try {
   let stderr = "";
@@ -173,8 +186,8 @@ async function runGecko(key) {
     const tree = await cmd("browsingContext.getTree", {});
     const hit = tree.contexts.find((c) => c.url && c.url.startsWith(new URL(URL_).origin));
     const ctx = (hit || tree.contexts[0]).context;
-    // The URL is already open from the command line. Navigating to it again starts a second load and
-    // leaves the context holding an empty document that never completes, so do not re-navigate.
+    // Initialize the browser and its bundled security policy before the first audit navigation.
+    await cmd('browsingContext.navigate', {context:ctx,url:URL_,wait:'none'});
     const ev = async (x) => {
       const r = await cmd("script.evaluate", { expression: x, target: { context: ctx }, awaitPromise: true, resultOwnership: "none" });
       if (r.type === "exception") throw new Error(r.exceptionDetails?.text || "page threw");
@@ -192,7 +205,7 @@ async function runGecko(key) {
     await waitForCross(ev);
     const out=JSON.parse(await ev(READ_KIT) || "{}");out.browserVersion=session.capabilities;return out;
   } finally {
-    try { ws.close(); } catch {}
+    await closeSocket(ws);
     stopBrowser(proc,MANIFEST[key].path,profile);
     await sleep(1000);
     try { fs.rmSync(profile, { recursive: true, force: true }); } catch {}
@@ -209,7 +222,7 @@ for (const key of BROWSERS) {
       try {
         const out = entry.engine === "gecko" ? await runGecko(key) : await runChromium(key);
         samples.push(out);
-        if(out.version!=="0.9.6")throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
+        if(out.version!==VERSION)throw new Error("methodology mismatch or audit did not complete: "+String(out.version));
         if (out.complete && typeof out.score === "number") scores.push(out.score); else errors.push("incomplete measurement");
         if (out.crossComplete && typeof out.cross === "number") crosses.push(out.cross);
         else errors.push(out.crossFailed ? String(out.crossFailed).slice(0, 60) : "cross not measurable");
@@ -218,14 +231,14 @@ for (const key of BROWSERS) {
   const row = {
     browser: key, url: URL_, capturedAt:new Date().toISOString(), os:os.type()+" "+os.release(), headless:HEADLESS, optins: { storage: STORE, webrtc: RTC }, blockThirdPartyCookies:BLOCK_3PC, runs: RUNS,
     scores, cross: crosses, stable: scores.length > 1 && new Set(scores).size === 1,
-    version: "0.9.6", source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
+    version: VERSION, source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
   };
   report.push(row);
   console.log(`${key.padEnd(11)} score ${JSON.stringify(scores).padEnd(12)} cross ${JSON.stringify(crosses).padEnd(12)}${errors.length ? "  " + errors[0] : ""}`);
 }
 
 const tag = `${SOURCE?"-candidate":""}${HEADLESS?"-headless":""}${new URL(URL_).hostname==="127.0.0.1"||new URL(URL_).hostname==="localhost"?"-local":""}${STORE ? "-store" : ""}${RTC ? "-rtc" : ""}${BLOCK_3PC?"-3pc":""}`;
-const file = path.join(OUT, `live-0.9.6${tag}.json`);
+const file = path.join(OUT, `live-${VERSION}${tag}.json`);
 // Merge rather than overwrite: running one browser at a time is the normal way to work through a
 // long matrix, and a plain write would silently discard every earlier row.
 let prior = [];

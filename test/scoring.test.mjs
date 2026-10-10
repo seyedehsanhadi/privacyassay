@@ -97,7 +97,7 @@ test("redaction: default-deny, an unforeseen value is masked rather than passed 
 });
 
 test("redaction: safe primitives survive so a redacted report is still readable", () => {
-  for (const v of ["true", "false", "none", "absent", "granted", "48000", "1.25", "0.8 ms"])
+  for (const v of ["true", "false", "none", "absent", "granted"])
     assert.equal(paRedactVal("some capability", v), v, `${v} should survive`);
 });
 
@@ -115,11 +115,11 @@ test("redaction: an FNV hash is masked under a label that does not contain the w
 
 // A full-precision float is a measurement, not a capability. Text metrics and audio readings
 // are exactly this shape, and the number allow-list used to pass any length of decimal.
-test("redaction: a full-precision measurement is masked, a short capability number is not", () => {
+test("redaction: numeric measurements are masked regardless of their precision", () => {
   for (const v of ["2.0000000000000004", "1234.56789012", "0.9999999999999999"])
     assert.equal(paRedactVal("textmetrics width", v), "[redacted]", `${v} is a measurement`);
   for (const v of ["48000", "44100", "1.25", "0.8 ms", "24", "-1"])
-    assert.equal(paRedactVal("sample rate", v), v, `${v} should survive`);
+    assert.equal(paRedactVal("sample rate", v), "[redacted]", `${v} must not survive`);
 });
 
 // paIdentity composes the reported browser label from whoYouAre. An extension-class

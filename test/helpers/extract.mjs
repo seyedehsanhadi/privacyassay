@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const SRC = fs.readFileSync(path.join(HERE, "..", "..", "index.html"), "utf8");
+export const SRC = fs.readFileSync(path.join(process.env.PRIVACYASSAY_TEST_ROOT || path.join(HERE, "..", ".."), "index.html"), "utf8");
 
 // Regex literals must be skipped, not scanned: a pattern like /[{]/ or /'/ would
 // otherwise unbalance the brace count and silently mis-slice the extracted source.
@@ -40,4 +40,4 @@ function skipRegex(s, i) {
   return i;
 }
 export function grabVar(name) { const p = SRC.indexOf("var " + name + "="); if (p < 0) throw new Error("grabVar: no 'var " + name + "=' in index.html (renamed or removed?)"); const b = SRC.indexOf("{", p); return SRC.slice(p, matchBrace(SRC, b) + 1) + ";"; }
-export function grabFn(name) { const p = SRC.indexOf("function " + name); if (p < 0) throw new Error("grabFn: no 'function " + name + "' in index.html (renamed or removed?)"); const b = SRC.indexOf("{", SRC.indexOf(")", p)); return SRC.slice(p, matchBrace(SRC, b) + 1); }
+export function grabFn(name) { const p = SRC.indexOf("function " + name); if (p < 0) throw new Error("grabFn: no 'function " + name + "' in index.html (renamed or removed?)"); const b = SRC.indexOf("{", SRC.indexOf(")", p)); return SRC.slice(SRC.slice(p-6,p)==="async "?p-6:p, matchBrace(SRC, b) + 1); }

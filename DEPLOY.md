@@ -43,6 +43,7 @@ Google decides which eligible pages to index. After deployment, use URL Inspecti
 ## Hosting notes
 
 - All browsers open a companion window on the Run click. A blocked popup or mismatched build leaves the cross-site comparison unmeasured. Storage also uses a companion frame for its write control.
+- Header inspection needs a real same-origin `/__headers` request-header echo. GitHub Pages cannot execute it; header diagnostics remain unavailable there. Scored-catalog coverage does not include every raw diagnostic.
 - The supercookie cache probes call `/__res` and `/__ctr`, which only `serve.py` answers. On a static host they fail and those probes remain unmeasured. They are opt-in and unscored, so the score is unaffected.
 - Serve over HTTPS. `file://` works for a quick look but the two-origin test is skipped there, so it reports single-site numbers only.
 - A `<meta>` CSP cannot set `X-Frame-Options` or `frame-ancestors`. Set those at the server or CDN if you care whether the report can be framed.

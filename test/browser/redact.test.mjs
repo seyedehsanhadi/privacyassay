@@ -25,9 +25,8 @@ window.__BLOBS = [];
   URL.createObjectURL = function (b) { try { window.__BLOBS.push(b); } catch (e) {} return orig(b); };
 })();`;
 
-// audioRate is deliberately not harvested. paRedactVal allows bare numbers on purpose so a
-// redacted report stays checkable by hand, and test/scoring.test.mjs already asserts that "48000"
-// survives redaction. Treating it as a leak would contradict a documented design decision.
+// Numeric fingerprint measurements are masked too; abc-regressions.test.mjs checks the actual
+// audio sample-rate export with a sentinel that cannot be confused with report counts.
 const HARVEST = `
 JSON.stringify((function () {
   var o = {}, put = function (k, v) { v = String(v == null ? "" : v); if (v.length >= 6) o[k] = v; };

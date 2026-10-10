@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const INDEX = path.join(HERE, "..", "..", "index.html");
+const INDEX = path.join(process.env.PRIVACYASSAY_TEST_ROOT || path.join(HERE, "..", ".."), "index.html");
 
 export async function startServer() {
   const handler = (req, res) => {

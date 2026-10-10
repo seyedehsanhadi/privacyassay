@@ -13,9 +13,9 @@ test('a failed repeat never receives variation credit',()=>{
   const o={...observed(),audioRenderClass:'ERR:repeat-incomplete',_noisy:{audioRenderClass:1}};
   const f=findability(o,'other');assert.equal(f.rows.find(r=>r.label==='rendered sound').state,'unknown');assert.equal(f.complete,false);assert.equal(f.score,0);
 });
-test('cross-site errors are unknown rather than masking or a match',()=>{
+test('cross-site errors retain exposure with an incomplete comparison',()=>{
   const a=observed();const b={...a,timezone:'ERR:timeout'};
-  const f=findabilityCross(a,b,'other');assert.equal(f.complete,false);assert.equal(f.score,0);assert.equal(f.rows.find(r=>r.label==='timezone').state,'unknown');assert.ok(!f.comparedAcrossOrigins.includes('timezone'));assert.ok(!f.changedAcrossOrigins.includes('timezone'));
+  const f=findabilityCross(a,b,'other');assert.equal(f.complete,false);assert.equal(f.score,0);assert.equal(f.rows.find(r=>r.label==='timezone').state,'shown');assert.equal(f.rows.find(r=>r.label==='timezone').comparisonIncomplete,true);assert.ok(!f.comparedAcrossOrigins.includes('timezone'));assert.ok(!f.changedAcrossOrigins.includes('timezone'));
 });
 test('cross-site optional controls cannot accidentally be treated as fingerprints',()=>{
   const a={...observed(),webrtcIP:'exposed',storageCarry:'carried: cookie'};
@@ -53,7 +53,7 @@ test('failed repeat collectors do not leave undefined categories behind',async()
 
 test('late WebGPU adapters cannot mutate a completed category',async()=>{
   let finish;const navigator={gpu:{requestAdapter:()=>new Promise(r=>{finish=r})}};
-  const collect=new Function('navigator','cat','setTimeout','fnv','fnvParts',grabFn('collectWebGPU')+';return collectWebGPU')(navigator,(name,rows)=>({name,rows}),(f,ms)=>setTimeout(f,Math.min(ms,20)),()=>'',()=> '');
+  const collect=new Function('navigator','cat','setTimeout','fnv','fnvParts','paFrameGpu',grabFn('collectWebGPU')+';return collectWebGPU')(navigator,(name,rows)=>({name,rows}),(f,ms)=>setTimeout(f,Math.min(ms,20)),()=>'',()=> '',()=>Promise.resolve(null));
   const result=await collect(),before=JSON.stringify(result);finish({info:{vendor:'late'}});await new Promise(r=>setTimeout(r,0));assert.equal(JSON.stringify(result),before);
 });
 
@@ -66,12 +66,12 @@ test('WebGPU descriptions remain measured when the other identity fields are emp
 test('an empty or blocked WebGPU identity is confirmed unavailable',()=>{const observe=new Function('navigator','window','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH','C','paAltVectors',grabFn('observeVectors')+grabFn('paRead')+grabFn('paErr')+grabFn('paWebgpuVectors')+grabFn('paUaChValue')+';return observeVectors')({gpu:{}},{},()=>'',()=>'',()=>'',p=>p.some(Boolean)?'hash':'ERR',null,{WebGPU:{rows:[['adapter vendor','(empty)']]}},()=>({}));assert.equal(observe().webgpuAdapter,'blocked');});
 test('disabled WebGL is unavailable instead of an incomplete reading',()=>{const observe=new Function('navigator','window','document','paRow','paRowExact','paCanvasClass','fnvParts','PA_UACH','C','paAltVectors',grabFn('observeVectors')+grabFn('paRead')+grabFn('paErr')+grabFn('paWebgpuVectors')+grabFn('paUaChValue')+';return observeVectors')({}, {},{createElement:()=>({getContext:()=>null})},()=>'',(c,n)=>c==='Active Rendering & GPU'&&n==='webgl'?'unavailable':'',()=>'',()=> 'ERR',null,{},()=>({}));for(const k of ['webglVendor','webglHash','webglRenderClass','webglExt','webglParams'])assert.equal(observe()[k],'blocked');});
 const withHashes=(o)=>({...o,...Object.fromEntries(PRIORS.surfaces.filter(s=>s.hashKey&&s.hashKey!==s.k).map(s=>[s.hashKey,'h-'+s.hashKey]))});
-test('a shown reading with an unusable comparison value stays unknown and uncompared',()=>{
+test('a shown reading with an unusable comparison value retains exposure and stays uncompared',()=>{
   const a=withHashes(observed());
   for(const bad of ['','ERR:SecurityError',NaN,Infinity,undefined,null,'timeout','unsupported','n/a','blocked:x',{}]){
     for(const [x,y] of [[a,{...a,canvasHash:bad}],[{...a,canvasHash:bad},a]]){
       const f=findabilityCross(x,y,'other'),row=f.rows.find(r=>r.label==='canvas drawing');
-      assert.equal(row.state,'unknown',String(bad));assert.equal(f.complete,false);
+      assert.equal(row.state,'shown',String(bad));assert.equal(row.comparisonIncomplete,true);assert.equal(f.complete,false);
       assert.ok(!f.comparedAcrossOrigins.includes('canvas drawing'));assert.ok(!f.changedAcrossOrigins.includes('canvas drawing'));
     }
   }

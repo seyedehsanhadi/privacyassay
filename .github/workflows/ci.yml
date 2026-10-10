@@ -32,6 +32,24 @@ jobs:
         id: chrome
         with:
           chrome-version: stable
+      - name: Verify Chrome startup and allow its sandbox on the disposable runner
+        env:
+          PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          set +e
+          timeout 10 "$PRIVACYASSAY_BROWSER" --headless=new --user-data-dir="$(mktemp -d)" --dump-dom about:blank > /tmp/privacyassay-chrome-startup.html 2> /tmp/privacyassay-chrome-startup.log
+          startup_status=$?
+          set -e
+          cat /tmp/privacyassay-chrome-startup.log
+          if [ "$startup_status" -ne 0 ]; then
+            grep -Eq 'No usable sandbox|SUID sandbox helper binary|Failed to move to new namespace' /tmp/privacyassay-chrome-startup.log || exit "$startup_status"
+            printf 'profile privacyassay-ci-chrome "%s" flags=(unconfined) {\n  userns,\n}\n' "$PRIVACYASSAY_BROWSER" | sudo tee /etc/apparmor.d/privacyassay-ci-chrome
+            sudo apparmor_parser -r /etc/apparmor.d/privacyassay-ci-chrome
+          fi
+      - name: Verify the CLI with its default browser sandbox
+        run: node --test test/browser/cli.test.mjs
+        env:
+          PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
       - run: npm run test:browser
         env:
           PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
@@ -53,4 +71,24 @@ jobs:
         env:
           PRIVACYASSAY_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
 
-# Installed-browser compatibility runs are local; CI does not establish all-browser coverage.
+  # Actual Apple Safari and SafariDriver, with no local desktop windows.
+  safari:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable native Safari automation and trust the isolated HTTPS fixtures
+        run: |
+          sudo safaridriver --enable
+          printf '\n127.0.0.1 site-a.test site-b.test\n' | sudo tee -a /etc/hosts
+          sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain test/fixtures/sites-test.crt
+          /usr/bin/safaridriver --version
+      - name: Audit, actual exports, denied reads, and two HTTPS sites
+        run: node --test --test-concurrency=1 --test-timeout=1800000 test/helpers/browser.test.mjs test/browser/sites.test.mjs test/browser/abc-regressions.test.mjs test/browser/export.test.mjs
+        env:
+          PRIVACYASSAY_ENGINE: safari
+
+# Tor/Mullvad use installed-browser local checks; this matrix does not establish all-browser coverage.

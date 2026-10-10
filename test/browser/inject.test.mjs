@@ -61,12 +61,14 @@ test("inject: breaking several readings leaves an incomplete result", async () =
   } finally { srv.close(); }
 });
 
-test("inject: a per-read random value is classified as blended, not shown", async () => {
+test("inject: main-only randomization receives no credit when the frame remains stable", async () => {
   const srv = await startServer();
   try {
-    const { rows } = await scoreWith(srv.port, OVERRIDE("navigator.hardwareConcurrency", "random"));
+    const { rows,patched } = await scoreWith(srv.port, 'if(window===top){'+OVERRIDE("navigator.hardwareConcurrency", "random")+'}', `(function(){var f=document.createElement('iframe');document.body.appendChild(f);try{return {mainVaries:navigator.hardwareConcurrency!==navigator.hardwareConcurrency,frameStable:f.contentWindow.navigator.hardwareConcurrency===f.contentWindow.navigator.hardwareConcurrency};}finally{f.remove();}})()`);
+    assert.equal(patched.mainVaries,true);assert.equal(patched.frameStable,true);
     const row = rows.find((r) => r.label === "CPU cores");
-    assert.equal(row.state, "blended", "repeatedly changing values are marked as changed");
+    assert.equal(row.state, "shown", "a stable frame exposes the value despite changing main reads");
+    assert.equal(row.bypass, "frame");
   } finally { srv.close(); }
 });
 
