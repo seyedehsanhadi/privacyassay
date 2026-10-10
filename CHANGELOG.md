@@ -6,7 +6,7 @@
 - Redact numeric readings and identity details in the page and saved reports; retain WebGL denial and collector-failure causes.
 - Validate first-party storage controls before crediting ambiguous cross-site failures. Generic IndexedDB failures remain unknown.
 - Score WebGPU features independently; isolate failed GPU metadata, clean up resources, and handle asynchronous lie probes without late report changes.
-- Fix explicit local companion routing, result visibility, keyboard focus and scan timestamps. Validate CLI arguments, bound startup and comparison time, and retain the full cross-site report.
+- Fix explicit local companion routing, result visibility, keyboard focus and scan timestamps. Recover first-run pages, including Vivaldi; wait for audit controls and verify candidate captures on both origins. Validate CLI arguments, bound startup and comparison time, and retain the full cross-site report.
 - Expand regression checks across Chromium, Firefox, Mullvad, Tor, Windows WebKit and native macOS Safari. The added surface and scoring corrections make scores incompatible with 0.9.6.
 
 ## 0.9.6 - 2026-10-07

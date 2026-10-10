@@ -130,7 +130,7 @@ async function runChromium(key) {
   if(SOURCE){const companion=/var PA_COMPANION="([^"]+)"/.exec(SOURCE.toString());if(!companion)throw new Error('candidate companion URL missing');override=await overrideSource(`http://127.0.0.1:${port}`,SOURCE,[new URL(URL_),new URL(companion[1])]);}
   let target = null;
   for (let i = 0; i < 80 && !target; i++) {
-    try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page" && t.url.startsWith(new URL(URL_).origin) && t.webSocketDebuggerUrl); } catch {}
+    try { const pages=(await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).filter(t=>t.type==="page"&&t.webSocketDebuggerUrl);target=pages.find(t=>t.url.startsWith(new URL(URL_).origin))||pages[0]; } catch {}
     if (!target) await sleep(300);
   }
   if (!target) target=await (await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(URL_)}`,{method:"PUT"})).json();
@@ -140,6 +140,8 @@ async function runChromium(key) {
   let id = 0; const pend = new Map();
   ws.onmessage = (e) => { const m = JSON.parse(e.data); if (pend.has(m.id)) { const p=pend.get(m.id);clearTimeout(p.timer);pend.delete(m.id);m.error?p.rej(new Error(m.error.message)):p.res(m); } };
   const cmd = (method, params = {}) => new Promise((res,rej) => { const i = ++id; const timer=setTimeout(()=>{pend.delete(i);rej(new Error(method+" timed out"));},15000);pend.set(i,{res,rej,timer}); ws.send(JSON.stringify({ id: i, method, params })); });
+  // First-run pages can stall Runtime until navigation starts a normal renderer.
+  if(target.url!==URL_)await cmd('Page.navigate',{url:SOURCE?'about:blank':URL_});
   await cmd("Runtime.enable");
   if(HEADLESS)await cmd('Emulation.setDeviceMetricsOverride',{width:1600,height:1100,deviceScaleFactor:1,mobile:false});
   const browserVersion=(await cmd('Browser.getVersion')).result;
@@ -156,6 +158,7 @@ async function runChromium(key) {
     for (let deadline=Date.now()+AUDIT_BUDGET_MS; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) { done = true; break; } }
     if (!done) throw new Error("audit did not finish: " + String(await ev(`location.href+" | "+(document.getElementById("stat")&&document.getElementById("stat").textContent)`).catch(() => "page unavailable")));
     await waitForCross(ev);
+    if(override)override.verify();
     const out=JSON.parse(await ev(READ_KIT) || "{}");out.browserVersion=browserVersion;if(override)out.sourceOverride=override.stats;
     if(process.env.PA_SCREENSHOT){const shot=(await cmd('Page.captureScreenshot',{format:'png',captureBeyondViewport:false})).result;fs.writeFileSync(`${process.env.PA_SCREENSHOT}-${key}.png`,Buffer.from(shot.data,'base64'));}
     return out;

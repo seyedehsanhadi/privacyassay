@@ -38,7 +38,7 @@ Usage: privacyassay [options]
   --full          print the full report instead of the summary
   --webrtc        include the WebRTC public-IP test (opens one STUN request; off by default)
   --headful       run with a visible window (default: headless)
-  --browser PATH  Chrome/Chromium/Brave/Edge binary (or set PRIVACYASSAY_BROWSER)
+  --browser PATH  Chrome/Chromium/Brave/Edge/Vivaldi binary (or set PRIVACYASSAY_BROWSER)
   --runs N        run N times and report the median score (default 1; farbling browsers like Brave vary run to run)
   --timeout MS    total run budget, including startup and comparison (default 90000)
   --no-cross      skip the two-origin cross-site comparison
@@ -96,7 +96,7 @@ function findBrowser() {
     : ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium",
        "/usr/bin/chromium-browser", "/usr/bin/brave-browser", "/snap/bin/chromium"];
   for (const c of cands) if (fs.existsSync(c)) return c;
-  throw new Error("No Chrome/Chromium/Brave/Edge found. Pass --browser PATH or set PRIVACYASSAY_BROWSER.");
+  throw new Error("No Chrome/Chromium/Brave/Edge found automatically. Pass --browser PATH for those or Vivaldi, or set PRIVACYASSAY_BROWSER.");
 }
 // ---- one audit: launch, connect, run, read the result ----
 
@@ -132,7 +132,7 @@ async function runOnce(browser, port) {
     "--no-first-run", "--no-default-browser-check", "--disable-extensions",
     `http://127.0.0.1:${port}/index.html`,
   ];
-  const proc = spawn(browser, args, { stdio: "ignore" });
+  const proc = spawn(browser, args, { stdio: "ignore", windowsHide:true });
   let launchError = null;
   proc.on("error", (error) => { launchError = error; });
   try {
@@ -147,10 +147,12 @@ async function runOnce(browser, port) {
 
     const { ws, send } = await cdp(target.webSocketDebuggerUrl, deadline);
     try {
+      // A browser may replace the requested URL with its first-run page.
+      if(target.url!==`http://127.0.0.1:${port}/index.html`)await send("Page.navigate",{url:`http://127.0.0.1:${port}/index.html`});
       await send("Runtime.enable"); await send("Page.enable");
       const ev = async (expr) => { const r = await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true, userGesture: true }); if (r.exceptionDetails) throw new Error("page error: " + (r.exceptionDetails.text || "")); return r.result.value; };
 
-      await pause(1200);
+      while(!await ev('document.readyState==="complete"&&!!document.getElementById("runBtn")').catch(()=>false))await pause(100);
       if (NOCROSS) await ev("window.__paSkipCross=true");
       if (WEBRTC) await ev(`(function(){var w=document.getElementById("webrtcOptin");if(w){w.checked=true;w.dispatchEvent(new Event("change"));}return 1;})()`);
       await ev(`document.getElementById("runBtn").click();"go"`);

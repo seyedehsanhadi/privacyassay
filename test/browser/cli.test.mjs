@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 
 const cli=process.env.PRIVACYASSAY_TEST_ROOT?path.join(process.env.PRIVACYASSAY_TEST_ROOT,'bin/privacyassay.mjs'):fileURLToPath(new URL('../../bin/privacyassay.mjs',import.meta.url));
-const run=args=>new Promise((resolve,reject)=>{
-  const started=Date.now(),child=spawn(process.execPath,[cli,...args],{stdio:['ignore','pipe','pipe']});
+const run=(args,entry=cli)=>new Promise((resolve,reject)=>{
+  const started=Date.now(),child=spawn(process.execPath,[entry,...args],{stdio:['ignore','pipe','pipe'],windowsHide:true});
   let out='',err='';child.stdout.on('data',x=>out+=x);child.stderr.on('data',x=>err+=x);
   child.on('error',reject);child.on('exit',code=>resolve({code,out,err,elapsed:Date.now()-started}));
 });
@@ -25,4 +27,25 @@ test('CLI full report preserves the measured second-site result',async()=>{
   const o=JSON.parse(r.out);assert.ok(o.findabilityCross);assert.ok(o.crossSite);
   assert.equal(o.crossSite.score,o.findabilityCross.score);assert.equal(o.crossSite.complete,o.findabilityCross.complete);
   assert.equal(o.version,o.findability.version);assert.equal(o.crossSiteNote,null);
+});
+
+test('CLI waits for delayed audit controls after navigation',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'pa-cli-ready-'));
+  try{
+    fs.mkdirSync(path.join(root,'bin'));
+    const entry=path.join(root,'bin/privacyassay.mjs');fs.copyFileSync(cli,entry);
+    // A readiness fixture, not a fingerprint measurement: the control appears after load.
+    fs.writeFileSync(path.join(root,'index.html'),`<!doctype html><script>
+      window.__KIT={version:'readiness-fixture',findability:{score:77,grade:'I',complete:false}};
+      setTimeout(()=>{const button=document.createElement('button');button.id='runBtn';
+        button.onclick=()=>{window.__KIT_DONE=true};document.body.append(button)},6000);
+    </script><body></body>`);
+    const result=await run(['--quiet','--no-cross','--timeout=30000'],entry);
+    assert.equal(result.code,0,result.err);const report=JSON.parse(result.out);
+    assert.equal(report.version,'readiness-fixture');assert.equal(report.score,77);
+    assert.ok(result.elapsed>=6000,'the CLI did not wait for its control');
+  }finally{
+    assert.ok(path.resolve(root).startsWith(path.resolve(os.tmpdir())+path.sep));
+    fs.rmSync(root,{recursive:true,force:true});
+  }
 });

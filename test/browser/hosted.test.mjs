@@ -31,12 +31,15 @@ test('public pair: native Safari audit and actual redacted exports',{
       page=await launch({url:'https://privacyassay.com/'});
       assert.equal(await page.ev('location.origin'),'https://privacyassay.com');
       assert.equal(await page.ev('isSecureContext'),true);
+      assert.equal(await page.ev('document.getElementById("storageOptin").checked'),false);
+      assert.equal(await page.ev('document.getElementById("webrtcOptin").checked'),false);
       assert.ok(fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8').includes('var PA_COMPANION="https://privacyassay.github.io/index.html";'));
       const report=await runAudit(page,{timeout:120000});
       assert.equal(await page.ev('window.__KIT_DONE'),true);assert.equal(report.version,version);
       assert.equal(await page.ev('window.__paObsB&&window.__paObsB._repeatCount'),2);
       assert.equal(await page.ev('window.__paStoreDiag.fromPop'),true);
       assert.ok(report.findabilityCross,report.crossFailed||'Public companion did not answer');
+      assert.equal(report.findability.complete,true);assert.equal(report.findabilityCross.complete,true);
       const exports=await page.ev(`(async()=>{const saved={},blobs=[],create=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;
         try{URL.createObjectURL=function(blob){blobs.push(blob);return create.call(URL,blob)};HTMLAnchorElement.prototype.click=function(){if(!this.download)return click.call(this)};
           for(const kind of ['savesum','savefull']){document.querySelector('[data-pa="'+kind+'"]').click();const blob=blobs.pop();if(!blob)throw new Error('Missing saved export');saved[kind]=JSON.parse(await blob.text())}

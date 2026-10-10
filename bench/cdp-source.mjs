@@ -3,7 +3,7 @@
 export async function overrideSource(base, source, urls) {
   const version=await(await fetch(base+'/json/version')).json();
   const ws=new WebSocket(version.webSocketDebuggerUrl), pending=new Map(), setup=[];
-  const stats={documents:0,errors:[]};let id=0;
+  const stats={documents:0,origins:{},errors:[]};let id=0;
   await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error('source override connection timed out')),10000);ws.onopen=()=>{clearTimeout(t);res();};ws.onerror=()=>{clearTimeout(t);rej(new Error('source override connection failed'));};});
   const cmd=(method,params={},sessionId)=>new Promise((res,rej)=>{
     const n=++id,timer=setTimeout(()=>{pending.delete(n);rej(new Error(method+' timed out'));},15000);
@@ -22,18 +22,21 @@ export async function overrideSource(base, source, urls) {
               await cmd('Fetch.enable',{patterns:[{resourceType:'Document',requestStage:'Response'}]},session);
               await cmd('Target.setAutoAttach',attach,session);
             }
-          }finally{await cmd('Runtime.runIfWaitingForDebugger',{},session);}
+          }finally{if(m.params.waitingForDebugger)await cmd('Runtime.runIfWaitingForDebugger',{},session);}
         })();setup.push(job);await job;
       }else if(m.method==='Fetch.requestPaused'){
         const p=m.params,u=new URL(p.request.url);
         const match=urls.some(url=>u.origin===url.origin&&(u.pathname===url.pathname||u.pathname==='/'&&url.pathname==='/index.html'));
         if(match&&p.responseStatusCode===200){
           const headers=(p.responseHeaders||[]).filter(h=>!/^(content-length|content-encoding|etag)$/i.test(h.name));
-          await cmd('Fetch.fulfillRequest',{requestId:p.requestId,responseCode:200,responseHeaders:headers,body:source.toString('base64')},m.sessionId);stats.documents++;
+          await cmd('Fetch.fulfillRequest',{requestId:p.requestId,responseCode:200,responseHeaders:headers,body:source.toString('base64')},m.sessionId);stats.documents++;stats.origins[u.origin]=(stats.origins[u.origin]||0)+1;
         }else await cmd('Fetch.continueRequest',{requestId:p.requestId},m.sessionId);
       }
     }catch(e){stats.errors.push(e.message);}
   };
   await cmd('Target.setAutoAttach',attach);await Promise.all(setup);
-  return {stats,close(){ws.close();for(const p of pending.values()){clearTimeout(p.timer);p.rej(new Error('source override closed'));}pending.clear();}};
+  return {stats,verify(){
+    if(stats.errors.length)throw new Error('Candidate source override failed: '+stats.errors.join('; '));
+    for(const url of urls)if(!stats.origins[url.origin])throw new Error('Candidate source was not applied at '+url.origin);
+  },close(){ws.close();for(const p of pending.values()){clearTimeout(p.timer);p.rej(new Error('source override closed'));}pending.clear();}};
 }

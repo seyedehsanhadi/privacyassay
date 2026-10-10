@@ -5,7 +5,7 @@
   "headless": true,
   "runsPerSetting": 2,
   "capturedFrom": "2026-10-10T21:22:20.726Z",
-  "capturedTo": "2026-10-10T21:38:32.582Z",
+  "capturedTo": "2026-10-10T22:20:31.184Z",
   "rows": [
     {
       "browser": "tor",
@@ -331,36 +331,60 @@
       "version": "8.2.4133.84",
       "measurements": {
         "default": {
-          "complete": false,
+          "complete": true,
           "attempts": 2,
-          "completed": 0,
-          "errors": 2,
-          "single": [],
-          "cross": []
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
         },
         "store": {
-          "complete": false,
+          "complete": true,
           "attempts": 2,
-          "completed": 0,
-          "errors": 2,
-          "single": [],
-          "cross": []
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
         },
         "rtc": {
-          "complete": false,
+          "complete": true,
           "attempts": 2,
-          "completed": 0,
-          "errors": 2,
-          "single": [],
-          "cross": []
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
         },
         "both": {
-          "complete": false,
+          "complete": true,
           "attempts": 2,
-          "completed": 0,
-          "errors": 2,
-          "single": [],
-          "cross": []
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
         }
       }
     },

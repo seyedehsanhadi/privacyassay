@@ -23,7 +23,7 @@ function killByProfile(tag) {
         `Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | ` +
         `Where-Object { $_.CommandLine -like '*${tag}*' } | ` +
         `ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }`],
-        { stdio: "ignore", timeout: 20000 });
+        { stdio: "ignore", timeout: 20000, windowsHide:true });
     } else {
       spawnSync("pkill", ["-9", "-f", tag], { stdio: "ignore", timeout: 20000 });
     }
@@ -120,7 +120,7 @@ export async function launch({ port, preload = null, headful = false, url = null
   sweepStaleProfiles();
   const binary = findBrowser();
   const udd = fs.mkdtempSync(path.join(os.tmpdir(), "pa-test-"));
-  const proc = spawn(binary, [...launchArgs(udd, headful), ...extraArgs], { stdio: ["ignore", "ignore", "pipe"] });
+  const proc = spawn(binary, [...launchArgs(udd, headful), ...extraArgs], { stdio: ["ignore", "ignore", "pipe"], windowsHide:true });
   let stderr = "";
   if (proc.stderr) proc.stderr.on("data", (d) => { stderr = (stderr + d).slice(-1200); });
 
@@ -147,6 +147,8 @@ export async function launch({ port, preload = null, headful = false, url = null
   if (!target) throw new Error("no page target");
 
   const { ws, send } = await connect(target.webSocketDebuggerUrl);
+  // Leave first-run pages before enabling Runtime; install preloads on the blank page.
+  if(target.url!=="about:blank")await send("Page.navigate",{url:"about:blank"});
   await send("Runtime.enable");
   await send("Page.enable");
   if (preload) await send("Page.addScriptToEvaluateOnNewDocument", { source: preload });
@@ -160,7 +162,7 @@ export async function launch({ port, preload = null, headful = false, url = null
   await send("Page.navigate", { url: url || `http://127.0.0.1:${port}/index.html` });
   for (let i = 0; i < 100; i++) {
     await sleep(100);
-    if (await ev("document.readyState === 'complete'").catch(() => false)) break;
+    if (await ev("document.readyState === 'complete' && !!document.getElementById('runBtn')").catch(() => false)) break;
   }
 
   return {
