@@ -54,7 +54,7 @@ The score summarizes the experiment; it does not predict whether a tracker can r
 
 ## Repeated measurements
 
-Canvas, WebGL, audio rendering, fonts and layout are measured again with the same stimuli. Scalar properties are read again within the same session. After a failed repeat, any established exposure remains shown and the comparison is incomplete. A reading with no established outcome is unknown. Neither earns protection credit. Audio hashes use the rendered buffer. GPU identity reads the renderer, not only its vendor.
+Canvas, WebGL, audio rendering, fonts and layout are measured again with the same stimuli. Scalar properties are read again within the same session. Ordinary font lookup can change during scanning; a differing font set stays exposed with an incomplete comparison, without per-read protection credit. This also undercredits genuine per-read font randomizers. Stable per-site font changes remain eligible when each site's repeats agree. After a failed repeat, any established exposure remains shown and the comparison is incomplete. A reading with no established outcome is unknown. Neither earns protection credit. Audio hashes use the rendered buffer. GPU identity reads the renderer, not only its vendor.
 
 Some capability inventories are sampled once and remain informational. The tool is not a population-based uniqueness estimate.
 

@@ -35,6 +35,17 @@ const SOURCE=process.env.PA_SOURCE?fs.readFileSync(process.env.PA_SOURCE):null;
 const HEADLESS=process.env.PA_HEADLESS==='1';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+async function deployedSourceHash(){
+  const hashes=await Promise.all(['https://privacyassay.com/index.html','https://privacyassay.github.io/index.html'].map(async url=>{
+    const response=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(30000)});
+    if(!response.ok)throw new Error('Deployed source unavailable: '+url);
+    return createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex');
+  }));
+  if(hashes[0]!==hashes[1])throw new Error('The two public origins serve different builds');
+  return hashes[0];
+}
+const DEPLOYED_SOURCE=!SOURCE&&new URL(URL_).hostname==='privacyassay.com'?await deployedSourceHash():null;
+
 // The audit runs a whole second-origin comparison before __KIT settles, and a hardened Gecko build
 // is slower at it than a stock one. PA_CROSS_MS in the page is 45s, so anything shorter here would
 // report "not measurable" for a run the page went on to finish.
@@ -81,7 +92,7 @@ const READ_KIT = `(async function(){
     for(var kind of ["savesum","savefull"]){var button=document.querySelector('[data-pa="'+kind+'"]');if(button){button.click();var blob=blobs.pop();if(blob)exports[kind]=JSON.parse(await blob.text());}}
   } finally {URL.createObjectURL=create;HTMLAnchorElement.prototype.click=click;}
   var K = window.__KIT || {}, F = K.findability || {}, C = K.findabilityCross || null;
-  return JSON.stringify({ capturedAt:new Date().toISOString(), userAgent:navigator.userAgent, exports:exports, unknown: (F.rows||[]).filter(function(r){return r.state==="unknown";}).map(function(r){return {label:r.label,value:r.value};}), page: location.href, status: document.getElementById("stat")&&document.getElementById("stat").textContent, version: K.version, complete: F.complete, coverage: F.coverage, score: F.score, grade: F.grade, crossComplete: C ? C.complete : false,
+  return JSON.stringify({ capturedAt:new Date().toISOString(), userAgent:navigator.userAgent, viewport:{width:innerWidth,height:innerHeight}, exports:exports, unknown: (F.rows||[]).filter(function(r){return r.state==="unknown";}).map(function(r){return {label:r.label,value:r.value};}), page: location.href, status: document.getElementById("stat")&&document.getElementById("stat").textContent, version: K.version, complete: F.complete, coverage: F.coverage, score: F.score, grade: F.grade, crossComplete: C ? C.complete : false,
     cross: C ? C.score : null,
     changed: C ? (C.changedAcrossOrigins || []).length : null,
     partitioning: K.partitioning || null,
@@ -130,6 +141,7 @@ async function runChromium(key) {
   ws.onmessage = (e) => { const m = JSON.parse(e.data); if (pend.has(m.id)) { const p=pend.get(m.id);clearTimeout(p.timer);pend.delete(m.id);m.error?p.rej(new Error(m.error.message)):p.res(m); } };
   const cmd = (method, params = {}) => new Promise((res,rej) => { const i = ++id; const timer=setTimeout(()=>{pend.delete(i);rej(new Error(method+" timed out"));},15000);pend.set(i,{res,rej,timer}); ws.send(JSON.stringify({ id: i, method, params })); });
   await cmd("Runtime.enable");
+  if(HEADLESS)await cmd('Emulation.setDeviceMetricsOverride',{width:1600,height:1100,deviceScaleFactor:1,mobile:false});
   const browserVersion=(await cmd('Browser.getVersion')).result;
   if(SOURCE)await cmd('Page.navigate',{url:URL_});
   const ev = async (x) => (await cmd("Runtime.evaluate", { expression: x, returnByValue: true, awaitPromise: true, userGesture: true }))?.result?.result?.value;
@@ -137,7 +149,9 @@ async function runChromium(key) {
     for (let deadline=Date.now()+60000; Date.now()<deadline;) { await sleep(300); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
-    await ev(`document.getElementById("runBtn").click();"go"`);
+    const point=JSON.parse(await ev(`JSON.stringify((function(){var r=document.getElementById("runBtn").getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2};})())`));
+    await cmd('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...point});
+    await cmd('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...point});
     let done = false;
     for (let deadline=Date.now()+AUDIT_BUDGET_MS; Date.now()<deadline;) { await sleep(1000); if (await ev("!!window.__KIT_DONE")) { done = true; break; } }
     if (!done) throw new Error("audit did not finish: " + String(await ev(`location.href+" | "+(document.getElementById("stat")&&document.getElementById("stat").textContent)`).catch(() => "page unavailable")));
@@ -186,15 +200,39 @@ async function runGecko(key) {
     const tree = await cmd("browsingContext.getTree", {});
     const hit = tree.contexts.find((c) => c.url && c.url.startsWith(new URL(URL_).origin));
     const ctx = (hit || tree.contexts[0]).context;
-    // Initialize the browser and its bundled security policy before the first audit navigation.
-    await cmd('browsingContext.navigate', {context:ctx,url:URL_,wait:'none'});
     const ev = async (x) => {
       const r = await cmd("script.evaluate", { expression: x, target: { context: ctx }, awaitPromise: true, resultOwnership: "none" });
       if (r.type === "exception") throw new Error(r.exceptionDetails?.text || "page threw");
       return r.result?.value;
     };
+    // The browser writes this only after its bundled Standard policy has initialized.
+    if(key==='tor'||key==='mullvad'){
+      let initialized=false;
+      for(const deadline=Date.now()+30000;Date.now()<deadline;){
+        try{initialized=/user_pref\("browser.security_level.noscript_inited", true\)/.test(fs.readFileSync(path.join(profile,'prefs.js'),'utf8'));}catch{}
+        if(initialized)break;
+        await sleep(250);
+      }
+      if(!initialized)throw new Error('Bundled Standard security policy did not initialize');
+    }
+    if(key==='tor'){
+      await cmd('browsingContext.navigate',{context:ctx,url:'about:torconnect',wait:'complete'});
+      const connect=JSON.parse(await ev(`JSON.stringify((function(){var b=document.getElementById("connectButton");if(!b)return null;var r=b.getBoundingClientRect();return{x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})())`));
+      if(!connect)throw new Error('Tor connection page has no Connect button');
+      await cmd('input.performActions',{context:ctx,actions:[{type:'pointer',id:'connect',parameters:{pointerType:'mouse'},actions:[{type:'pointerMove',origin:'viewport',...connect},{type:'pointerDown',button:0},{type:'pointerUp',button:0}]}]});
+      let connected=false,last='';
+      for(const deadline=Date.now()+300000;Date.now()<deadline;){
+        const stage=await ev(`typeof aboutTorConnect!=="undefined"?aboutTorConnect.shownStage:location.href`).catch(()=>last);
+        if(stage!==last)console.log('tor bootstrap: '+stage);
+        last=stage;
+        if(last==='Bootstrapped'||last==='about:tor'){connected=true;break;}
+        await sleep(500);
+      }
+      if(!connected)throw new Error('Tor network bootstrap did not complete: '+last);
+    }
+    await cmd('browsingContext.navigate', {context:ctx,url:URL_,wait:'none'});
     let ready = false;
-    for (let deadline=Date.now()+(key==="tor"?300000:90000); Date.now()<deadline;) { await sleep(500); if (key==="tor") await ev(`(function(){var b=document.getElementById("connectButton");if(location.protocol==="about:"&&b&&!window.__paConnect){window.__paConnect=1;b.click();}})()`).catch(() => {}); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
+    for (let deadline=Date.now()+(key==="tor"?300000:90000); Date.now()<deadline;) { await sleep(500); if (await ev(`document.readyState==="complete"&&!!document.getElementById("runBtn")`).catch(() => false)) { ready = true; break; } }
     if (!ready) throw new Error("the page never became ready at " + URL_ + ". Tor reaches a public site only through its own network, which this harness does not bootstrap; every other browser needs plain connectivity.");
     await ev(OPTINS(STORE, RTC));
     const pt = JSON.parse(await ev(`JSON.stringify((function(){var r=document.getElementById("runBtn").getBoundingClientRect();return{x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})())`));
@@ -226,19 +264,21 @@ for (const key of BROWSERS) {
         if (out.complete && typeof out.score === "number") scores.push(out.score); else errors.push("incomplete measurement");
         if (out.crossComplete && typeof out.cross === "number") crosses.push(out.cross);
         else errors.push(out.crossFailed ? String(out.crossFailed).slice(0, 60) : "cross not measurable");
-      } catch (e) { errors.push(e.message.slice(0, 400)); }
+        console.log(`${key} run ${r+1}/${RUNS}: ${out.score}/${out.cross}, complete ${out.complete}/${out.crossComplete}`);
+      } catch (e) { errors.push(e.message.slice(0, 400)); console.log(`${key} run ${r+1}/${RUNS}: ${e.message.slice(0,400)}`); }
     }
   const row = {
     browser: key, url: URL_, capturedAt:new Date().toISOString(), os:os.type()+" "+os.release(), headless:HEADLESS, optins: { storage: STORE, webrtc: RTC }, blockThirdPartyCookies:BLOCK_3PC, runs: RUNS,
     scores, cross: crosses, stable: scores.length > 1 && new Set(scores).size === 1,
-    version: VERSION, source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
+    version: VERSION, deployedSourceSha256:DEPLOYED_SOURCE, source:SOURCE?{context:'public origins with candidate HTML responses; not deployed',sha256:createHash('sha256').update(SOURCE).digest('hex')}:null, profile: "fresh automation profile; bundled extensions unchanged", samples, errors,
   };
   report.push(row);
   console.log(`${key.padEnd(11)} score ${JSON.stringify(scores).padEnd(12)} cross ${JSON.stringify(crosses).padEnd(12)}${errors.length ? "  " + errors[0] : ""}`);
 }
 
 const tag = `${SOURCE?"-candidate":""}${HEADLESS?"-headless":""}${new URL(URL_).hostname==="127.0.0.1"||new URL(URL_).hostname==="localhost"?"-local":""}${STORE ? "-store" : ""}${RTC ? "-rtc" : ""}${BLOCK_3PC?"-3pc":""}`;
-const file = path.join(OUT, `live-${VERSION}${tag}.json`);
+if(DEPLOYED_SOURCE&&await deployedSourceHash()!==DEPLOYED_SOURCE)throw new Error('Deployed source changed during measurement');
+const file = process.env.PA_OUTPUT || path.join(OUT, `live-${VERSION}${tag}.json`);
 // Merge rather than overwrite: running one browser at a time is the normal way to work through a
 // long matrix, and a plain write would silently discard every earlier row.
 let prior = [];

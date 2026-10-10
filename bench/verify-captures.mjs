@@ -21,6 +21,24 @@ for(const file of process.argv.slice(2))for(const browser of JSON.parse(fs.readF
   assert.equal(summary.counts.readingsTotal,rows.length);assert.equal(summary.complete,unknown===0&&rows.length>0);
   assert.equal(summary.grade,summary.complete?(score>=90?'A':score>=75?'B':score>=60?'C':score>=40?'D':'F'):'I');
   for(const k of ['score','grade','complete','coverage','upperBound']){assert.equal(full.summary[k],summary[k]);assert.equal(full.findability[k],summary[k]);}
+  const cross=full.findabilityCross;
+  if(cross){
+    const weight=cross.categories.reduce((n,g)=>n+g.weight,0);
+    let earned=0,possible=0;
+    for(const g of cross.categories){
+      assert.ok(g.weightInside>0);assert.ok(g.hiddenInside>=0);assert.ok(g.unknownInside>=0);
+      assert.ok(g.hiddenInside+g.unknownInside<=g.weightInside);
+      const expected=g.weight*g.hiddenInside/g.weightInside;
+      assert.ok(Math.abs(g.earned-expected)<1e-10);
+      earned+=expected;possible+=g.weight*(g.hiddenInside+g.unknownInside)/g.weightInside;
+    }
+    assert.equal(cross.totalWeight,weight);
+    assert.equal(cross.score,Math.round(100*earned/weight));
+    assert.equal(cross.upperBound,Math.round(100*possible/weight));
+    assert.equal(cross.complete,cross.checks.unknown===0&&cross.checks.incomplete===0&&cross.checks.total>0);
+    for(const k of ['score','measuredScore','grade','complete'])assert.equal(summary.crossSite[k],cross[k]);
+    assert.ok(cross.measuredScore>=0&&cross.measuredScore<=cross.score);
+  }
   if(sample.sourceOverride){assert.equal(sample.sourceOverride.errors.length,0);assert.ok(sample.sourceOverride.documents>=2);}
   checked++;
 }

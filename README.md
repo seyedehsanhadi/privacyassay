@@ -35,7 +35,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 | | |
 |---|---|
-| **Size** | one HTML file, 294 KB |
+| **Size** | one HTML file, 312 kB |
 | **Needs** | any current browser; Node 22+ for the CLI |
 | **Status** | 0.9.7; failed readings stay unknown; canvas compared on pixels; bypassed protections count as exposed |
 
@@ -103,7 +103,7 @@ The whole tool is `index.html`, one file. Sections are marked `/* TITLE ==== */`
 | What a shared report may contain | `paRedactVal` |
 
 ```bash
-npm test              # scoring arithmetic, every classifier branch, catalog consistency, docs against code
+npm test              # scoring arithmetic, classifier cases, catalog consistency, docs against code
 npm run test:browser  # a real browser, including deliberate probe sabotage
 npm run test:stress   # repeated runs, re-entrancy, viewport extremes
 ```

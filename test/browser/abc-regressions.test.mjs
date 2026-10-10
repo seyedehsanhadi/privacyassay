@@ -17,6 +17,16 @@ describe('A/B browser regressions',()=>{
   after(async()=>{if(page)await page.close();if(server)server.close();});
   beforeEach(async()=>{await page.ev(`window.__KIT=${JSON.stringify(baseline)};document.querySelector('[data-pa="calc"]').click();if(document.querySelector('[data-pa="redact"]').getAttribute('aria-checked')==='false')document.querySelector('[data-pa="redact"]').click();true`);});
 
+  test('a changing font lookup stays exposed and incomplete in an actual audit',async()=>{
+    await page.ev(`(()=>{const width=Object.getOwnPropertyDescriptor(HTMLElement.prototype,'offsetWidth'),height=Object.getOwnPropertyDescriptor(HTMLElement.prototype,'offsetHeight'),append=document.body.appendChild;let round=0;window.__restoreFonts=()=>{Object.defineProperty(HTMLElement.prototype,'offsetWidth',width);Object.defineProperty(HTMLElement.prototype,'offsetHeight',height);document.body.appendChild=append};document.body.appendChild=function(node){if(node.tagName==='SPAN'&&node.textContent.startsWith('mmMwWLl0O'))node.__fontRound=++round;return append.call(this,node)};Object.defineProperty(HTMLElement.prototype,'offsetWidth',{...width,get:function(){if(!this.__fontRound)return width.get.call(this);const family=this.style.fontFamily;if(family.includes('Arial Black'))return this.__fontRound===1?120:100;if(/^['"]?Arial['"]?,/.test(family))return 120;return 100}});Object.defineProperty(HTMLElement.prototype,'offsetHeight',{...height,get:function(){return this.__fontRound?20:height.get.call(this)}});return true})()`);
+    try{
+      const report=await runAudit(page),fonts=report.findability.rows.find(r=>r.label==='installed fonts');
+      assert.equal(fonts.state,'shown');assert.equal(fonts.comparisonIncomplete,true);
+      assert.equal(report.findability.complete,false);assert.equal(report.findability.grade,'I');
+      if(report.findabilityCross){assert.equal(report.findabilityCross.complete,false);assert.equal(report.findabilityCross.rows.find(r=>r.label==='installed fonts').state,'shown');}
+    }finally{await page.ev('window.__restoreFonts();true');}
+  });
+
   test('redacted saved JSON masks numeric readings and extension identity',async()=>{
     const out=await page.ev(`(async()=>{const k=window.__KIT;k.whoYouAre=[{what:'PrivateExtensionSentinel',kind:'addon'}];k.findability.browser='PrivateFamilySentinel';k.findability.familyKey='PrivateFamilySentinel';k.categories['Browser Identification'].rows=[['PrivateExtensionSentinel',['yes','ok']]];k.categories['Audio & Media Codecs'].rows=[['AudioContext sampleRate','98765']];window.__saved=[];document.querySelector('[data-pa="savefull"]').click();${waitSaved}return JSON.parse(__saved[0])})()`);
     assert.equal(out.summary.redacted,true);assert.equal(out.summary.score,baseline.findability.score);

@@ -1418,7 +1418,7 @@ var PRIORS={
      verified:"the exact size of your browser window, shaped by your screen, taskbar, toolbars and"},
     {k:"rects", group:"layout", tier:2, alt:"hit", label:"element geometry (subpixel)", hashKey:"rects",
      verified:"a real leak, but it shifts between visits, so we rate it medium rather than strong"},
-    {k:"fontSet", group:"fonts", tier:3, label:"installed fonts", hashKey:"fontSet",
+    {k:"fontSet", group:"fonts", tier:3, label:"installed fonts", hashKey:"fontSet", noPerReadCredit:true,
      verified:"stable and near-unique in combination: reveals the OS build and which applications are"},
     {k:"webglVendor", group:"gpu", tier:2, alt:"frame", label:"GPU name",
      verified:"names your graphics card and driver"},
@@ -1711,7 +1711,7 @@ function paRepeatMerge(first,second,a,b){
       var key=s.hashKey||s.k,va=ar.bypass?(first._alt||{})[s.k]:first[key],vb=br.bypass?(second._alt||{})[s.k]:second[key];
       var comparable=function(v){return (typeof v==="string"||typeof v==="number")&&String(v)!==""&&!/^(NaN|[+-]?Infinity|undefined|null|ERR(?::.*)?|n\/a(?: .*)?|unavailable(?: .*)?|absent|timeout|unsupported|blocked(?::.*)?)$/i.test(String(v));};
       if(!comparable(va)||!comparable(vb)){incomplete[s.k]=true;return;}
-      if(String(va)!==String(vb)){if(!!ar.bypass!==!!br.bypass)incomplete[s.k]=true;else if(!comparable(first[key])||!comparable(second[key])||String(first[key])!==String(second[key]))noisy[s.k]=1;}
+      if(String(va)!==String(vb)){if(!!ar.bypass!==!!br.bypass||s.noPerReadCredit)incomplete[s.k]=true;else if(!comparable(first[key])||!comparable(second[key])||String(first[key])!==String(second[key]))noisy[s.k]=1;}
     }});
   Object.keys(first._alt||{}).concat(Object.keys(second._alt||{})).forEach(function(k){
     var x=(first._alt||{})[k],y=(second._alt||{})[k];

@@ -12,6 +12,27 @@ const M=new Function(core+';return {PRIORS,findability,findabilityCross,paRepeat
 const all=()=>Object.fromEntries(M.PRIORS.surfaces.filter(s=>!s.optional).flatMap(s=>[[s.k,'fixture-exposed'],...(s.hashKey?[[s.hashKey,'aabb1122']]:[])]));
 const cpu=F=>F.rows.find(r=>r.label==='CPU cores');
 const repeat=(a,b)=>M.paRepeatMerge(a,b,M.findability(a,'other'),M.findability(b,'other'));
+// shortcut: genuine per-read font randomizers remain incomplete because ordinary lookup can vary too.
+test('volatile font lookup cannot earn per-read protection credit',()=>{
+ const a={...all(),fontSet:'55f644fd'},b={...all(),fontSet:'7d3e1801'};
+ const out=M.findability(repeat(a,b),'other'),fonts=out.rows.find(r=>r.label==='installed fonts');
+ assert.equal(fonts.state,'shown');assert.equal(fonts.comparisonIncomplete,true);
+ assert.equal(out.score,0);assert.equal(out.complete,false);assert.equal(out.grade,'I');
+});
+test('volatile font lookup cannot prove a stable per-site mask',()=>{
+ const a=repeat({...all(),fontSet:'55f644fd'},{...all(),fontSet:'7d3e1801'});
+ const b=repeat({...all(),fontSet:'aabb1122'},{...all(),fontSet:'aabb1122'});
+ const out=M.findabilityCross(a,b,'other');
+ assert.equal(out.rows.find(r=>r.label==='installed fonts').state,'shown');
+ assert.equal(out.score,0);assert.equal(out.complete,false);
+});
+test('stable per-site font masks remain distinguishable from volatile lookup',()=>{
+ const a=repeat({...all(),fontSet:'55f644fd'},{...all(),fontSet:'55f644fd'});
+ const b=repeat({...all(),fontSet:'7d3e1801'},{...all(),fontSet:'7d3e1801'});
+ const out=M.findabilityCross(a,b,'other');
+ assert.equal(out.rows.find(r=>r.label==='installed fonts').variationKind,'between-origins');
+ assert.equal(out.complete,true);assert.ok(out.score>0);
+});
 test('explicit local companion pair replies to its configured home without contacting the public default',()=>{
  const routes=new Function('location','PA_HOME','PA_COMPANION',['otherOrigin','paIsLocalPage','paBackOrigin','paCompanion'].map(n=>fn(n)).join('\n')+';return {back:paBackOrigin(),companion:paCompanion()};');
  const home='https://127.0.0.2:8443/',peer='https://127.0.0.3:8443/index.html';

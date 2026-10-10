@@ -2,7 +2,7 @@
 
 ## 0.9.7 - 2026-10-10
 
-- Preserve exposed values when repeated or frame reads fail; distinguish stable per-site changes from variation within one site. Incomplete comparisons earn no protection credit.
+- Preserve exposed values when repeated or frame reads fail; distinguish stable per-site changes from variation within one site. Volatile font lookup stays incomplete; incomplete comparisons earn no protection credit.
 - Redact numeric readings and identity details in the page and saved reports; retain WebGL denial and collector-failure causes.
 - Validate first-party storage controls before crediting ambiguous cross-site failures. Generic IndexedDB failures remain unknown.
 - Score WebGPU features independently; isolate failed GPU metadata, clean up resources, and handle asynchronous lie probes without late report changes.

@@ -4,7 +4,6 @@ Thumbs.db
 
 # internal working notes and the local benchmark harness
 .scratch/
-.claude/
 bench/captures/export-audit.json
 bench/captures/browsers.json
 
