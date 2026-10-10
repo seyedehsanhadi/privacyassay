@@ -1,0 +1,494 @@
+{
+  "methodology": "0.9.7",
+  "sha256": "f810d984534425ec15f4dceea9edc8a65741cd03593dd307e8ef174265400008",
+  "platform": "Windows 11",
+  "headless": true,
+  "runsPerSetting": 2,
+  "capturedFrom": "2026-10-10T21:22:20.726Z",
+  "capturedTo": "2026-10-10T21:38:32.582Z",
+  "rows": [
+    {
+      "browser": "tor",
+      "name": "Tor Browser",
+      "version": "15.0.24",
+      "engineVersion": "140.17.0",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            21,
+            21
+          ],
+          "cross": [
+            58,
+            58
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            39,
+            39
+          ],
+          "cross": [
+            67,
+            67
+          ]
+        }
+      }
+    },
+    {
+      "browser": "mullvad",
+      "name": "Mullvad Browser",
+      "version": "15.0.24",
+      "engineVersion": "140.17.0",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            21,
+            21
+          ],
+          "cross": [
+            58,
+            58
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            39,
+            39
+          ],
+          "cross": [
+            67,
+            67
+          ]
+        }
+      }
+    },
+    {
+      "browser": "librewolf",
+      "name": "LibreWolf",
+      "version": "152.0.6-1",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            26,
+            26
+          ],
+          "cross": [
+            46,
+            46
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            35,
+            35
+          ],
+          "cross": [
+            52,
+            52
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            23,
+            23
+          ],
+          "cross": [
+            40,
+            40
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            47,
+            47
+          ]
+        }
+      }
+    },
+    {
+      "browser": "brave",
+      "name": "Brave",
+      "version": "1.97.56",
+      "engineVersion": "155.0.8059.40",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            11,
+            16
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            13,
+            13
+          ],
+          "cross": [
+            27,
+            24
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            16,
+            14
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            11,
+            11
+          ],
+          "cross": [
+            25,
+            24
+          ]
+        }
+      }
+    },
+    {
+      "browser": "firefox",
+      "name": "Firefox",
+      "version": "154.0.1",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            12,
+            12
+          ],
+          "cross": [
+            12,
+            12
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            23,
+            23
+          ],
+          "cross": [
+            23,
+            23
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            11,
+            11
+          ],
+          "cross": [
+            11,
+            11
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            21,
+            21
+          ],
+          "cross": [
+            21,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "browser": "vivaldi",
+      "name": "Vivaldi",
+      "version": "8.2.4133.84",
+      "measurements": {
+        "default": {
+          "complete": false,
+          "attempts": 2,
+          "completed": 0,
+          "errors": 2,
+          "single": [],
+          "cross": []
+        },
+        "store": {
+          "complete": false,
+          "attempts": 2,
+          "completed": 0,
+          "errors": 2,
+          "single": [],
+          "cross": []
+        },
+        "rtc": {
+          "complete": false,
+          "attempts": 2,
+          "completed": 0,
+          "errors": 2,
+          "single": [],
+          "cross": []
+        },
+        "both": {
+          "complete": false,
+          "attempts": 2,
+          "completed": 0,
+          "errors": 2,
+          "single": [],
+          "cross": []
+        }
+      }
+    },
+    {
+      "browser": "chrome",
+      "name": "Chrome",
+      "version": "154.0.8037.99",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "browser": "edge",
+      "name": "Edge",
+      "version": "154.0.4258.37",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}

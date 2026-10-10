@@ -1,53 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 756 340" width="756" height="340" role="img" aria-label="Score by browser, higher means more of the fingerprint hidden">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 756 377" width="756" height="377" role="img" aria-label="Privacyassay 0.9.7 headless browser measurements; higher means more checked readings hidden">
 <style>text{font-family:ui-sans-serif,system-ui,"Segoe UI",sans-serif}.n{font-family:ui-monospace,Menlo,Consolas,monospace}</style>
-<line x1="132.0" y1="33" x2="132.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="132.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">0</text>
-<line x1="244.0" y1="33" x2="244.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="244.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">20</text>
-<line x1="356.0" y1="33" x2="356.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="356.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">40</text>
-<line x1="468.0" y1="33" x2="468.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="468.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">60</text>
-<line x1="580.0" y1="33" x2="580.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="580.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">80</text>
-<line x1="692.0" y1="33" x2="692.0" y2="298" stroke="#1b2740" stroke-width="1"/>
-<text x="692.0" y="25" fill="#a1b2ca" font-size="12" text-anchor="middle" class="n">100</text>
-<text x="118" y="60.5" fill="#e8eef8" font-size="14" text-anchor="end">Tor Browser</text>
-<rect x="132" y="46" width="319.2" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="451.2" y1="56.0" x2="507.2" y2="56.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="451.2" y1="51.0" x2="451.2" y2="61.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="507.2" y1="51.0" x2="507.2" y2="61.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="519.2" y="60.5" fill="#a1b2ca" font-size="13" class="n">57-67</text>
-<text x="118" y="97.5" fill="#e8eef8" font-size="14" text-anchor="end">Mullvad Browser</text>
-<rect x="132" y="83" width="319.2" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="451.2" y1="93.0" x2="507.2" y2="93.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="451.2" y1="88.0" x2="451.2" y2="98.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="507.2" y1="88.0" x2="507.2" y2="98.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="519.2" y="97.5" fill="#a1b2ca" font-size="13" class="n">57-67</text>
-<text x="118" y="134.5" fill="#e8eef8" font-size="14" text-anchor="end">LibreWolf</text>
-<rect x="132" y="120" width="257.6" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="356.0" y1="130.0" x2="423.2" y2="130.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="356.0" y1="125.0" x2="356.0" y2="135.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="423.2" y1="125.0" x2="423.2" y2="135.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="435.2" y="134.5" fill="#a1b2ca" font-size="13" class="n">40-52</text>
-<text x="118" y="171.5" fill="#e8eef8" font-size="14" text-anchor="end">Brave</text>
-<rect x="132" y="157" width="106.4" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="221.6" y1="167.0" x2="322.4" y2="167.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="221.6" y1="162.0" x2="221.6" y2="172.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="322.4" y1="162.0" x2="322.4" y2="172.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="334.4" y="171.5" fill="#a1b2ca" font-size="13" class="n">16-34</text>
-<text x="118" y="208.5" fill="#e8eef8" font-size="14" text-anchor="end">Firefox</text>
-<rect x="132" y="194" width="50.4" height="20" rx="3" fill="#3f6fd8"/>
-<line x1="176.8" y1="204.0" x2="244.0" y2="204.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="176.8" y1="199.0" x2="176.8" y2="209.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<line x1="244.0" y1="199.0" x2="244.0" y2="209.0" stroke="#cfe0ff" stroke-width="1.6"/>
-<text x="256.0" y="208.5" fill="#a1b2ca" font-size="13" class="n">8-20</text>
-<text x="118" y="245.5" fill="#e8eef8" font-size="14" text-anchor="end">Chrome</text>
-<rect x="132" y="231" width="2.5" height="20" rx="3" fill="#3f6fd8"/>
-<text x="144.0" y="245.5" fill="#a1b2ca" font-size="13" class="n">0</text>
-<text x="118" y="282.5" fill="#e8eef8" font-size="14" text-anchor="end">Edge</text>
-<rect x="132" y="268" width="2.5" height="20" rx="3" fill="#3f6fd8"/>
-<text x="144.0" y="282.5" fill="#a1b2ca" font-size="13" class="n">0</text>
-<line x1="132" y1="33" x2="132" y2="298" stroke="#2b3a55" stroke-width="1.5"/>
-<text x="132" y="318" fill="#a1b2ca" font-size="12">Bar: cross-site score, both opt-ins off. Whisker: range across the four opt-in settings.</text>
-</svg>
+<line x1="132" y1="33" x2="132" y2="335" stroke="#263449"/><text x="132" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">0</text>
+<line x1="244" y1="33" x2="244" y2="335" stroke="#263449"/><text x="244" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">20</text>
+<line x1="356" y1="33" x2="356" y2="335" stroke="#263449"/><text x="356" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">40</text>
+<line x1="468" y1="33" x2="468" y2="335" stroke="#263449"/><text x="468" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">60</text>
+<line x1="580" y1="33" x2="580" y2="335" stroke="#263449"/><text x="580" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">80</text>
+<line x1="692" y1="33" x2="692" y2="335" stroke="#263449"/><text x="692" y="25" fill="#a5b5c9" font-size="12" text-anchor="middle" class="n">100</text>
+<text x="118" y="60.5" fill="#ecf2fa" font-size="14" text-anchor="end">Tor Browser</text>
+<rect x="132" y="46" width="324.79999999999995" height="20" rx="3" fill="#74a9ff"/>
+<path d="M456.79999999999995,51v10 M456.79999999999995,56H507.2 M507.2,51v10" stroke="#74a9ff" stroke-width="1.6" fill="none"/>
+<text x="519.2" y="60.5" fill="#a5b5c9" font-size="13" class="n">58–67</text>
+<text x="118" y="97.5" fill="#ecf2fa" font-size="14" text-anchor="end">Mullvad Browser</text>
+<rect x="132" y="83" width="324.79999999999995" height="20" rx="3" fill="#74a9ff"/>
+<path d="M456.79999999999995,88v10 M456.79999999999995,93H507.2 M507.2,88v10" stroke="#74a9ff" stroke-width="1.6" fill="none"/>
+<text x="519.2" y="97.5" fill="#a5b5c9" font-size="13" class="n">58–67</text>
+<text x="118" y="134.5" fill="#ecf2fa" font-size="14" text-anchor="end">LibreWolf</text>
+<rect x="132" y="120" width="257.59999999999997" height="20" rx="3" fill="#74a9ff"/>
+<path d="M356,125v10 M356,130H423.2 M423.2,125v10" stroke="#74a9ff" stroke-width="1.6" fill="none"/>
+<text x="435.2" y="134.5" fill="#a5b5c9" font-size="13" class="n">40–52</text>
+<text x="118" y="171.5" fill="#ecf2fa" font-size="14" text-anchor="end">Brave</text>
+<rect x="132" y="157" width="75.6" height="20" rx="3" fill="#74a9ff"/>
+<path d="M193.6,162v10 M193.6,167H283.2 M283.2,162v10" stroke="#74a9ff" stroke-width="1.6" fill="none"/>
+<text x="295.2" y="171.5" fill="#a5b5c9" font-size="13" class="n">11–27</text>
+<text x="118" y="208.5" fill="#ecf2fa" font-size="14" text-anchor="end">Firefox</text>
+<rect x="132" y="194" width="67.19999999999999" height="20" rx="3" fill="#74a9ff"/>
+<path d="M193.6,199v10 M193.6,204H260.79999999999995 M260.79999999999995,199v10" stroke="#74a9ff" stroke-width="1.6" fill="none"/>
+<text x="272.79999999999995" y="208.5" fill="#a5b5c9" font-size="13" class="n">11–23</text>
+<text x="118" y="245.5" fill="#ecf2fa" font-size="14" text-anchor="end">Chrome</text>
+<text x="144" y="245.5" fill="#a5b5c9" font-size="13" class="n">0</text>
+<text x="118" y="282.5" fill="#ecf2fa" font-size="14" text-anchor="end">Edge</text>
+<text x="144" y="282.5" fill="#a5b5c9" font-size="13" class="n">0</text>
+<text x="118" y="319.5" fill="#ecf2fa" font-size="14" text-anchor="end">Vivaldi</text>
+<text x="144" y="319.5" fill="#a5b5c9" font-size="13">Incomplete</text>
+<text x="132" y="362" fill="#a5b5c9" font-size="11">v0.9.7 · Bar: two-run mean, opt-ins off. Whisker: all four settings, only when complete. Headless.</text></svg>

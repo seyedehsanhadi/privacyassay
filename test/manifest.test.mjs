@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { grabVar, grabFn } from "./helpers/extract.mjs";
 
@@ -31,10 +32,30 @@ test("manifest: entry page remains a standalone document",()=>{const html=fs.rea
 test("browser charts match the README table",()=>{
   const readme=fs.readFileSync(path.join(ROOT,"README.md"),"utf8");
   assert.match(readme,/not comparable/i);assert.match(readme,/\d+\.\d+\.\d+ measured/);
+  const data=JSON.parse(fs.readFileSync(path.join(ROOT,`bench/results-${PKG.version}.json`),"utf8"));
+  assert.equal(data.methodology,PKG.version);assert.equal(data.headless,true);assert.equal(data.runsPerSetting,2);
+  assert.equal(data.sha256,createHash('sha256').update(fs.readFileSync(path.join(ROOT,'index.html'))).digest('hex'));
+  assert.equal(data.rows.length,8);assert.ok(data.rows.some(row=>row.browser==='vivaldi'));
+  const span=values=>values.length?(Math.min(...values)===Math.max(...values)?String(values[0]):`${Math.min(...values)}–${Math.max(...values)}`):'—';
   for(const theme of ["light","dark"]){
     const svg=fs.readFileSync(path.join(ROOT,`chart-${theme}.svg`),"utf8");
-    for(const browser of ["LibreWolf","Tor Browser","Mullvad Browser","Firefox","Brave","Chrome","Edge"])assert.ok(svg.includes(`>${browser}</text>`),browser);
-    assert.equal((svg.match(/<rect /g)||[]).length,7);
+    assert.match(svg,new RegExp(PKG.version.replaceAll('.','\\.')));assert.match(svg,/Headless\./);
+    const axis=n=>Number(new RegExp(`<text x="([\\d.]+)"[^>]*class="n">${n}</text>`).exec(svg)?.[1]);
+    const scale=(axis(100)-axis(0))/100;assert.ok(scale>0);
+    for(const row of data.rows){
+      const baseline=row.measurements.default,settings=Object.values(row.measurements);
+      const all=settings.every(setting=>setting.complete)?settings.flatMap(setting=>setting.cross):[];
+      for(const setting of settings)if(setting.complete){assert.equal(setting.single.length,2);assert.equal(setting.cross.length,2);assert.equal(setting.errors,0);assert.equal(setting.completed,2);}
+      const line=readme.split('\n').find(line=>line.startsWith(`| ${row.name} |`));assert.ok(line,row.name);
+      assert.deepEqual(line.split('|').slice(2,-1).map(s=>s.trim()),[row.version,span(baseline.cross),span(all),span(baseline.single)]);
+      const label=`>${row.name}</text>`,start=svg.indexOf(label);assert.ok(start>=0,row.name);
+      let section=svg.slice(start+label.length);const end=section.indexOf('<text x="118"');if(end>=0)section=section.slice(0,end);
+      const bar=/<rect [^>]*width="([\d.]+)"/.exec(section);
+      if(!baseline.complete){assert.match(section,/Incomplete/);assert.equal(bar,null);continue;}
+      const mean=baseline.cross.reduce((sum,value)=>sum+value,0)/baseline.cross.length;
+      if(mean===0)assert.equal(bar,null);else{assert.ok(bar,row.name);assert.ok(Math.abs(Number(bar[1])/scale-mean)<1e-9,row.name);}
+      assert.equal(/<text [^>]*class="n">([^<]+)<\/text>/.exec(section)?.[1],all.length?span(all):`${span(baseline.cross)}; range incomplete`);
+    }
   }
 });
 

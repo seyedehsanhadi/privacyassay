@@ -102,4 +102,4 @@ WebGPU features are measured separately from limits and adapter identity. [Mozil
 
 The AI section checks web API availability; it cannot read Firefox AI Controls or certify browser-assistant data handling. Network-layer fingerprinting, browser telemetry, tracker blocking, bounce tracking, behavioral tracking and all-browser compatibility are outside this score. Unsupported, unknown and not tested are distinct outcomes.
 
-Historical 0.9.1-beta captures in bench/captures are retained for reproducibility, not current browser recommendations. Their calibration validates arithmetic over recorded states. New measurements must include catalog version, browser/OS version, configuration, context and completion. No new seven-browser ranking is claimed by this release.
+Historical 0.9.1-beta captures in bench/captures are retained for reproducibility, not current browser recommendations. Their calibration validates arithmetic over recorded states. New measurements must include catalog version, browser/OS version, configuration, context and completion. The current table reports headless measurements on one machine, not a general browser ranking.

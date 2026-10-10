@@ -90,5 +90,11 @@ jobs:
         run: node --test --test-concurrency=1 --test-timeout=1800000 test/helpers/browser.test.mjs test/browser/sites.test.mjs test/browser/abc-regressions.test.mjs test/browser/export.test.mjs
         env:
           PRIVACYASSAY_ENGINE: safari
+      - name: Verify the deployed public pair and saved reports in native Safari
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node --test test/browser/hosted.test.mjs
+        env:
+          PRIVACYASSAY_ENGINE: safari
+          PRIVACYASSAY_HOSTED: '1'
 
 # Tor/Mullvad use installed-browser local checks; this matrix does not establish all-browser coverage.

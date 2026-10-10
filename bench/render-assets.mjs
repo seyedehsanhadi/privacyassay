@@ -1,4 +1,4 @@
-// Render the social card without overwriting the historical README screenshot.
+// Render the social card without overwriting the measured README screenshot.
 import fs from "node:fs";
 import { launch } from "../test/helpers/browser.mjs";
 import { startServer } from "../test/helpers/server.mjs";

@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay result: Brave, 0 of 100 hidden on this page, 19 on a second site, grade F](screenshot.png)
+![Privacyassay 0.9.7 result: Brave, 0 of 100 hidden on this page, 16 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Brave 155, 0.9.6, both opt-ins off, 2026-10-07, hosted pair. Your result will differ.</sub></div>
+<div align="center"><sub>Brave 1.97.56, 0.9.7, headless, both opt-ins off, 2026-10-10, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -49,24 +49,25 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, 2026-10-07, 0.9.6 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, headless, 2026-10-10, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Cross-site score by browser: Tor Browser 57 (range 57-67), Mullvad Browser 57 (57-67), LibreWolf 46 (40-52), Brave 19 (16-34), Firefox 9 (8-20), Chrome 0, Edge 0">
+  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 11–16 (four-setting range 11–27), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi incomplete">
 </picture>
 
 | Browser | Version | Cross-site | Range | Single-site |
 |---|---|---:|---:|---:|
-| Tor Browser | 140.17.0 | 57 | 57-67 | 20 |
-| Mullvad Browser | 140.17.0 | 57 | 57-67 | 20 |
-| LibreWolf | 152.0.6-1 | 46 | 40-52 | 26 |
-| Brave | 155.1.97.56 | 19 | 16-34 | 0 |
-| Firefox | 154.0.1 | 9 | 8-20 | 9 |
-| Chrome | 154.0.8037.92 | 0 | 0 | 0 |
+| Tor Browser | 15.0.24 | 58 | 58–67 | 21 |
+| Mullvad Browser | 15.0.24 | 58 | 58–67 | 21 |
+| LibreWolf | 152.0.6-1 | 46 | 40–52 | 26 |
+| Brave | 1.97.56 | 11–16 | 11–27 | 0 |
+| Firefox | 154.0.1 | 12 | 11–23 | 12 |
+| Chrome | 154.0.8037.99 | 0 | 0 | 0 |
 | Edge | 154.0.4258.37 | 0 | 0 | 0 |
+| Vivaldi | 8.2.4133.84 | — | — | — |
 
-Range is the spread across the four opt-in settings (supercookies, WebRTC), which change the denominator; scores from different settings cannot be compared. The single-site score never earns uniformity credit, which is why Tor and Mullvad read lower there. Brave re-seeds per session, so its cross-site score varies between runs. Installed fonts never earn uniformity credit, because the tool cannot verify the bundled set. Mullvad was measured with its bundled script-blocking extension moved aside, because it blocked the page's scripts; Tor ran with its own in place. Raw captures stay out of the repository, because each one fingerprints the test machine. Scores are not comparable with 0.9.5 or earlier, although every browser above scored the same on 0.9.5.
+Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; both are release 15.0.24, Gecko 140.17.0. Brave uses Chromium 155.0.8059.40. Vivaldi’s headless debugging connection timed out, so its result is incomplete. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
 
 ## Run it
 
@@ -125,7 +126,7 @@ A high score means most of what it checks is hidden, not that you are anonymous.
 
 Browser fingerprinting has been measured in public for years, and this tool is not the first to do it.
 
-[EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than seven. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
+[EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than eight. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
 
 What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and no credit for anything it could not measure. Its one assumption, that a privacy browser family's documented fixed values are shared by its users, is labelled as assumed and reported separately.
 

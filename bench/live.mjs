@@ -69,7 +69,7 @@ function profileFor(key) {
 function stopBrowser(proc,binary,profile){
   if(process.platform==="win32"){
     const quote=v=>"'"+String(v).replaceAll("'","''")+"'";
-    try{execFileSync("powershell",["-NoProfile","-Command", "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "+quote(path.basename(binary))+" -and $_.CommandLine -and $_.CommandLine.Contains("+quote(profile)+") } | ForEach-Object { & taskkill /F /PID $_.ProcessId /T | Out-Null }"],{stdio:"ignore",timeout:20000});}catch{}
+    try{execFileSync("powershell",["-NoProfile","-Command", "Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "+quote(path.basename(binary))+" -and $_.CommandLine -and $_.CommandLine.Contains("+quote(profile)+") } | ForEach-Object { & taskkill /F /PID $_.ProcessId /T | Out-Null }"],{stdio:"ignore",timeout:20000,windowsHide:true});}catch{}
   }
   try{proc.kill();}catch{}
   proc.stdout?.destroy();proc.stderr?.destroy();proc.unref();
