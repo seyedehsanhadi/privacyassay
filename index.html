@@ -1685,7 +1685,7 @@ function observeVectors(){
   return out;
 }
 
-function paStableVoices(){return new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v=[];try{v=speechSynthesis.getVoices()||[];}catch(e){}tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}
+function paStableVoices(){return new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v;try{v=speechSynthesis.getVoices();}catch(e){}if(!Array.isArray(v)){clearInterval(iv);res(null);return;}tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}
 function repeatVectors(){
   var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs","WebGPU"].forEach(function(k){saved[k]=C[k];});
   return Promise.resolve().then(function(){
@@ -2792,7 +2792,7 @@ async function runKit(){
     if(audio.bufHash)C["Audio & Media Codecs"].rows.push(["audio buffer slice hash (200 samples)",audio.bufHash]);
     if(audio.nonZero)C["Audio & Media Codecs"].rows.push(["audio non-zero samples",audio.nonZero]);
     var voices=[];try{speechSynthesis.getVoices();voices=await paStableVoices();}catch(e){}
-    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")":"blocked";})()]);
+    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return voices===null?"ERR:getVoices":vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")":"blocked";})()]);
     C["Audio & Media Codecs"].hash=catHash(C["Audio & Media Codecs"].rows);
   }
   var ffProbe=await fontFaceLocalProbe();

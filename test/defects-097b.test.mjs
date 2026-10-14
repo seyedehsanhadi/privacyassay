@@ -114,6 +114,8 @@ test("voices: a list still loading is read once it settles, so a repeat read can
   const speechSynthesis = { getVoices() { return lists[Math.min(calls++, lists.length - 1)]; } };
   const read = new Function("speechSynthesis", grabFn("paStableVoices") + ";return paStableVoices();");
   assert.equal((await read(speechSynthesis)).length, 3);
+  assert.equal(await read({ getVoices() { return undefined; } }), null);
+  assert.equal(await read({ getVoices() { throw new Error("x"); } }), null);
   const repeat = grabFn("repeatVectors");
   assert.ok(repeat.includes("paStableVoices()"));
   assert.ok(!/speechSynthesis\.getVoices\(\);C\[/.test(repeat));
