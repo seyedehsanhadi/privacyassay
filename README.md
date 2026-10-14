@@ -30,18 +30,18 @@ Everything runs on your machine; the fingerprint is never uploaded.
 - **One file, no build, no dependencies.** Open it, or host it anywhere static.
 - **A formula you can recompute by hand** from the report it prints.
 - **Says what it cannot measure** as loudly as what it can.
-- **No fingerprint is uploaded.** Every reading is taken and scored in the browser. Redact is on by default, so screenshots stay safe to post.
+- **No fingerprint is uploaded.** Every reading is taken and scored in the browser. Redact is on by default and masks raw values on screen and in saved reports; review a screenshot or report before sharing it.
 - **Runs in CI** and fails a build below a threshold you set.
 
 | | |
 |---|---|
 | **Size** | one HTML file, 312 kB |
-| **Needs** | any current browser; Node 22+ for the CLI |
-| **Status** | 0.9.7; failed readings stay unknown; canvas compared on pixels; bypassed protections count as exposed |
+| **Needs** | JavaScript in a current browser; Node 22+ for the CLI |
+| **Status** | 0.9.7; failed reads keep established exposure; otherwise unknown; canvas compared on pixels; bypassed protections count as exposed |
 
-Each reading is your real value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement (**unknown**). On the cross-site score a reading also counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's fixed value on both sites, which separates uniformity from randomization. Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
+Each reading is an observable value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement without established exposure (**unknown**). On the cross-site score a reading also counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's documented standard value on both sites. Whether users across cohorts and settings share that value is assumed, not measured. Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, using judgment-based weights for potential identifying value rather than measured identification probabilities. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
-Redact is on by default, so values on screen and in any saved report are masked. Turn it off on the start card to see your own values. The score is identical either way.
+Redact is on by default, so raw values on screen and in saved reports are masked. Scores, counts and leak labels remain visible; review a report before sharing it. Turn Redact off on the start card to see your own values. The score is identical either way.
 
 A `<meta>` Content-Security-Policy denies everything by default. It allows this origin and the second origin the two-origin test needs, which is loopback for a local copy and `privacyassay.github.io` for the hosted one. CSP cannot govern WebRTC, which is why the STUN test is opt-in and off by default. DRM key systems are opt-in too, because requesting them can make the browser show a permission or install prompt.
 
@@ -49,7 +49,7 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, headless, 2026-10-10 UTC, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's fixed values that match on both (uniformizers). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, headless, 2026-10-10 UTC, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's documented standard values that match on both (uniformizers, with population uniformity assumed). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
@@ -75,7 +75,7 @@ Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9
 
 Open `index.html` and press Run.
 
-Three checks (request-header echo, two-origin cross-site, supercookies) need a real origin:
+The request-header echo and some supercookie checks need server endpoints; the two-origin check needs a second origin. For a local run with both:
 
 ```bash
 python serve.py
@@ -83,7 +83,7 @@ python serve.py
 
 Serves `http://127.0.0.1:8000`, loopback only, and pairs it with `localhost` as the second origin, which needs `localhost` to resolve to the address it binds.
 
-Hosting it yourself works the same way for everything except those two-origin checks, which need a second host that answers back. [DEPLOY.md](DEPLOY.md) has the four steps. Until the two origins name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
+Static hosting runs the core audit, but request-header diagnostics need `/__headers`, and some opt-in supercookie cache checks need `/__res` and `/__ctr`; static hosts without those endpoints leave those diagnostics unmeasured. The public hosted pair does not serve those endpoints. These diagnostics are outside scored-catalog coverage. The two-origin check needs a second host that answers back. [DEPLOY.md](DEPLOY.md) has the four steps. Until the two origins name the pair you actually serve from, the tool reports the second origin as missing rather than a result it did not measure.
 
 ## In CI
 
@@ -111,7 +111,7 @@ npm run test:browser  # a real browser, including deliberate probe sabotage
 npm run test:stress   # repeated runs, re-entrancy, viewport extremes
 ```
 
-A confirmed refused reading receives credit; a broken probe stays unknown and receives none. The browser suite deliberately breaks probes and checks that a failure never becomes protection credit, and becomes a shown value only when a second route actually read one.
+A confirmed refused reading receives credit; a broken probe stays unknown and receives none. The browser suite deliberately breaks probes and checks that a failure never becomes protection credit; established exposure stays shown even when a later read fails.
 
 ## What it cannot do
 
@@ -130,7 +130,7 @@ Browser fingerprinting has been measured in public for years, and this tool is n
 
 [EFF Cover Your Tracks](https://coveryourtracks.eff.org/) estimates how rare your browser is against a live population, which is the one thing measured here cannot do. [privacytests.org](https://privacytests.org/) tests browsers rather than the visitor, across a far wider matrix than eight. [CreepJS](https://abrahamjuliot.github.io/creepjs/) reads more surfaces than this does and is the reference for lie detection.
 
-What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and no credit for anything it could not measure. Its one assumption, that a privacy browser family's documented fixed values are shared by its users, is labelled as assumed and reported separately.
+What is different here is the combination: one file with no build, a score whose arithmetic you can recompute by hand from the report, and no credit for anything it could not measure. Its family-uniformity assumption, that documented standard values are shared across users and settings, is labelled as assumed and reported separately.
 
 ## Contributing
 
