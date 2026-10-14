@@ -49,11 +49,11 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, headless, 2026-10-10 UTC, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's documented standard values that match on both (uniformizers, with population uniformity assumed). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's documented standard values that match on both (uniformizers, with population uniformity assumed). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 11–16 (four-setting range 11–27), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
+  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 16–18 (four-setting range 10–34), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
 </picture>
 
 | Browser | Version | Cross-site | Range | Single-site |
@@ -61,15 +61,15 @@ One machine, Windows 11, headless, 2026-10-10 UTC, 0.9.7 measured on the hosted 
 | Tor Browser | 15.0.24 | 58 | 58–67 | 21 |
 | Mullvad Browser | 15.0.24 | 58 | 58–67 | 21 |
 | LibreWolf | 152.0.6-1 | 46 | 40–52 | 26 |
-| Brave | 1.97.56 | 11–16 | 11–27 | 0 |
+| Brave | 1.97.56 | 16–18 | 10–34 | 0 |
 | Firefox | 154.0.1 | 12 | 11–23 | 12 |
 | Vivaldi | 8.2.4133.84 | 0 | 0 | 0 |
 | Chrome | 154.0.8037.99 | 0 | 0 | 0 |
-| Edge | 154.0.4258.37 | 0 | 0 | 0 |
+| Edge | 155.0.4283.45 | 0 | 0 | 0 |
 
 Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; both are release 15.0.24, Gecko 140.17.0. Brave uses Chromium 155.0.8059.40. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
 
-Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38089270491).
+Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38520446738).
 
 ## Run it
 
@@ -92,7 +92,7 @@ node bin/privacyassay.mjs                 # print the result as JSON
 node bin/privacyassay.mjs --min-score 40  # and fail below a threshold
 ```
 
-Headless, fresh browser per run so a farbling browser cannot re-use one seed. It serves `127.0.0.1` and `localhost` from one handler, so it reports the two-origin cross-site figure as well; `--no-cross` skips it. Needs Node 22+ and a Chromium-family browser. Set the threshold against the browser CI runs: a stock Chromium scores near zero. Incomplete runs fail `--min-score`; summary exports use `privacyassay-summary/1.1`.
+`--help` lists the rest: `--runs`, `--timeout`, `--webrtc`, `--full`, `--browser`. Headless, fresh browser per run so a farbling browser cannot re-use one seed. It serves `127.0.0.1` and `localhost` from one handler, so it reports the two-origin cross-site figure as well; `--no-cross` skips it. Needs Node 22+ and a Chromium-family browser. Set the threshold against the browser CI runs: a stock Chromium scores near zero. Incomplete runs fail `--min-score`; summary exports use `privacyassay-summary/1.1`.
 
 ## Reviewing this
 

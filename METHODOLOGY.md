@@ -1,6 +1,6 @@
 # Methodology 0.9.7
 
-Updated 2026-10-10. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3. 0.9.5 adds uniformity credit to the cross-site score, so cross-site scores of Tor Browser, Mullvad Browser and LibreWolf are not comparable with 0.9.4. 0.9.6 counts a hidden reading as exposed when a fresh same-origin frame or hit-testing recovers it, so scores of browsers or extensions that miss those routes are not comparable with 0.9.5. 0.9.7 retains any alternate-route exposure even if another read fails, rejects one-sided exposure as proof of per-site variation, and adds WebGPU features. Scores are not directly comparable with 0.9.6.
+Updated 2026-10-14. This version measures observed fingerprint exposure. Its scores are not comparable with 0.9.1-beta captures. 0.9.3 changed the canvas comparison value from encoded PNG bytes to decoded pixels, so its cross-site canvas results are not comparable with 0.9.2 captures. A lower 0.9.3 score on the same browser removes credit 0.9.2 gave in error; it is not a browser regression. 0.9.4 scores a WebGL readback that the browser refuses with NotSupportedError (Mullvad, Tor) as a refused reading instead of unknown, so those browsers can now complete a run and are not comparable with 0.9.3. 0.9.5 adds uniformity credit to the cross-site score, so cross-site scores of Tor Browser, Mullvad Browser and LibreWolf are not comparable with 0.9.4. 0.9.6 counts a hidden reading as exposed when a fresh same-origin frame or hit-testing recovers it, so scores of browsers or extensions that miss those routes are not comparable with 0.9.5. 0.9.7 retains any alternate-route exposure even if another read fails, rejects one-sided exposure as proof of per-site variation, and adds WebGPU features. Scores are not directly comparable with 0.9.6.
 
 ## Outcomes
 
@@ -68,7 +68,7 @@ Canvas is compared on the decoded pixels of the drawing (`getImageData`), not on
 
 The CLI launches a fresh browser per run and serves 127.0.0.1 and localhost. This loopback pair is not equivalent to independent public domains. Compare runs with the same browser/OS versions, settings, opt-ins and context. Different configurations cannot be compared as equivalent.
 
-For multiple CLI runs, all report fields describe the run with the median score. The summary states how many runs were incomplete; any incomplete run fails `--min-score`.
+For multiple CLI runs, all report fields describe the run with the median score; with an even number of runs, the lower of the two middle runs. The summary states how many runs were incomplete; any incomplete run fails `--min-score`.
 
 ## Optional tests
 

@@ -184,7 +184,7 @@ async function runOnce(browser, port) {
             // two producers cannot drift and the CLI does not depend on a render helper being global.
             var total=(Fc.comparedAcrossOrigins||[]).length;
             var anon=(Fc.changedAcrossOrigins||[]).length;
-            return {score:Fc.score,grade:Fc.grade,complete:Fc.complete,signalsChanged:anon,signalsCompared:total,
+            return {score:Fc.score,measuredScore:Fc.measuredScore,grade:Fc.grade,complete:Fc.complete,signalsChanged:anon,signalsCompared:total,
               recognizedOnSecondSite:null};
           }catch(e){return null;}})(),
           crossSiteNote:(K.crossFailed&&K.crossFailed!=="measuring")?String(K.crossFailed):null,

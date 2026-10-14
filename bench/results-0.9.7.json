@@ -1,11 +1,11 @@
 {
   "methodology": "0.9.7",
-  "sha256": "f810d984534425ec15f4dceea9edc8a65741cd03593dd307e8ef174265400008",
+  "sha256": "9e866ed385453105b18829c3c8d9528fa8c87658c3e52ec74055810b426c3ceb",
   "platform": "Windows 11",
   "headless": true,
   "runsPerSetting": 2,
-  "capturedFrom": "2026-10-10T21:22:20.726Z",
-  "capturedTo": "2026-10-10T22:20:31.184Z",
+  "capturedFrom": "2026-10-14T06:09:46.613Z",
+  "capturedTo": "2026-10-14T06:45:06.924Z",
   "rows": [
     {
       "browser": "tor",
@@ -214,8 +214,8 @@
             0
           ],
           "cross": [
-            11,
-            16
+            16,
+            18
           ]
         },
         "store": {
@@ -229,7 +229,7 @@
           ],
           "cross": [
             27,
-            24
+            34
           ]
         },
         "rtc": {
@@ -243,7 +243,7 @@
           ],
           "cross": [
             16,
-            14
+            10
           ]
         },
         "both": {
@@ -256,8 +256,8 @@
             11
           ],
           "cross": [
-            25,
-            24
+            24,
+            25
           ]
         }
       }
@@ -454,7 +454,7 @@
     {
       "browser": "edge",
       "name": "Edge",
-      "version": "154.0.4258.37",
+      "version": "155.0.4283.45",
       "measurements": {
         "default": {
           "complete": true,

@@ -12,8 +12,8 @@ Two things the test suite enforces, worth knowing before a pull request:
 
 - `index.html` carries the licence header and section markers, and no other comments. The reason behind a fix belongs in the
   test that pins it.
-- Any number stated in prose is checked against the code that produces it, so changing a value in one
-  place fails the build in the other.
+- The catalog totals and the README benchmark table and charts are checked against the code and data
+  that produce them, so changing one without the other fails the build.
 
 ```bash
 npm test && npm run test:browser && npm run test:stress
