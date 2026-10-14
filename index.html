@@ -1685,6 +1685,7 @@ function observeVectors(){
   return out;
 }
 
+function paStableVoices(){return new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v=[];try{v=speechSynthesis.getVoices()||[];}catch(e){}tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}
 function repeatVectors(){
   var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs","WebGPU"].forEach(function(k){saved[k]=C[k];});
   return Promise.resolve().then(function(){
@@ -1693,9 +1694,12 @@ function repeatVectors(){
       paDeadline(collectWebGPU,7000).catch(function(){cat("WebGPU",[["WebGPU",["ERR:repeat-timeout","no"]]]);})]).then(function(r){return r[0];});
   }).then(function(audio){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
-    try{var voices=speechSynthesis.getVoices();C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);}catch(e){}
-    var second=observeVectors();
-    return paRepeatMerge(first,second,findability(first,"other"),findability(second,"other"));
+    var vp=null;try{speechSynthesis.getVoices();vp=paStableVoices();}catch(e){}
+    return Promise.resolve(vp).then(function(voices){
+      if(voices)C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);
+      var second=observeVectors();
+      return paRepeatMerge(first,second,findability(first,"other"),findability(second,"other"));
+    });
   }).finally(function(){Object.keys(saved).forEach(function(k){if(saved[k])C[k]=saved[k];else delete C[k];});});
 }
 
@@ -2787,7 +2791,7 @@ async function runKit(){
     if(audio.samples)C["Audio & Media Codecs"].rows.push(["audio fixed-bin samples",audio.samples]);
     if(audio.bufHash)C["Audio & Media Codecs"].rows.push(["audio buffer slice hash (200 samples)",audio.bufHash]);
     if(audio.nonZero)C["Audio & Media Codecs"].rows.push(["audio non-zero samples",audio.nonZero]);
-    var voices=[];try{voices=speechSynthesis.getVoices()||[];if(!voices.length){voices=await new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v=speechSynthesis.getVoices()||[];tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}}catch(e){}
+    var voices=[];try{speechSynthesis.getVoices();voices=await paStableVoices();}catch(e){}
     C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")":"blocked";})()]);
     C["Audio & Media Codecs"].hash=catHash(C["Audio & Media Codecs"].rows);
   }

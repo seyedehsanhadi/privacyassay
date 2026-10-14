@@ -107,3 +107,14 @@ test("wasm: the validate-only probe is labelled atomics, not threads, and the Sh
   assert.ok(SRC.includes('"WASM SIMD/streaming/SharedArrayBuffer/exceptions"'));
   assert.ok(!SRC.includes("streaming/threads/"));
 });
+
+test("voices: a list still loading is read once it settles, so a repeat read cannot fake per-read variation", async () => {
+  const lists = [[{ name: "a" }], [{ name: "a" }, { name: "b" }], [{ name: "a" }, { name: "b" }, { name: "c" }]];
+  let calls = 0;
+  const speechSynthesis = { getVoices() { return lists[Math.min(calls++, lists.length - 1)]; } };
+  const read = new Function("speechSynthesis", grabFn("paStableVoices") + ";return paStableVoices();");
+  assert.equal((await read(speechSynthesis)).length, 3);
+  const repeat = grabFn("repeatVectors");
+  assert.ok(repeat.includes("paStableVoices()"));
+  assert.ok(!/speechSynthesis\.getVoices\(\);C\[/.test(repeat));
+});
