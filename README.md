@@ -69,7 +69,7 @@ One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted 
 
 Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; both are release 15.0.24, Gecko 140.17.0. Brave uses Chromium 155.0.8059.40. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
 
-Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38520446738).
+Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38562462345).
 
 ## Run it
 
