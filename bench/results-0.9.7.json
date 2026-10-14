@@ -1,11 +1,11 @@
 {
   "methodology": "0.9.7",
-  "sha256": "9e866ed385453105b18829c3c8d9528fa8c87658c3e52ec74055810b426c3ceb",
+  "sha256": "6693a48ef26c19fa5bc808138e48c342df0de0ecd107342ea88ed6dc89f23d68",
   "platform": "Windows 11",
   "headless": true,
   "runsPerSetting": 2,
-  "capturedFrom": "2026-10-14T06:09:46.613Z",
-  "capturedTo": "2026-10-14T06:45:06.924Z",
+  "capturedFrom": "2026-10-14T11:20:55.653Z",
+  "capturedTo": "2026-10-14T12:14:07.898Z",
   "rows": [
     {
       "browser": "tor",
@@ -214,8 +214,8 @@
             0
           ],
           "cross": [
-            16,
-            18
+            25,
+            25
           ]
         },
         "store": {
@@ -228,8 +228,8 @@
             13
           ],
           "cross": [
-            27,
-            34
+            29,
+            29
           ]
         },
         "rtc": {
@@ -243,7 +243,7 @@
           ],
           "cross": [
             16,
-            10
+            14
           ]
         },
         "both": {
@@ -256,8 +256,8 @@
             11
           ],
           "cross": [
-            24,
-            25
+            30,
+            24
           ]
         }
       }

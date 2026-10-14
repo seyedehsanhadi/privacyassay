@@ -53,7 +53,7 @@ One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 16–18 (four-setting range 10–34), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
+  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 25 (four-setting range 14–30), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
 </picture>
 
 | Browser | Version | Cross-site | Range | Single-site |
@@ -61,7 +61,7 @@ One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted 
 | Tor Browser | 15.0.24 | 58 | 58–67 | 21 |
 | Mullvad Browser | 15.0.24 | 58 | 58–67 | 21 |
 | LibreWolf | 152.0.6-1 | 46 | 40–52 | 26 |
-| Brave | 1.97.56 | 16–18 | 10–34 | 0 |
+| Brave | 1.97.56 | 25 | 14–30 | 0 |
 | Firefox | 154.0.1 | 12 | 11–23 | 12 |
 | Vivaldi | 8.2.4133.84 | 0 | 0 | 0 |
 | Chrome | 154.0.8037.99 | 0 | 0 | 0 |

@@ -19,9 +19,9 @@
 <path d="M356,125v10 M356,130H423.2 M423.2,125v10" stroke="#2563eb" stroke-width="1.6" fill="none"/>
 <text x="435.2" y="134.5" fill="#57687f" font-size="13" class="n">40–52</text>
 <text x="118" y="171.5" fill="#101112" font-size="14" text-anchor="end">Brave</text>
-<rect x="132" y="157" width="95.19999999999999" height="20" rx="3" fill="#2563eb"/>
-<path d="M188,162v10 M188,167H322.4 M322.4,162v10" stroke="#2563eb" stroke-width="1.6" fill="none"/>
-<text x="334.4" y="171.5" fill="#57687f" font-size="13" class="n">10–34</text>
+<rect x="132" y="157" width="140" height="20" rx="3" fill="#2563eb"/>
+<path d="M210.39999999999998,162v10 M210.39999999999998,167H300 M300,162v10" stroke="#2563eb" stroke-width="1.6" fill="none"/>
+<text x="312" y="171.5" fill="#57687f" font-size="13" class="n">14–30</text>
 <text x="118" y="208.5" fill="#101112" font-size="14" text-anchor="end">Firefox</text>
 <rect x="132" y="194" width="67.19999999999999" height="20" rx="3" fill="#2563eb"/>
 <path d="M193.6,199v10 M193.6,204H260.79999999999995 M260.79999999999995,199v10" stroke="#2563eb" stroke-width="1.6" fill="none"/>
