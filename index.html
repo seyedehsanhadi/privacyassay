@@ -819,7 +819,7 @@ function collectEngine(){
   rows.push(["numeric edge cases",fnv([0.1+0.2,(-0).toString(),JSON.stringify(-0),Object.is(-0,0),Math.atan2(-0,-0),parseInt("0x10"),parseInt("010"),parseFloat("1e999"),Date.parse("2026-01-01T00:00:00Z"),isNaN(Date.parse("nope"))].join(","))]);
   try{
     
-    var WM={simd:[0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11],threads:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,5,4,1,3,1,1,10,11,1,9,0,65,0,254,16,2,0,26,11],tailCall:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,10,6,1,4,0,18,0,11],gc:[0,97,115,109,1,0,0,0,1,5,1,95,1,120,0],memory64:[0,97,115,109,1,0,0,0,5,3,1,4,1],multiMemory:[0,97,115,109,1,0,0,0,5,5,2,0,0,0,0],relaxedSimd:[0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,15,1,13,0,65,1,253,15,65,2,253,15,253,128,2,11],exceptions:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,10,8,1,6,0,6,64,25,11,11],extendedConst:[0,97,115,109,1,0,0,0,5,3,1,0,1,11,9,1,0,65,1,65,2,106,11,0]};
+    var WM={simd:[0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11],atomics:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,5,4,1,3,1,1,10,11,1,9,0,65,0,254,16,2,0,26,11],tailCall:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,10,6,1,4,0,18,0,11],gc:[0,97,115,109,1,0,0,0,1,5,1,95,1,120,0],memory64:[0,97,115,109,1,0,0,0,5,3,1,4,1],multiMemory:[0,97,115,109,1,0,0,0,5,5,2,0,0,0,0],relaxedSimd:[0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,15,1,13,0,65,1,253,15,65,2,253,15,253,128,2,11],exceptions:[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,10,8,1,6,0,6,64,25,11,11],extendedConst:[0,97,115,109,1,0,0,0,5,3,1,0,1,11,9,1,0,65,1,65,2,106,11,0]};
     var wn=Object.keys(WM),wbits="";wn.forEach(function(k){try{wbits+=WebAssembly.validate(new Uint8Array(WM[k]))?"1":"0";}catch(e){wbits+="0";}});
     var wapi=(("Suspending"in WebAssembly)?"1":"0")+(("Function"in WebAssembly)?"1":"0")+(("compileStreaming"in WebAssembly)?"1":"0");
     rows.push(["WASM feature matrix (engine+version, UA-independent spoof tell) ["+wn.join(",")+"|jspi,typeReflect,streaming]",wbits+"+"+wapi+" #"+fnv(wbits+wapi)]);
@@ -863,7 +863,7 @@ function collectFeatures(){
   rows.push(["crossOriginIsolated value",probe(function(){return window.crossOriginIsolated;})]);
   rows.push(["performance.memory",present(performance.memory)]);
   if(performance.memory)rows.push(["jsHeapSizeLimit",performance.memory.jsHeapSizeLimit]);
-  try{var wsimd=WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11]));rows.push(["WASM SIMD/streaming/threads/exceptions",fnv([wsimd,typeof WebAssembly.compileStreaming==="function",typeof SharedArrayBuffer!=="undefined",typeof WebAssembly.Exception!=="undefined",typeof WebAssembly.Tag!=="undefined"].join(","))]);}catch(e){}
+  try{var wsimd=WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11]));rows.push(["WASM SIMD/streaming/SharedArrayBuffer/exceptions",fnv([wsimd,typeof WebAssembly.compileStreaming==="function",typeof SharedArrayBuffer!=="undefined",typeof WebAssembly.Exception!=="undefined",typeof WebAssembly.Tag!=="undefined"].join(","))]);}catch(e){}
   return cat("Browser Feature Detection",rows,"Which APIs exist, which reflects the engine and version. Device APIs are stable capability signals.");
 }
 

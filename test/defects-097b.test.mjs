@@ -99,3 +99,11 @@ test("base name: iOS Chrome, Firefox and Edge are not labelled Safari", () => {
   assert.equal(name(ios("EdgiOS/129.0.2792.84")), "Edge");
   assert.equal(name(ios("Version/17.0")), "Safari");
 });
+
+test("wasm: the validate-only probe is labelled atomics, not threads, and the SharedArrayBuffer bit is named", () => {
+  const matrix = lineWith("var WM={");
+  assert.match(matrix, /atomics:\[0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,5,4,1,3,1,1,10,11,1,9,0,65,0,254,16,2,0,26,11\]/);
+  assert.doesNotMatch(matrix, /threads:/);
+  assert.ok(SRC.includes('"WASM SIMD/streaming/SharedArrayBuffer/exceptions"'));
+  assert.ok(!SRC.includes("streaming/threads/"));
+});
