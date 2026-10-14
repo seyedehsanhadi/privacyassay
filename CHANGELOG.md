@@ -1,12 +1,13 @@
 # Changelog
 
-## 0.9.7 - 2026-10-10
+## 0.9.7 - 2026-10-14
 
 - Preserve exposed values when repeated or frame reads fail; distinguish stable per-site changes from variation within one site. Volatile font lookup stays incomplete; incomplete comparisons earn no protection credit.
 - Redact numeric readings and identity details in the page and saved reports; retain WebGL denial and collector-failure causes.
 - Validate first-party storage controls before crediting ambiguous cross-site failures. Generic IndexedDB failures remain unknown.
 - Score WebGPU features independently; isolate failed GPU metadata, clean up resources, and handle asynchronous lie probes without late report changes.
 - Fix explicit local companion routing, result visibility, keyboard focus and scan timestamps. Recover first-run pages, including Vivaldi; wait for audit controls and verify candidate captures on both origins. Validate CLI arguments, bound startup and comparison time, and retain the full cross-site report.
+- Read WebGPU fallback and subgroup details from `GPUAdapterInfo`, where current browsers expose them. Keep feature detection when site storage is blocked. Stop flagging Android Chrome's empty plugin list and treat iPadOS as mobile. Name Edge, Chrome and Firefox on Android and iOS. Unmeasured coherence probes no longer display as failures. CLI `--no-cross` now skips the second site, and a finished audit survives a cross-site wait that reaches `--timeout`.
 - Expand regression checks across Chromium, Firefox, Mullvad, Tor, Windows WebKit and native macOS Safari. The added surface and scoring corrections make scores incompatible with 0.9.6.
 
 ## 0.9.6 - 2026-10-07

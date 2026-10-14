@@ -174,7 +174,6 @@ async function runOnce(browser, port) {
         }
       }
 
-      remaining();
       const data = await ev(`(function(){var K=window.__KIT||{},F=K.findability||{},Fc=K.findabilityCross||null;
         return JSON.stringify({version:K.version||null,userAgent:navigator.userAgent,
           score:F.score,grade:F.grade,complete:F.complete,coverage:F.coverage,comparisonCoverage:F.comparisonCoverage,comparisonIncomplete:F.checks&&F.checks.incomplete||0,upperBound:F.upperBound,verdict:F.verdict||null,strongest:F.strongest||null,

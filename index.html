@@ -847,7 +847,7 @@ function collectFeatures(){
   var rows=[];
   var feats={
     "WebAssembly":window.WebAssembly,"WebAssembly.instantiate":window.WebAssembly&&WebAssembly.instantiate,
-    "indexedDB":window.indexedDB,"localStorage":window.localStorage,"sessionStorage":window.sessionStorage,
+    "indexedDB":window.indexedDB,"localStorage":paRead(function(){return window.localStorage;},null),"sessionStorage":paRead(function(){return window.sessionStorage;},null),
     "openDatabase":window.openDatabase,"caches (CacheStorage)":window.caches,"BroadcastChannel":window.BroadcastChannel,
     "SharedArrayBuffer":window.SharedArrayBuffer,
     "WebTransport":window.WebTransport,"WebSocket":window.WebSocket,"ServiceWorker":navigator.serviceWorker,
@@ -979,8 +979,8 @@ function collectWebGPU(){
       if(!ad){rows.push(["GPUAdapter",["null (blocked)","ok"]]);fin();return;}
       var pushInfo=function(info){if(done)return;info=info||{};rows.push(["adapter vendor",info.vendor||"(empty)"]);rows.push(["adapter architecture",info.architecture||"(empty)"]);rows.push(["adapter device",info.device||"(empty)"]);rows.push(["adapter description",info.description||"(empty)"]);
         try{var lv=[];for(var k in ad.limits)lv.push(k+":"+ad.limits[k]);rows.push(["GPUAdapter.limits ("+lv.length+")",fnvParts(lv.sort())]);}catch(e){rows.push(["GPUAdapter.limits (unreadable)",paErr(e)]);}
-        try{rows.push(["adapter.isFallbackAdapter",("isFallbackAdapter"in ad)?String(ad.isFallbackAdapter):"absent"]);}catch(e){}
-        try{var smn=ad.limits&&ad.limits.subgroupMinSize,smx=ad.limits&&ad.limits.subgroupMaxSize;
+        try{rows.push(["adapter.isFallbackAdapter",("isFallbackAdapter"in info)?String(info.isFallbackAdapter):("isFallbackAdapter"in ad)?String(ad.isFallbackAdapter):"absent"]);}catch(e){}
+        try{var smn=info.subgroupMinSize||ad.limits&&ad.limits.subgroupMinSize,smx=info.subgroupMaxSize||ad.limits&&ad.limits.subgroupMaxSize;
           rows.push(["subgroup size range (GPU execution-unit width)",(smn||smx)?(smn+" - "+smx):"absent"]);}catch(e){}
         try{
           var namedLimits=["maxBufferSize","maxStorageBufferBindingSize","maxUniformBufferBindingSize","maxTextureDimension2D"];
@@ -1082,7 +1082,7 @@ function collectSandbox(){
 
 function collectSensors(){
   var rows=[];
-  var mobileUA=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var mobileUA=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
   ["Accelerometer","LinearAccelerationSensor","GravitySensor","Gyroscope","Magnetometer","AbsoluteOrientationSensor","RelativeOrientationSensor","AmbientLightSensor"].forEach(function(k){var p=present(window[k]);rows.push([k,[p?"present"+(p&&!mobileUA?" (desktop: constructor defined, no hardware - uniform)":""):"absent",(p&&mobileUA)?"mid":"ok"]]);});
   var motion=("ondevicemotion" in window)||("ondeviceorientation" in window);
   rows.push(["devicemotion / deviceorientation events",[motion?"present"+(mobileUA?"":" (desktop: handler defined, never fires - uniform Chrome)"):"absent",(motion&&mobileUA)?"mid":"ok"]]);
@@ -1415,11 +1415,11 @@ var PRIORS={
     {k:"canvasClass", group:"gpu", tier:3, alt:"frame", label:"canvas drawing", hashKey:"canvasHash",
      verified:"one of the most identifying readings there is"},
     {k:"innerSize", group:"window", tier:3, label:"window size", noCrossDiff:true,
-     verified:"the exact size of your browser window, shaped by your screen, taskbar, toolbars and"},
+     verified:"the exact size of your browser window, shaped by your screen, taskbar, toolbars and zoom level"},
     {k:"rects", group:"layout", tier:2, alt:"hit", label:"element geometry (subpixel)", hashKey:"rects",
      verified:"a real leak, but it shifts between visits, so we rate it medium rather than strong"},
     {k:"fontSet", group:"fonts", tier:3, label:"installed fonts", hashKey:"fontSet", noPerReadCredit:true,
-     verified:"stable and near-unique in combination: reveals the OS build and which applications are"},
+     verified:"stable and near-unique in combination: reveals the OS build and which applications are installed"},
     {k:"webglVendor", group:"gpu", tier:2, alt:"frame", label:"GPU name",
      verified:"names your graphics card and driver"},
     {k:"availFrame", group:"display", tier:2, label:"taskbar size",
@@ -1455,7 +1455,7 @@ var PRIORS={
     {k:"mathml", group:"layout", tier:2, alt:"hit", label:"MathML render size", hashKey:"mathml",
      verified:"the rendered size of a MathML formula"},
     {k:"maxTouchPoints", group:"os", tier:1, alt:"frame", label:"touch points",
-     verified:"resistFingerprinting reports 10 on Windows even on machines with no touchscreen, which"},
+     verified:"resistFingerprinting reports 10 on Windows even on machines with no touchscreen, which hides the real hardware"},
     {k:"languages", group:"locale", tier:1, alt:"frame", label:"language",
      verified:"your accept-language list"},
     {k:"cores", group:"hardware", tier:1, alt:"frame", label:"CPU cores",
@@ -1477,7 +1477,7 @@ var PRIORS={
     {k:"uaCh", group:"os", tier:2, label:"device details (client hints)",
      verified:"what getHighEntropyValues hands over on request: device model, exact OS build and CPU"},
     {k:"storageCarry", group:"storage", tier:3, optional:true, label:"storage carried across sites", okLabel:"no supercookie carried",
-     verified:"a token written from a third-party frame on one origin and read back where that origin"}
+     verified:"a token written from a third-party frame on one origin and read back where that origin is embedded on another site"}
   ]
 };
 
@@ -1927,7 +1927,7 @@ function identify(){
     hit("WebGL turned off, by a pref or an extension","strong","WebGL is unavailable while WebGPU is present; an engine or driver limitation would remove both, but a pref such as webgl.disabled does exactly this");
 
   var ua=navigator.userAgent||"";
-  [[/Vivaldi\/([\d.]+)/,"Vivaldi"],[/\bOPR\/([\d.]+)/,"Opera"],[/YaBrowser\/([\d.]+)/,"Yandex Browser"],[/Edg\/([\d.]+)/,"Edge"]].forEach(function(p){
+  [[/Vivaldi\/([\d.]+)/,"Vivaldi"],[/\bOPR\/([\d.]+)/,"Opera"],[/YaBrowser\/([\d.]+)/,"Yandex Browser"],[/Edg(?:A|iOS)?\/([\d.]+)/,"Edge"]].forEach(function(p){
     var m=p[0].exec(ua);if(m)hit(p[1]+" "+m[1],"strong","its vendor token is in the User-Agent; the fingerprint underneath is ordinary Chromium unless something else here says otherwise");
   });
   glDone(gl);glDone(offGl);
@@ -2009,7 +2009,7 @@ async function coherence(H){
 
   checks["Chrome UA <-> window.chrome present"]=!/Chrome\//.test(navigator.userAgent)||present(window.chrome);
 
-  var plen=(navigator.plugins||[]).length;checks["plugins present (empty on desktop Chrome = Cloudflare tell)"]=!(/Chrome\//.test(navigator.userAgent)&&/Win|Mac|Linux|CrOS/.test(navigator.platform)&&plen===0);
+  var plen=(navigator.plugins||[]).length;checks["plugins present (empty on desktop Chrome = Cloudflare tell)"]=!(/Chrome\//.test(navigator.userAgent)&&!/Android/.test(navigator.userAgent)&&/Win|Mac|Linux|CrOS/.test(navigator.platform)&&plen===0);
 
   try{var wgpuV="";var wc=C["WebGPU"];if(wc)wc.rows.forEach(function(r){if(/adapter vendor/i.test(r[0]))wgpuV=String(r[1]).toLowerCase();});
     if(wgpuV&&rend){var fam=function(s){s=(s||"").toLowerCase();return /nvidia|geforce/.test(s)?"nvidia":/amd|radeon/.test(s)?"amd":/intel/.test(s)?"intel":/apple/.test(s)?"apple":/adreno/.test(s)?"qualcomm":/mali/.test(s)?"arm":"";};var fa=fam(rend),fb=fam(wgpuV);var wgc=!(fa&&fb&&fa!==fb);checks["WebGL renderer <-> WebGPU adapter"]=wgc;if(!wgc)detail["WebGL renderer <-> WebGPU adapter"]="webgl="+fa+" webgpu="+fb;}
@@ -2606,7 +2606,7 @@ function paRenderRaw(R,order){
   });
   h+='</div></div>';
   var ch=R.coherence||{checks:{},detail:{}},keys=Object.keys(ch.checks||{});
-  (ch.rows||[]).forEach(function(r){var k=r&&r[0];if(k&&!(k in ch.checks)){ch.checks[k]=(r[1]&&r[1][1])==="ok";if(r[1]&&r[1][1]!=="ok"&&r[1][0])ch.detail[k]=r[1][0];keys.push(k);}});
+  (ch.rows||[]).forEach(function(r){var k=r&&r[0];if(k&&!/unmeasured/.test(k)&&!(k in ch.checks)){ch.checks[k]=(r[1]&&r[1][1])==="ok";if(r[1]&&r[1][1]!=="ok"&&r[1][0])ch.detail[k]=r[1][0];keys.push(k);}});
   var passN=keys.filter(function(k){return ch.checks[k];}).length,failN=keys.length-passN;
   h+='<div style="flex:1 1 300px;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;box-shadow:var(--card-shadow);padding:15px 18px;">';
   h+='<div style="display:flex;align-items:center;gap:10px;"><span class="pa-mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);">Coherence &amp; consistency</span>';
@@ -2654,7 +2654,7 @@ function paDownload(name,obj){
   }catch(e){}
 }
 function paUABaseName(){var ua=navigator.userAgent||"",has=function(s){return ua.indexOf(s)>=0;};
-  return has("Edg/")?"Edge":has("OPR/")?"Opera":has("SamsungBrowser/")?"Samsung Internet":has("Firefox/")?"Firefox":has("Chrome/")?"Chrome":has("Safari/")?"Safari":"";}
+  return has("Edg/")||has("EdgA/")||has("EdgiOS/")?"Edge":has("OPR/")?"Opera":has("SamsungBrowser/")?"Samsung Internet":has("Firefox/")||has("FxiOS/")?"Firefox":has("Chrome/")||has("CriOS/")?"Chrome":has("Safari/")?"Safari":"";}
 function paIdentity(K){
   var w=(K&&K.whoYouAre)||[];
   var browsers=w.filter(function(f){return f.kind!=="addon";}).map(function(f){return f.what;});
@@ -3114,7 +3114,7 @@ function paRunCrossWindow(){
 /* RUN BUTTON - second-site channel choice, gesture, staleness guard ====== */
 document.getElementById("runBtn").addEventListener("click",function(){
   var btn=document.getElementById("runBtn"),lbl=document.getElementById("runLbl");
-  var comp=paCompanion();var oh=comp?comp.host:null;
+  var comp=window.__paSkipCross?null:paCompanion();var oh=comp?comp.host:null;
   var xTok=oh?("pa"+Math.random().toString(36).slice(2,10)):null;
   try{var _old=document.querySelectorAll('iframe[data-pa-x]');for(var _i=0;_i<_old.length;_i++){if(_old[_i].parentNode)_old[_i].parentNode.removeChild(_old[_i]);}}catch(e){}
   var wantStore=oh&&!!PAV.storageTest;
