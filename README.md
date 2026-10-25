@@ -53,21 +53,21 @@ One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 25 (four-setting range 14–30), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
+  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 18 (four-setting range 16–30), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
 </picture>
 
 | Browser | Version | Cross-site | Range | Single-site |
 |---|---|---:|---:|---:|
-| Tor Browser | 15.0.24 | 58 | 58–67 | 21 |
+| Tor Browser | 15.0.25 | 58 | 58–67 | 21 |
 | Mullvad Browser | 15.0.24 | 58 | 58–67 | 21 |
 | LibreWolf | 152.0.6-1 | 46 | 40–52 | 26 |
-| Brave | 1.97.56 | 25 | 14–30 | 0 |
-| Firefox | 154.0.1 | 12 | 11–23 | 12 |
-| Vivaldi | 8.2.4133.84 | 0 | 0 | 0 |
-| Chrome | 154.0.8037.99 | 0 | 0 | 0 |
-| Edge | 155.0.4283.45 | 0 | 0 | 0 |
+| Brave | 1.98.60 | 18 | 16–30 | 0 |
+| Firefox | 157.0.1 | 12 | 11–23 | 12 |
+| Vivaldi | 8.2.4133.94 | 0 | 0 | 0 |
+| Chrome | 155.0.8059.85 | 0 | 0 | 0 |
+| Edge | 156.0.4314.42 | 0 | 0 | 0 |
 
-Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; both are release 15.0.24, Gecko 140.17.0. Brave uses Chromium 155.0.8059.40. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
+Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; Tor is release 15.0.25 and Mullvad 15.0.24, both Gecko 140.17.0. Brave uses Chromium 156.0.8078.48. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
 
 Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38562462345).
 

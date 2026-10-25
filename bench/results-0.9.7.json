@@ -1,16 +1,16 @@
 {
   "methodology": "0.9.7",
-  "sha256": "6693a48ef26c19fa5bc808138e48c342df0de0ecd107342ea88ed6dc89f23d68",
+  "sha256": "c05e312dfc2548e69ace48b4715cebcac4cea13c3698d334d9cafbfd44d73abe",
   "platform": "Windows 11",
   "headless": true,
   "runsPerSetting": 2,
-  "capturedFrom": "2026-10-14T11:20:55.653Z",
-  "capturedTo": "2026-10-14T12:14:07.898Z",
+  "capturedFrom": "2026-10-25T19:15:44.364Z",
+  "capturedTo": "2026-10-25T20:01:20.499Z",
   "rows": [
     {
       "browser": "tor",
       "name": "Tor Browser",
-      "version": "15.0.24",
+      "version": "15.0.25",
       "engineVersion": "140.17.0",
       "measurements": {
         "default": {
@@ -201,8 +201,8 @@
     {
       "browser": "brave",
       "name": "Brave",
-      "version": "1.97.56",
-      "engineVersion": "155.0.8059.40",
+      "version": "1.98.60",
+      "engineVersion": "156.0.8078.48",
       "measurements": {
         "default": {
           "complete": true,
@@ -214,8 +214,8 @@
             0
           ],
           "cross": [
-            25,
-            25
+            18,
+            18
           ]
         },
         "store": {
@@ -228,7 +228,7 @@
             13
           ],
           "cross": [
-            29,
+            22,
             29
           ]
         },
@@ -243,7 +243,7 @@
           ],
           "cross": [
             16,
-            14
+            16
           ]
         },
         "both": {
@@ -257,7 +257,7 @@
           ],
           "cross": [
             30,
-            24
+            25
           ]
         }
       }
@@ -265,7 +265,7 @@
     {
       "browser": "firefox",
       "name": "Firefox",
-      "version": "154.0.1",
+      "version": "157.0.1",
       "measurements": {
         "default": {
           "complete": true,
@@ -328,7 +328,7 @@
     {
       "browser": "vivaldi",
       "name": "Vivaldi",
-      "version": "8.2.4133.84",
+      "version": "8.2.4133.94",
       "measurements": {
         "default": {
           "complete": true,
@@ -391,7 +391,7 @@
     {
       "browser": "chrome",
       "name": "Chrome",
-      "version": "154.0.8037.99",
+      "version": "155.0.8059.85",
       "measurements": {
         "default": {
           "complete": true,
@@ -454,7 +454,7 @@
     {
       "browser": "edge",
       "name": "Edge",
-      "version": "155.0.4283.45",
+      "version": "156.0.4314.42",
       "measurements": {
         "default": {
           "complete": true,
