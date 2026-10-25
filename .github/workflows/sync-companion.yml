@@ -28,8 +28,9 @@ jobs:
           fi
           git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/privacyassay/privacyassay.github.io.git" companion
           cp index.html methodology.html METHODOLOGY.md companion/
+          printf 'User-agent: *\nDisallow: /*.md$\nDisallow: /__\n' > companion/robots.txt
           cd companion
-          git add index.html methodology.html METHODOLOGY.md
+          git add index.html methodology.html METHODOLOGY.md robots.txt
           if git diff --cached --quiet; then
             echo "companion already byte-identical; nothing to push."
             exit 0

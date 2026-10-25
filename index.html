@@ -368,7 +368,7 @@
 .pa-optin input{cursor:pointer;flex:0 0 auto;margin-top:2px}
 .pa-sm{display:none}
 #paBar{display:none}
-body.pa-pre main,body.pa-pre .pa-how{display:none}
+body.pa-pre main{display:none}
 body.pa-beacon .pa-cardwrap,body.pa-beacon #paBar,body.pa-beacon main,body.pa-beacon .pa-how{display:none}
 .pa-cardwrap{max-width:1600px;margin:0 auto;min-height:calc(100dvh - 8px);display:flex;align-items:center;justify-content:center;padding:24px 20px}
 .pa-card{width:100%;max-width:560px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 20px 60px rgba(0,0,0,.30);padding:26px 28px;display:flex;flex-direction:column;gap:18px}
@@ -465,10 +465,14 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
   <div class="pa-how-body">
     <p>Each reading is classified as exposed (<b>shown</b>), observed masked or changing (<b>blended</b>), or unavailable (<b>refused</b>). These classifications are evidence from this test, not proof that a tracker cannot link you.</p>
     <p>The score is the share of what this tool checks that stays hidden, weighted by how identifying each reading is. It does not estimate how rare you are. A strong reading still shown is named next to the grade.</p>
-    <p>A high score summarizes this experiment. Unknown or failed readings receive no protection credit. An incomplete result has grade I, measurement coverage and a lower-bound score. Method and working in <a href="methodology.html" target="_blank" rel="noopener">METHODOLOGY.md</a>.</p>
+    <p>A high score summarizes this experiment. Unknown or failed readings receive no protection credit. An incomplete result has grade I, measurement coverage and a lower-bound score. Method and working in <a href="methodology.html" target="_blank" rel="noopener">the methodology</a>.</p>
     <h2>Browser privacy test coverage</h2>
     <p>Privacyassay checks canvas, WebGL, WebGPU, audio, fonts, layout, device details and other browser fingerprint surfaces. It compares a second site when available; WebRTC public-IP and cross-site storage tests are optional. Results depend on the browser, operating system, settings and tests that finish.</p>
     <p>This is not a complete privacy or security assessment. It does not test tracker blocking, browser telemetry, AI assistants' data handling, DNS or TLS fingerprinting, or resistance to every tracking technique. AI API availability does not reveal whether Firefox AI features or another browser's assistant are enabled. Unsupported and unmeasured features must not be read as proof of safety.</p>
+    <h2>Common questions</h2>
+    <p><b>What is a browser fingerprint?</b> It is the set of details a website can read without cookies: how your browser draws canvas and WebGL graphics, processes audio, lists fonts and reports screen and device values. Combined, they can recognize a browser across visits even after cookies are cleared.</p>
+    <p><b>Is my fingerprint uploaded?</b> No. The test runs on this page and the results stay in your browser. The optional cross-site test opens a second site, and the optional WebRTC test contacts one public STUN server.</p>
+    <p><b>How do I compare browsers?</b> Run the test in each browser on the same device with the same settings and opt-ins, then compare grades. Brave, Firefox, LibreWolf, Mullvad Browser and Tor Browser protect different readings in different ways, so a single reading rarely tells the whole story.</p>
   </div>
 </details>
 <main>

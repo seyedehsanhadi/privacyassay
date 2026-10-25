@@ -30,3 +30,16 @@ test('public methodology is linked, self-canonical, discoverable and included in
   assert.ok(JSON.parse(read('package.json')).files.includes('methodology.html'));
   assert.match(read('.github/workflows/sync-companion.yml'),/cp index.html methodology.html METHODOLOGY.md companion\//);
 });
+
+test('search: only site files are published, the companion stays crawlable, and the intro is not hidden before a run',()=>{
+  const read = path => fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+  const stage = read('.github/workflows/pages.yml').match(/cp ([^\n]+) _site\//)[1].split(' ');
+  for (const f of stage) assert.ok(fs.existsSync(new URL('../'+f,import.meta.url)), f+' is staged but missing');
+  assert.ok(stage.includes('index.html') && stage.includes('methodology.html') && stage.includes('CNAME'));
+  assert.ok(!stage.some(f=>f.endsWith('.md')), 'Markdown must not be published as raw pages');
+  const companion = read('.github/workflows/sync-companion.yml');
+  assert.doesNotMatch(companion, /Disallow: \/\\n/);
+  assert.match(companion, /companion\/robots\.txt/);
+  for (const f of ['methodology.html','llms.txt']) assert.doesNotMatch(read(f), /href="METHODOLOGY\.md"|privacyassay\.com\/METHODOLOGY\.md/);
+  assert.doesNotMatch(read('index.html'), /body\.pa-pre[^{]*\.pa-how/);
+});

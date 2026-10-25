@@ -1,0 +1,37 @@
+name: pages
+
+# Publishes only the public site. The repository also holds notes, tests, benchmark captures and
+# Markdown sources; served raw they compete with the real pages in search results.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage the public files
+        run: |
+          mkdir _site
+          cp index.html methodology.html robots.txt sitemap.xml llms.txt CNAME og-card.png favicon.ico _site/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

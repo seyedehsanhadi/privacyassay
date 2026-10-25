@@ -9,6 +9,6 @@ The catalog contains 33 readings across 13 categories. WebRTC and storage checks
 ## Documentation
 
 - [Methodology](https://privacyassay.com/methodology.html): reader-facing scoring and coverage explanation
-- [Technical methodology](https://privacyassay.com/METHODOLOGY.md): weights, completion states and experimental constraints
+- [Technical methodology](https://github.com/seyedehsanhadi/privacyassay/blob/main/METHODOLOGY.md): weights, completion states and experimental constraints
 - [Repository](https://github.com/seyedehsanhadi/privacyassay): source, tests and contribution guidance
 - [Security](https://github.com/seyedehsanhadi/privacyassay/blob/main/SECURITY.md): reporting process
