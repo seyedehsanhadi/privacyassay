@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.8 - 2026-11-17
+
+- Hash the WebGL extension list in sorted order and give the SVG text probe its own font, so the main page and the fresh frame read the same value. Stock browsers no longer get "GPU feature list" and "SVG text metrics" flagged as bypassed, and protected browsers keep credit those two readings earned.
+- An empty voice list is now an exposed value of 0 voices, not a refusal; only a missing or failing speech API counts as refused. A voice count that changes between the two reads is marked incomplete instead of earning per-read credit.
+- Read canvas pixels from `willReadFrequently` contexts. Safari 27.2 throws `InvalidStateError` on readback from a default 2D context, which left the canvas reading incomplete. Failed reads no longer go into the cross-site link code.
+- Group weight on the results page and in the summary export comes from exposed readings, so the strong-leak count matches the verdict. All summary counts describe the single-site result.
+- The cross-site card labels credit from assumed uniformity as assumed, and incomplete runs show lower bounds without a grade or a delta. Page text now says which opt-in sent a request and that redaction keeps status words visible.
+- The CLI rejects unknown options with exit code 2, documents that an incomplete run under `--min-score` exits 2, and tags `--full` output with its schema.
+- Scores can differ from 0.9.7 for browsers with protected WebGL, SVG or voice readings, so they are not comparable.
+
 ## 0.9.7 - 2026-10-14
 
 - Preserve exposed values when repeated or frame reads fail; distinguish stable per-site changes from variation within one site. Volatile font lookup stays incomplete; incomplete comparisons earn no protection credit.

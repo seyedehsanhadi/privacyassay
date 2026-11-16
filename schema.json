@@ -217,7 +217,7 @@
         },
         "maskedByAssumedUniformity": {
           "type": "integer",
-          "description": "Blended readings credited only because they match a browser family's documented standard value; uniformity across users is assumed, not measured."
+          "description": "Blended readings in the single-site score credited only because they match a browser family's documented standard value; uniformity across users is assumed, not measured. A single-site run never earns this credit, so this is 0; the cross-site credit is the gap between crossSite.score and crossSite.measuredScore."
         },
         "unknown": {
           "type": "integer"

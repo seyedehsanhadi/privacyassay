@@ -72,7 +72,7 @@ test("render failures remain unknown; measured changes blend",()=>{for(const k o
 
 test("a grid-aligned window does not prove letterboxing",()=>{for(const fam of Object.keys(PRIORS.browsers)){assert.equal(stateOf({innerSize:"1000x700"},fam,"innerSize"),"shown");assert.equal(stateOf({screenClass:"1000x700"},fam,"screenClass"),"shown");}});
 
-test("zero taskbar geometry does not earn brand-based credit",()=>{for(const fam of Object.keys(PRIORS.browsers))assert.equal(stateOf({availFrame:"masked"},fam,"availFrame"),"shown");});
+test("zero taskbar geometry does not earn brand-based credit",()=>{for(const fam of Object.keys(PRIORS.browsers))assert.equal(stateOf({availFrame:"none"},fam,"availFrame"),"shown");});
 
 test("empty voice inventory does not prove masking",()=>{assert.equal(stateOf({speechVoices:"0 (ERR)"},"other","speechVoices"),"unknown");assert.equal(stateOf({speechVoices:"22 voices"},"other","speechVoices"),"shown");});
 

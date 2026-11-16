@@ -34,7 +34,7 @@ if (flag("--help") || flag("-h")) {
 
 Usage: privacyassay [options]
   --help, -h      show this help
-  --min-score N   exit 1 if the score is below N (CI gate)
+  --min-score N   exit 1 if the score is below N (CI gate); exit 2 if the run is incomplete
   --full          print the full report instead of the summary
   --webrtc        include the WebRTC public-IP test (opens one STUN request; off by default)
   --headful       run with a visible window (default: headless)
@@ -49,6 +49,14 @@ By default the tool runs entirely on your machine and makes no external request.
 With --webrtc it opens one STUN request to a public server to detect the IP leak.
 `);
   process.exit(0);
+}
+
+const KNOWN = ["--help", "--min-score", "--full", "--webrtc", "--headful", "--browser", "--runs", "--timeout", "--no-cross", "--cross-timeout", "--quiet"];
+const unknown = argv.find((a) => a.startsWith("--") && !KNOWN.includes(a.split("=")[0]));
+if (unknown) {
+  process.stderr.write(`unknown option ${unknown}; see --help
+`);
+  process.exit(2);
 }
 
 // A mistyped number must stop the run, never coerce to NaN: `--min-score abc` would
@@ -243,7 +251,7 @@ async function main() {
   const med = results[Math.floor((results.length - 1) / 2)];
   const scores = results.map((r) => r.score);
 
-  const out = FULL ? { ...med.full, crossSite: med.crossSite || null, crossSiteNote: med.crossSiteNote || (NOCROSS ? "skipped (--no-cross)" : med.crossSite ? null : "not measurable") } : {
+  const out = FULL ? { schema: "privacyassay-full/1.1", ...med.full, crossSite: med.crossSite || null, crossSiteNote: med.crossSiteNote || (NOCROSS ? "skipped (--no-cross)" : med.crossSite ? null : "not measurable") } : {
     schema: "privacyassay-summary/1.1", tool: "privacyassay", version: med.version,
     userAgent: med.userAgent, score: med.score, grade: med.grade, complete: med.complete, coverage: med.coverage, comparisonCoverage: med.comparisonCoverage, comparisonIncomplete: med.comparisonIncomplete, upperBound: med.upperBound, verdict: med.verdict,
     strongest: med.strongest, exposedStrong: med.exposedStrong,

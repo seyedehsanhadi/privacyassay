@@ -37,7 +37,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.7","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"sameAs":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.8","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"sameAs":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -448,7 +448,7 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
       <label class="pa-optin"><input type="checkbox" id="webrtcOptin"> <span class="pa-lg">Also test the WebRTC public-IP leak. Off by default so the audit stays fully local; turning it on opens one request to a public STUN server.</span><span class="pa-sm">WebRTC leak</span></label>
       <label class="pa-optin"><input type="checkbox" id="storageOptin"> <span class="pa-lg">Also test for supercookies: whether a tracker can plant an ID that survives across sites. Opens a brief second-site window to read storage as a first party.</span><span class="pa-sm">Supercookies</span></label>
       <label class="pa-optin"><input type="checkbox" id="drmOptin"> <span class="pa-lg">Also test which DRM systems answer. Off by default because the browser may show a DRM permission or component-install prompt.</span><span class="pa-sm">DRM</span></label>
-      <label class="pa-optin"><input type="checkbox" id="redactOptin" checked> <span class="pa-lg">Hide your raw values on screen and in any file you save, so screenshots and shared reports stay safe. On by default; turn it off to reveal your own values. The score is the same either way.</span><span class="pa-sm">Redact values</span></label>
+      <label class="pa-optin"><input type="checkbox" id="redactOptin" checked> <span class="pa-lg">Hide your raw values on screen and in any file you save. Status words such as on, off or fine stay visible, so check a screenshot or report before sharing it. On by default; turn it off to reveal your own values. The score is the same either way.</span><span class="pa-sm">Redact values</span></label>
     </div>
     <div class="pa-card-links" id="paCardLinks">
       <a class="pa-linkbtn" href="methodology.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8M8 17h8M8 9h1.5"></path></svg>Methodology</a>
@@ -499,6 +499,8 @@ try{if(PA_COMPANION){var _cu=new URL(PA_COMPANION);if(location.host===_cu.host&&
 function fnv(s){var h=2166136261>>>0;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function fnvDead(v){v=String(v);return /ERR:/.test(v)||/(^|[:|])undefined$/.test(v)||v==="";}
 function fnvParts(a,sep){if(!a||!a.length)return "ERR";sep=sep===undefined?"|":sep;for(var i=0;i<a.length;i++)if(!fnvDead(a[i]))return fnv(a.join(sep));return "ERR";}
+function paLinkDead(v){return fnvDead(v)||/^(ERR|blocked)(:|$)/.test(v);}
+function paLinkPart(a){a=a.map(function(x){return x==null?"":String(x);});return a.some(paLinkDead)?"":(a.length>1?fnv(a.join("~")):a[0]);}
 function fnvBytes(a){var h=2166136261>>>0;for(var i=0;i<a.length;i++){h^=a[i];h=Math.imul(h,16777619)>>>0;}return ("0000000"+h.toString(16)).slice(-8);}
 function probe(fn){try{var v=fn();return v===undefined?"undefined":v;}catch(e){return "ERR:"+(e&&e.name||e);}}
 function present(g){try{return typeof g!=="undefined"&&g!==null;}catch(e){return false;}}
@@ -513,12 +515,12 @@ function cat(name,rows,note){C[name]={rows:rows,hash:catHash(rows),note:note||""
 function glDone(g){try{var e=g&&g.getExtension&&g.getExtension("WEBGL_lose_context");if(e)e.loseContext();}catch(x){}}
 
 /* COLLECTORS - canvas, WebGL, GPU ======================================== */
-function canvas2dHash(){var c=document.createElement("canvas");c.width=300;c.height=64;var x=c.getContext("2d");if(!x)return null;x.textBaseline="top";x.font="16px 'Arial'";x.fillStyle="#f60";x.fillRect(8,1,180,42);x.fillStyle="#069";x.fillText("Privacyassay\u{1F47E}\u{1F600}",2,15);x.fillStyle="rgba(80,200,120,.65)";x.fillText("Privacyassay\u{1F47E}\u{1F600}",4,17);x.beginPath();x.arc(48,32,22,0,7);x.closePath();x.fill();return c;}
+function canvas2dHash(){var c=document.createElement("canvas");c.width=300;c.height=64;var x=c.getContext("2d",{willReadFrequently:true});if(!x)return null;x.textBaseline="top";x.font="16px 'Arial'";x.fillStyle="#f60";x.fillRect(8,1,180,42);x.fillStyle="#069";x.fillText("Privacyassay\u{1F47E}\u{1F600}",2,15);x.fillStyle="rgba(80,200,120,.65)";x.fillText("Privacyassay\u{1F47E}\u{1F600}",4,17);x.beginPath();x.arc(48,32,22,0,7);x.closePath();x.fill();return c;}
 function collectGPU(){
   var rows=[];
   var c=null,canvasError="ERR";try{c=canvas2dHash();}catch(e){canvasError=paErr(e);}
   try{rows.push(["canvas 2D toDataURL",c?fnv(c.toDataURL()):canvasError]);}catch(e){rows.push(["canvas 2D toDataURL",paErr(e)]);}
-  try{rows.push(["canvas getImageData px",c?fnvBytes(c.getContext("2d").getImageData(0,0,c.width,c.height).data):canvasError]);}catch(e){rows.push(["canvas getImageData px",paErr(e)]);}
+  try{rows.push(["canvas getImageData px",c?fnvBytes(c.getContext("2d",{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data):canvasError]);}catch(e){rows.push(["canvas getImageData px",paErr(e)]);}
   var csubs=[
     ["canvas sub: text",function(x){x.textBaseline="alphabetic";x.font="18px 'Times New Roman'";x.fillStyle="#a1c";x.fillText("Cwm fjordbank glyphs vext quiz",4,30);x.font="italic 14px 'Georgia'";x.fillStyle="rgba(20,120,200,.7)";x.fillText("mMwWiIl1 0Oo",6,50);}],
     ["canvas sub: emoji",function(x){x.font="28px sans-serif";["\u{1F600}","\u{1F469}‍\u{1F467}","\u{1F3F4}‍☠️","\u{1FAE0}"].forEach(function(e,i){x.fillText(e,4+i*40,40);});}],
@@ -544,7 +546,7 @@ function collectGPU(){
     try{var prec=[];["VERTEX_SHADER","FRAGMENT_SHADER"].forEach(function(s){["HIGH_FLOAT","MEDIUM_FLOAT","LOW_FLOAT","HIGH_INT","MEDIUM_INT","LOW_INT"].forEach(function(p){var f=gl.getShaderPrecisionFormat(gl[s],gl[p]);prec.push(f.precision+","+f.rangeMin+","+f.rangeMax);});});rows.push(["WebGL precision formats (12)",fnv(prec.join("|"))]);}catch(e){}
     try{var aniso=gl.getExtension("EXT_texture_filter_anisotropic");if(aniso)rows.push(["WebGL max anisotropy",probe(function(){return ""+gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT);})]);}catch(e){}
     try{var c3=document.createElement("canvas");var g3=c3.getContext("webgl2");if(g3){var p2=["MAX_3D_TEXTURE_SIZE","MAX_ARRAY_TEXTURE_LAYERS","MAX_COLOR_ATTACHMENTS","MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS","MAX_COMBINED_UNIFORM_BLOCKS","MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS","MAX_DRAW_BUFFERS","MAX_ELEMENT_INDEX","MAX_ELEMENTS_INDICES","MAX_ELEMENTS_VERTICES","MAX_FRAGMENT_INPUT_COMPONENTS","MAX_FRAGMENT_UNIFORM_BLOCKS","MAX_FRAGMENT_UNIFORM_COMPONENTS","MAX_PROGRAM_TEXEL_OFFSET","MIN_PROGRAM_TEXEL_OFFSET","MAX_SAMPLES","MAX_SERVER_WAIT_TIMEOUT","MAX_TEXTURE_LOD_BIAS","MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS","MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS","MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS","MAX_UNIFORM_BLOCK_SIZE","MAX_UNIFORM_BUFFER_BINDINGS","MAX_VARYING_COMPONENTS","MAX_VERTEX_OUTPUT_COMPONENTS","MAX_VERTEX_UNIFORM_BLOCKS","MAX_VERTEX_UNIFORM_COMPONENTS","UNIFORM_BUFFER_OFFSET_ALIGNMENT"];var pv2=p2.map(function(p){return p+":"+probe(function(){return ""+g3.getParameter(g3[p]);});});rows.push(["WebGL2 params ("+p2.length+")",fnvParts(pv2)+" "+pv2.slice(0,6).map(function(s){return s.split(":")[1];}).join("/").slice(0,40)]);glDone(g3);}else rows.push(["WebGL2 params","n/a (no WebGL2)"]);}catch(e){}
-    try{rows.push(["WebGL extensions",fnvParts(gl.getSupportedExtensions()||[],",")]);}catch(e){}
+    try{rows.push(["WebGL extensions",fnvParts((gl.getSupportedExtensions()||[]).slice().sort(),",")]);}catch(e){}
     try{rows.push(["WebGL context attributes",fnv(JSON.stringify(gl.getContextAttributes()||{}))]);}catch(e){}
 
     try{var c2=document.createElement("canvas");c2.width=96;c2.height=96;var g2=c2.getContext("webgl");var vs=g2.createShader(g2.VERTEX_SHADER);g2.shaderSource(vs,"attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);gl_PointSize=80.;}");g2.compileShader(vs);var fs=g2.createShader(g2.FRAGMENT_SHADER);g2.shaderSource(fs,"precision mediump float;void main(){gl_FragColor=vec4(.4,.7,.25,1.);}");g2.compileShader(fs);var pr=g2.createProgram();g2.attachShader(pr,vs);g2.attachShader(pr,fs);g2.linkProgram(pr);g2.useProgram(pr);var b=g2.createBuffer();g2.bindBuffer(g2.ARRAY_BUFFER,b);g2.bufferData(g2.ARRAY_BUFFER,new Float32Array([0,0]),g2.STATIC_DRAW);var l=g2.getAttribLocation(pr,"p");g2.enableVertexAttribArray(l);g2.vertexAttribPointer(l,2,g2.FLOAT,false,0,0);g2.drawArrays(g2.POINTS,0,1);var px=new Uint8Array(96*96*4);var _rp=0;try{g2.readPixels(0,0,96,96,g2.RGBA,g2.UNSIGNED_BYTE,px);}catch(e){_rp=e&&e.name==='NotSupportedError'&&g2.getError()===0?1:0;if(!_rp)throw e;}var _drew=false;for(var _pi=0;_pi<px.length;_pi++){if(px[_pi]!==0){_drew=true;break;}}rows.push(["WebGL render hash",_rp?"blocked:NotSupportedError":_drew?fnvBytes(px):"ERR"]);glDone(g2);}catch(e){rows.push(["WebGL render hash",paErr(e)]);}
@@ -1182,7 +1184,7 @@ function refreshRate(){
 function collectLeaks2026(){
   var rows=[];
   try{
-    function cvh(){var c=document.createElement("canvas");c.width=180;c.height=40;var x=c.getContext("2d");if(!x)return 0;x.textBaseline="top";x.font="14px Arial";x.fillStyle="#f60";x.fillRect(0,0,90,20);x.fillStyle="#069";x.fillText("leak-probe",2,2);var d=x.getImageData(0,0,180,40).data;var h=2166136261;for(var i=0;i<d.length;i+=5){h=(h^d[i])>>>0;h=Math.imul(h,16777619)>>>0;}return h;}
+    function cvh(){var c=document.createElement("canvas");c.width=180;c.height=40;var x=c.getContext("2d",{willReadFrequently:true});if(!x)throw new Error("no 2d context");x.textBaseline="top";x.font="14px Arial";x.fillStyle="#f60";x.fillRect(0,0,90,20);x.fillStyle="#069";x.fillText("leak-probe",2,2);var d=x.getImageData(0,0,180,40).data;var h=2166136261;for(var i=0;i<d.length;i+=5){h=(h^d[i])>>>0;h=Math.imul(h,16777619)>>>0;}return h;}
     var h1=cvh(),h2=cvh(),h3=cvh();var perRead=!(h1===h2&&h2===h3);
     rows.push(["canvas per-read noise variance",[perRead?"changed across three reads; resistance to averaging not tested":"stable across three reads; protection and cross-session linkability not determined","mid"]]);
   }catch(e){rows.push(["canvas per-read variance","ERR"]);}
@@ -1403,7 +1405,7 @@ async function lieBattery(){
 
 /* FINDABILITY CATALOG - the scored readings and their weights ============ */
 var PRIORS={
-  version:"0.9.7", dated:"2026-10-10",
+  version:"0.9.8", dated:"2026-11-17",
 
 
 /* - browser labels (informational only) ------------------ */
@@ -1433,7 +1435,7 @@ var PRIORS={
      verified:"a rendered 3D image read back pixel by pixel, shaped by your GPU and driver"},
     {k:"webglExt", group:"gpu", tier:2, alt:"frame", label:"GPU feature list", hashKey:"webglExt",
      verified:"which WebGL extensions the GPU stack offers"},
-    {k:"speechVoices", group:"media", tier:2, alt:"frame", label:"installed voices", hashKey:"speechVoices",
+    {k:"speechVoices", group:"media", tier:2, alt:"frame", label:"installed voices", hashKey:"speechVoices", noPerReadCredit:true,
      verified:"exposes OS version and installed language packs, and survives a spoofed user agent"},
     {k:"screenClass", group:"display", tier:2, label:"screen size", noCrossDiff:true,
      verified:"Tor and Mullvad round the window so many users share one size"},
@@ -1548,7 +1550,7 @@ function paCanvasHash(doc){var c=doc.createElement("canvas");c.width=90;c.height
   return fnvBytes(x.getImageData(0,0,c.width,c.height).data);}
 function paTextMetrics(doc){var cv=doc.createElement("canvas").getContext("2d");cv.font="14px Arial";var tm=cv.measureText("Privacyassay mMwW");
   return {w:tm.width,extras:fnv([tm.actualBoundingBoxAscent,tm.actualBoundingBoxDescent,tm.actualBoundingBoxLeft,tm.actualBoundingBoxRight,tm.fontBoundingBoxAscent,tm.fontBoundingBoxDescent].join(","))};}
-function paSvgMetrics(doc){var NS="http://www.w3.org/2000/svg";var sv=doc.createElementNS(NS,"svg");sv.style.cssText="position:absolute;left:-9999px";var t=doc.createElementNS(NS,"text");t.textContent="svgFP\u{1F600}";t.setAttribute("font-size","19");sv.appendChild(t);doc.body.appendChild(sv);
+function paSvgMetrics(doc){var NS="http://www.w3.org/2000/svg";var sv=doc.createElementNS(NS,"svg");sv.style.cssText="position:absolute;left:-9999px";var t=doc.createElementNS(NS,"text");t.textContent="svgFP\u{1F600}";t.setAttribute("font-size","19");t.setAttribute("font-family","sans-serif");sv.appendChild(t);doc.body.appendChild(sv);
   try{return fnvParts([t.getComputedTextLength(),t.getBBox().width,t.getBBox().height]);}finally{doc.body.removeChild(sv);}}
 function paFrameGpu(){
   return new Promise(function(res){
@@ -1668,7 +1670,7 @@ function observeVectors(){
     availFrame:P(function(){var dw=screen.width-screen.availWidth,dh=screen.height-screen.availHeight;
       if(!(screen.width>0&&screen.availWidth>0))return "";
       if(dw<0||dh<0)return "";
-      return (dw===0&&dh===0)?"masked":(dw+"x"+dh);},""),
+      return (dw===0&&dh===0)?"none":(dw+"x"+dh);},""),
     rects:paRow("CSS & Rendering","getboundingclientrect hash"),
     svgMetrics:paRow("CSS & Rendering","svg getcomputedtextlength"),
     textMetrics:paRow("Font Enumeration","textmetrics extras"),
@@ -1690,6 +1692,7 @@ function observeVectors(){
   return out;
 }
 
+function paVoicesRow(v){return typeof v==="string"?v:!Array.isArray(v)?"ERR:getVoices":v.length?v.length+" ("+fnvParts(v.map(function(x){return x&&x.name?x.name+x.lang:"undefined";}),",")+")":"0";}
 function paStableVoices(){return new Promise(function(res){var last=-1,stable=0,tries=0;try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}var iv=setInterval(function(){var v;try{v=speechSynthesis.getVoices();}catch(e){}if(!Array.isArray(v)){clearInterval(iv);res(null);return;}tries++;if(v.length>0&&v.length===last)stable++;else stable=0;last=v.length;if((stable>=2&&v.length>0)||tries>=14){clearInterval(iv);res(v);}},180);});}
 function repeatVectors(){
   var first=observeVectors(),saved={};["Active Rendering & GPU","Font Enumeration","CSS & Rendering","Audio & Media Codecs","WebGPU"].forEach(function(k){saved[k]=C[k];});
@@ -1701,7 +1704,7 @@ function repeatVectors(){
     C["Audio & Media Codecs"].rows.push(["AudioContext render hash",audio.hash]);
     var vp=null;try{speechSynthesis.getVoices();vp=paStableVoices();}catch(e){}
     return Promise.resolve(vp).then(function(voices){
-      if(voices)C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",voices.length?voices.length+" ("+fnvParts(voices.map(function(v){return v.name+v.lang;}),",")+")":"blocked"]);
+      if(voices)C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",paVoicesRow(voices)]);
       var second=observeVectors();
       return paRepeatMerge(first,second,findability(first,"other"),findability(second,"other"));
     });
@@ -1811,7 +1814,7 @@ var PA_STD={
     maxTouchPoints:function(v){return /^(10|5)$/.test(String(v));},
     audioRate:function(v){return String(v)==="44100";},
     languages:function(v){return v==="en-US";},
-    availFrame:function(v){return v==="masked";}
+    availFrame:function(v){return v==="none";}
   },
   letterbox:{
     innerSize:function(v){return paIsLB(v);},
@@ -2156,7 +2159,7 @@ function realmCheck(){
 }
 function workerCheck(){
   return new Promise(function(res){
-    try{var src="var o={};try{var c=new OffscreenCanvas(64,32);var x=c.getContext('2d');x.font=\"14px Arial\";x.fillStyle='#069';x.fillText('w',2,16);var d=x.getImageData(0,0,64,32).data;var h=2166136261>>>0;for(var i=0;i<d.length;i++){h^=d[i];h=Math.imul(h,16777619)>>>0;}o.canvas=(h>>>0).toString(16);}catch(e){}try{var gc=new OffscreenCanvas(8,8);var g=gc.getContext('webgl')||gc.getContext('webgl2');var dd=g&&g.getExtension('WEBGL_debug_renderer_info');o.gpu=dd?''+g.getParameter(dd.UNMASKED_RENDERER_WEBGL):'';}catch(e){}o.hw=navigator.hardwareConcurrency;o.dm=''+navigator.deviceMemory;o.ua=navigator.userAgent;try{o.tz=Intl.DateTimeFormat().resolvedOptions().timeZone;o.tzo=new Date().getTimezoneOffset();}catch(e){}postMessage(o);";
+    try{var src="var o={};try{var c=new OffscreenCanvas(64,32);var x=c.getContext('2d',{willReadFrequently:true});x.font=\"14px Arial\";x.fillStyle='#069';x.fillText('w',2,16);var d=x.getImageData(0,0,64,32).data;var h=2166136261>>>0;for(var i=0;i<d.length;i++){h^=d[i];h=Math.imul(h,16777619)>>>0;}o.canvas=(h>>>0).toString(16);}catch(e){}try{var gc=new OffscreenCanvas(8,8);var g=gc.getContext('webgl')||gc.getContext('webgl2');var dd=g&&g.getExtension('WEBGL_debug_renderer_info');o.gpu=dd?''+g.getParameter(dd.UNMASKED_RENDERER_WEBGL):'';}catch(e){}o.hw=navigator.hardwareConcurrency;o.dm=''+navigator.deviceMemory;o.ua=navigator.userAgent;try{o.tz=Intl.DateTimeFormat().resolvedOptions().timeZone;o.tzo=new Date().getTimezoneOffset();}catch(e){}postMessage(o);";
       var url=URL.createObjectURL(new Blob([src],{type:"text/javascript"}));var wk;try{wk=new Worker(url);}catch(e){URL.revokeObjectURL(url);throw e;}var d=false;function done(v){if(d)return;d=true;try{wk.terminate();}catch(e){}try{URL.revokeObjectURL(url);}catch(e){}res(v);}wk.onmessage=function(e){done(e.data);};wk.onerror=function(){done({err:"error"});};setTimeout(function(){done({err:"timeout"});},3500);
     }catch(e){res({err:""+e});}
   });
@@ -2266,16 +2269,16 @@ function paGroupsFrom(F){
   var T=paTierMap(),by={};
   (F.rows||[]).forEach(function(r){(by[r.group]=by[r.group]||[]).push(r);});
   return Object.keys(by).map(function(g){
-    var rows=by[g],shown=[],blended=[],refused=[],unknown=[],weight=0;
+    var rows=by[g],shown=[],blended=[],refused=[],unknown=[],weight=0,shownWeight=0;
     rows.forEach(function(r){
-      var it=T[r.label]||2;if(it>weight)weight=it;
+      var it=T[r.label]||2;if(it>weight)weight=it;if(r.state==="shown"&&it>shownWeight)shownWeight=it;
       if(r.state==="shown")shown.push(r);else if(r.state==="blended")blended.push(r);else if(r.state==="refused")refused.push(r);else unknown.push(r);
     });
     var state=shown.length?"shown":unknown.length?"unknown":(blended.length?"blended":"refused");
     var rep=shown.length?shown.slice().sort(function(a,b){return (b.tier||0)-(a.tier||0);})[0]:unknown.length?unknown[0]:rows[0];
     var val=(rep.state!=="shown"&&rep.okLabel)?rep.okLabel:String(rep.value||"");
     if(rep.state!=="shown"&&!rep.okLabel)val=(state==="blended"?"masked or varied in this experiment":"not readable: your browser returned nothing here");
-    return {id:g,reading:PAGRP[g]||g,weight:weight,state:state,rows:rows,unknownCount:unknown.length,incompleteCount:rows.filter(function(r){return r.comparisonIncomplete;}).length,bypass:rep.bypass||"",
+    return {id:g,reading:PAGRP[g]||g,weight:shown.length?shownWeight:weight,state:state,rows:rows,unknownCount:unknown.length,incompleteCount:rows.filter(function(r){return r.comparisonIncomplete;}).length,bypass:rep.bypass||"",
       exposedLabel:unknown.length?(shown.length+" exposed, "+unknown.length+" not measured"):state==="blended"?(rows.length+" masked"):(shown.length+" of "+rows.length+" exposed"),
       value:state==="unknown"?"Measurement incomplete":val,valueFull:rep.state==="shown"?String(rep.value||""):"",why:rep.why||""};
   });
@@ -2290,11 +2293,11 @@ function paAxisPair(R,F,cs){
   var lab=PAMONO+"font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);";
   var num=PAMONO+"font-size:23px;font-weight:700;line-height:1.15;color:var(--text);margin-top:5px;";
   var h='<div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">';
-  h+='<div style="'+box+'"><div style="'+lab+'">This page</div><div style="'+num+'">'+here+'</div>'+
-     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">of what it checks, hidden</div></div>';
+  h+='<div style="'+box+'"><div style="'+lab+'">This page</div><div style="'+num+'">'+(F.complete===false?"&#8805; ":"")+here+'</div>'+
+     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">'+(F.complete===false?"lower bound of what it checks, hidden":"of what it checks, hidden")+'</div></div>';
   h+='<div style="'+box+'"><div style="'+lab+'">Another site</div><div style="'+num+'">'+
-     (there===null?'<span style="color:var(--text-3);font-size:15px;font-weight:600;">'+(cs&&cs.pending?"measuring":"not measurable")+'</span>':there)+'</div>'+
-     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">'+(there!==null?'hidden from a site on another domain':(cs&&cs.pending?'opening a second site to compare':'the second site did not answer'))+'</div></div>';
+     (there===null?'<span style="color:var(--text-3);font-size:15px;font-weight:600;">'+(cs&&cs.pending?"measuring":"not measurable")+'</span>':(cs.crossIncomplete?"&#8805; ":"")+there)+'</div>'+
+     '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;">'+(there!==null?(cs.crossIncomplete?'lower bound, hidden from a site on another domain':'hidden from a site on another domain'):(cs&&cs.pending?'opening a second site to compare':'the second site did not answer'))+'</div></div>';
   if(st)h+='<div style="flex:2 1 240px;min-width:200px;'+box+'"><div style="'+lab+'">Observed outcome</div>'+
      '<div style="font-size:15px;font-weight:650;color:var(--text);margin-top:5px;">'+paEsc(st[0])+'</div>'+
      '<div style="font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.45;">'+paEsc(st[1])+'</div></div>';
@@ -2322,6 +2325,13 @@ function paIsRand(R){
 window.__paIsRand=paIsRand;
 
 /* - shape the cross-site result for the card ------------- */
+function paCrossMid(cs){
+  if(cs.answer==="Yes")return ["linked","var(--gradeF)"];
+  if(cs.singleIncomplete||cs.crossIncomplete)return ["lower bounds","var(--text-3)"];
+  var d=cs.delta;
+  if(cs.assumed&&d>0)return ["+"+d+" assumed","var(--text-3)"];
+  return [d>0?"+"+d:(d===0?"same":String(d)),d>0?"var(--gradeB)":d<0?"var(--gradeF)":"var(--text-3)"];
+}
 function paCrossData(R){
   var Fc=R.findabilityCross;
   var a=(location.host||"this page"),b="",comp=null;
@@ -2340,7 +2350,7 @@ function paCrossData(R){
   var shownTotal=(Fc.shownCount!=null)?Fc.shownCount:((Fc.rows||[]).filter(function(r){return r&&r.state==="shown";}).length||total);
   var recog=null;
   var cs={pending:false,originA:a,originB:b,total:total,anon:anon,linked:linked,score:Fc.score,grade:Fc.grade,
-    single:single,singleGrade:singleGrade,singleColor:paBandFor(singleGrade).band,crossColor:paBandFor(Fc.grade).band,delta:Fc.score-single,
+    single:single,singleGrade:singleGrade,singleColor:paBandFor(singleGrade).band,crossColor:paBandFor(Fc.grade).band,delta:Fc.score-single,assumed:Fc.measuredScore!=null&&Fc.score>Fc.measuredScore,singleIncomplete:!!(R.findability&&R.findability.complete===false),crossIncomplete:Fc.complete===false,
     pct:total?Math.round(anon/total*100):0,answer:Fc.complete===false?"Incomplete":!total?"No comparison":anon?"Changed":"Matched",
     tone:"var(--text-2)",bg:"var(--hover)",
     uni:(Fc.uniformAcrossOrigins||[]).length,measured:Fc.measuredScore,
@@ -2350,6 +2360,7 @@ function paCrossData(R){
   if(p&&p.tested)cs.partition={tested:p.tested,kept:(p.blocked.length+(p.refusedWrite||[]).length),notMeasured:p.notMeasured||[],unknown:p.unknownPersistent||[],leaked:p.leakedPersistent||p.leaked||[],leakedCache:(p.leaked||[]).filter(function(k){return (p.leakedPersistent||[]).indexOf(k)<0;})};
   return cs;
 }
+function paSentNote(p){var a=[];if(p.webrtcStun)a.push("the WebRTC option's request to a public STUN server");if(p.storageTest)a.push("the supercookie option's second-site window");return a.length?"Apart from "+a.join(" and ")+", nothing was sent anywhere; it all ran in this browser.":"Nothing was sent anywhere; it all ran in this browser.";}
 function paEsc(s){return esc(String(s==null?"":s));}
 function paCaret(open){
   return '<span style="display:inline-flex;color:var(--text-3);flex:0 0 auto;"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" style="transform:rotate('+(open?180:0)+'deg);transition:transform .18s ease;"><path d="M1.5 3.5 L5 7 L8.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>';
@@ -2372,7 +2383,7 @@ function paRenderView(R){
   var F=R.findability;
   if(!F){host.innerHTML='<div style="background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px 30px;">'+
     '<div style="font-size:clamp(22px,2.2vw,28px);font-weight:600;color:var(--text);">The test could not finish.</div>'+
-    '<div style="margin-top:12px;font-size:16px;line-height:1.55;color:var(--text-2);max-width:56ch;">Something interrupted the scan before all surfaces were measured, so there is no verdict to show. Nothing was sent anywhere; it all ran in this browser.</div>'+
+    '<div style="margin-top:12px;font-size:16px;line-height:1.55;color:var(--text-2);max-width:56ch;">Something interrupted the scan before all surfaces were measured, so there is no verdict to show. '+paSentNote(PAV)+'</div>'+
     '<button data-pa="rescan" style="margin-top:20px;background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:9px;padding:11px 18px;font-size:14px;font-weight:600;" class="pa-solid-hov">Run the test again</button></div>';return;}
   var sa=document.getElementById("scanAt");
   if(!R.scannedAt)R.scannedAt=new Date().toISOString();
@@ -2406,7 +2417,7 @@ function paRenderView(R){
   h+='<div class="pa-gauge">';
   h+='<span style="position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,'+color+' 0%,transparent 66%);opacity:.18;filter:blur(16px);display:block;"></span>';
   var ringNow=(PAV.lastScore===score)?score:PAV.disp;
-  h+='<svg width="100%" height="100%" viewBox="0 0 200 200" style="display:block;position:relative;" role="img" aria-label="Protection score '+score+' out of 100, grade '+grade+'">'+paRing(ringNow,color)+'</svg>';
+  h+='<svg width="100%" height="100%" viewBox="0 0 200 200" style="display:block;position:relative;" role="img" aria-label="'+(F.complete===false?'Protection score lower bound '+score+' out of 100, incomplete, no grade assigned':'Protection score '+score+' out of 100, grade '+grade)+'">'+paRing(ringNow,color)+'</svg>';
   h+='<span style="position:absolute;inset:9%;border-radius:50%;pointer-events:none;background:repeating-linear-gradient(0deg,var(--scan) 0 1px,transparent 1px 3px);opacity:.55;display:block;"></span>';
   h+='<div style="position:absolute;left:0;right:0;bottom:13%;display:flex;align-items:center;justify-content:center;gap:7px;">';
   h+=bg.glyph==="circle"?'<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" style="fill:'+color+';"></circle></svg>'
@@ -2438,11 +2449,11 @@ function paRenderView(R){
       if(cs.canMeasure)h+='<button data-pa="measureRand" class="pa-solid-hov" style="margin-top:14px;align-self:flex-start;background:var(--btn-bg);color:var(--btn-fg);border:0;border-radius:9px;padding:10px 16px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>Measure across two sites</button>';
     }
   }else{
-    var _rec=cs.answer==="Yes",_d=cs.delta,_mid=(_rec?"linked":(_d>0?"+"+_d:(_d===0?"same":String(_d)))),_mc=(_rec?"var(--gradeF)":(_d>0?"var(--gradeB)":_d<0?"var(--gradeF)":"var(--text-3)"));
+    var _mm=paCrossMid(cs),_mid=_mm[0],_mc=_mm[1];
     h+='<div style="margin-top:16px;display:flex;align-items:stretch;gap:10px;">';
-    h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On this page</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.singleColor+';letter-spacing:-.02em;">'+cs.single+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.singleColor+';margin-top:2px;">grade '+cs.singleGrade+'</div></div>';
+    h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On this page</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.singleColor+';letter-spacing:-.02em;">'+(cs.singleIncomplete?"&#8805; ":"")+cs.single+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.singleColor+';margin-top:2px;">'+(cs.singleIncomplete?"lower bound":"grade "+cs.singleGrade)+'</div></div>';
     h+='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;"><span style="color:var(--text-3);font-size:17px;line-height:1;">&#8594;</span><span class="pa-mono" style="font-size:11px;font-weight:700;color:'+_mc+';white-space:nowrap;">'+_mid+'</span></div>';
-    h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On a second site</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.crossColor+';letter-spacing:-.02em;">'+cs.score+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.crossColor+';margin-top:2px;">grade '+cs.grade+'</div></div>';
+    h+='<div style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;"><div class="pa-mono" style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">On a second site</div><div style="display:flex;align-items:baseline;justify-content:center;gap:5px;"><span class="pa-mono" style="font-size:30px;font-weight:700;color:'+cs.crossColor+';letter-spacing:-.02em;">'+(cs.crossIncomplete?"&#8805; ":"")+cs.score+'</span><span class="pa-mono" style="font-size:12px;color:var(--text-3);">/100</span></div><div class="pa-mono" style="font-size:11px;font-weight:700;color:'+cs.crossColor+';margin-top:2px;">'+(cs.crossIncomplete?"lower bound":"grade "+cs.grade)+'</div></div>';
     h+='</div>';
     h+='<div style="margin-top:'+(cs.partition?"14px":"auto")+';padding-top:14px;font-size:14px;line-height:1.5;color:var(--text);">'+paEsc(cs.result)+'</div>';
     if(cs.partition)h+='<div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2);"><b>Supercookie test:</b> '+cs.partition.kept+' of '+cs.partition.tested+' measured storage mechanisms did not carry a token (isolated or write refused)'+(cs.partition.notMeasured.length?'; not measured here (the API is missing, or this host has no cache-probe endpoint): '+cs.partition.notMeasured.map(paEsc).join(", "):'')+(cs.partition.leaked.length?'. Carried across sites: '+cs.partition.leaked.map(paEsc).join(", "):(cs.partition.unknown.length?'; persistent storage result is incomplete':'; no persistent token carryover observed in the measured mechanisms'))+(cs.partition.leakedCache&&cs.partition.leakedCache.length?'. HTTP-cache timing side-channel reused '+cs.partition.leakedCache.length+' ('+cs.partition.leakedCache.map(paEsc).join(", ")+'); informational and not scored':'')+'.</div>';
@@ -2521,7 +2532,7 @@ function paRenderView(R){
   if(blended.length){
     h+='<div style="margin-top:14px;"><button class="pa-btn-hov" data-pa="masked" style="width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--card-shadow);padding:14px 16px;display:flex;align-items:center;gap:12px;color:var(--text-2);">';
     h+='<span style="width:24px;height:24px;flex:0 0 auto;border-radius:50%;background:var(--amber-bg);color:var(--amber);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">~</span>';
-    h+='<span style="font-size:14.5px;line-height:1.4;">'+blended.length+(blended.length===1?" surface masked":" surfaces masked")+': reported common values, so they did not count against you.</span>';
+    h+='<span style="font-size:14.5px;line-height:1.4;">'+blended.length+(blended.length===1?" surface masked":" surfaces masked")+': their values varied or looked common, so they did not count against you.</span>';
     h+='<span class="pa-mono" style="margin-left:auto;font-size:12px;color:var(--accent);white-space:nowrap;">'+(PAV.maskedOpen?"hide":"show")+'</span></button>';
     if(PAV.maskedOpen){
       h+='<div style="border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--panel);margin-top:-1px;">';
@@ -2571,7 +2582,7 @@ function paExportBar(){
   b+='<button class="pa-btn-hov" data-pa="print" style="background:transparent;color:var(--text-2);border:1px solid var(--line-strong);border-radius:9px;padding:9px 15px;font-size:13.5px;white-space:nowrap;">Print</button>';
   b+='<span style="margin-left:auto;display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);white-space:nowrap;"><span>Redact raw values</span>';
   b+='<button data-pa="redact" role="switch" aria-checked="'+(PAV.redact?"true":"false")+'" aria-label="Redact raw values" style="width:42px;height:24px;border-radius:999px;border:0;padding:2px;background:'+(PAV.redact?"var(--green)":"var(--line-strong)")+';position:relative;flex:0 0 auto;"><span style="display:block;width:20px;height:20px;border-radius:50%;background:var(--knob);box-shadow:0 1px 2px rgba(0,0,0,.25);transform:translateX('+(PAV.redact?"18px":"0px")+');transition:transform .15s;"></span></button></span>';
-  b+='<span style="flex:1 1 100%;font-size:12px;color:var(--text-3);line-height:1.45;">Summary is a short, shareable result. Redact is on by default: your raw values are hidden on screen and in the saved file, so screenshots and public issues stay safe. Turn it off to reveal your own values.</span>';
+  b+='<span style="flex:1 1 100%;font-size:12px;color:var(--text-3);line-height:1.45;">Summary is a short, shareable result. Redact is on by default: your raw values are hidden on screen and in the saved file, but status words such as on, off or fine stay visible, so check a report before sharing it. Turn it off to reveal your own values.</span>';
   b+='</div>';
   return b;
 }
@@ -2709,7 +2720,7 @@ function paSave(kind){
         masked:(F.rows||[]).filter(function(r){return r.state==="blended";}).length,
         notReadable:(F.rows||[]).filter(function(r){return r.state==="refused";}).length,
         notReadableUnavailable:F.checks.refusedUnavailable,notReadableDenied:F.checks.refusedDenied,notReadableWithheld:F.checks.refusedWithheld,
-        maskedByAssumedUniformity:(Fc||F).checks.assumedUniform},
+        maskedByAssumedUniformity:F.checks.assumedUniform},
       note:"Score is the share of what this tool checks that this browser hides, weighted by how identifying each reading is. It does not estimate how rare you are, which would need a population of real fingerprints. It summarizes observed exposure, not the probability of identification. Full method in METHODOLOGY.md."
     });return;
   }
@@ -2796,8 +2807,8 @@ async function runKit(){
     if(audio.samples)C["Audio & Media Codecs"].rows.push(["audio fixed-bin samples",audio.samples]);
     if(audio.bufHash)C["Audio & Media Codecs"].rows.push(["audio buffer slice hash (200 samples)",audio.bufHash]);
     if(audio.nonZero)C["Audio & Media Codecs"].rows.push(["audio non-zero samples",audio.nonZero]);
-    var voices=[];try{speechSynthesis.getVoices();voices=await paStableVoices();}catch(e){}
-    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",(function(){var vv=Array.isArray(voices)?voices:[];return voices===null?"ERR:getVoices":vv.length?vv.length+" ("+fnvParts(vv.map(function(v){return v&&v.name?v.name+v.lang:"undefined";}),",")+")":"blocked";})()]);
+    var voices=[];try{speechSynthesis.getVoices();voices=await paStableVoices();}catch(e){voices=paErr(e);}
+    C["Audio & Media Codecs"].rows.push(["SpeechSynthesis voices",paVoicesRow(voices)]);
     C["Audio & Media Codecs"].hash=catHash(C["Audio & Media Codecs"].rows);
   }
   var ffProbe=await fontFaceLocalProbe();
@@ -2820,7 +2831,7 @@ async function runKit(){
     C["Font Enumeration"].hash=catHash(C["Font Enumeration"].rows);
   }
   var _rv=function(cat,lab){var c=C[cat];if(!c)return"";var ll=lab.toLowerCase();for(var i=0;i<c.rows.length;i++){if(String(c.rows[i][0]).toLowerCase()===ll){var v=c.rows[i][1];return Array.isArray(v)?v[0]:v;}}return"";};
-  var _lv={canvas:fnv(String(_rv("Active Rendering & GPU","canvas 2D toDataURL"))+"~"+String(_rv("Active Rendering & GPU","canvas getImageData px"))),webgl:String(_rv("Active Rendering & GPU","WebGL render hash")||""),audio:String(_rv("Audio & Media Codecs","AudioContext render hash")||""),rects:fnv(String(_rv("CSS & Rendering","getBoundingClientRect hash"))+"~"+String(_rv("CSS & Rendering","SVG getComputedTextLength+BBox"))),fonts:fnv(String(_rv("Font Enumeration","font list hash"))+"~"+String(_rv("Font Enumeration","measureText width")))};
+  var _lv={canvas:paLinkPart([_rv("Active Rendering & GPU","canvas 2D toDataURL"),_rv("Active Rendering & GPU","canvas getImageData px")]),webgl:paLinkPart([_rv("Active Rendering & GPU","WebGL render hash")]),audio:paLinkPart([_rv("Audio & Media Codecs","AudioContext render hash")]),rects:paLinkPart([_rv("CSS & Rendering","getBoundingClientRect hash"),_rv("CSS & Rendering","SVG getComputedTextLength+BBox")]),fonts:paLinkPart([_rv("Font Enumeration","font list hash"),_rv("Font Enumeration","measureText width")])};
   PA_UACH=await highEntropy();
   if(BEACON){
     
@@ -2975,11 +2986,11 @@ async function runKit(){
   var wgAbsent=/unavailable|null|disabled|blocked/i.test(wgS);
   var pubIP=(lk.publicIPs||[]).length;
 
-  function lv2(c1,l1,c2,l2){return fnv(String(cval(c1,l1)||"")+"~"+String(cval(c2,l2)||""));}
+  function lv2(c1,l1,c2,l2){return paLinkPart([cval(c1,l1),cval(c2,l2)]);}
   var linkVec={
     canvas:lv2("Active Rendering & GPU","canvas 2D toDataURL","Active Rendering & GPU","canvas getImageData px"),
-    webgl:String(cval("Active Rendering & GPU","WebGL render hash")||""),
-    audio:String(cval("Audio & Media Codecs","AudioContext render hash")||""),
+    webgl:paLinkPart([cval("Active Rendering & GPU","WebGL render hash")]),
+    audio:paLinkPart([cval("Audio & Media Codecs","AudioContext render hash")]),
     rects:lv2("CSS & Rendering","getBoundingClientRect hash","CSS & Rendering","SVG getComputedTextLength+BBox"),
     fonts:lv2("Font Enumeration","font list hash","Font Enumeration","measureText width")
   };

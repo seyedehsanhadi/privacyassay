@@ -11,7 +11,7 @@ const LABEL = Object.fromEntries(PRIORS.surfaces.map((s) => [s.k, s.label]));
 const row = (F, k) => F.rows.find((r) => r.label === LABEL[k]);
 
 const RFP = { cores: "4", timezone: "Atlantic/Reykjavik", colorDepth: "24", devicePixelRatio: "2", maxTouchPoints: "10",
-  audioRate: "44100", languages: "en-US", availFrame: "masked", innerSize: "1400x700", screenClass: "1400x700" };
+  audioRate: "44100", languages: "en-US", availFrame: "none", innerSize: "1400x700", screenClass: "1400x700" };
 
 test("uniform: standard values identical on both origins are hidden in a Tor build", () => {
   const F = findabilityCross(RFP, { ...RFP }, "tor-build");
