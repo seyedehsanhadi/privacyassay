@@ -34,6 +34,8 @@ test('public pair: native Safari audit and actual redacted exports',{
       assert.equal(await page.ev('document.getElementById("storageOptin").checked'),false);
       assert.equal(await page.ev('document.getElementById("webrtcOptin").checked'),false);
       assert.ok(fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8').includes('var PA_COMPANION="https://privacyassay.github.io/index.html";'));
+      const readback=`(()=>{for(let i=0;i<600;i++){const c=document.createElement('canvas');c.width=90;c.height=24;const x=c.getContext('2d');x.fillText('a',2,4);try{x.getImageData(0,0,90,24)}catch(e){return i+':'+e.name}}return 'ok600'})()`;
+      if(run===1){const probe=await launch({url:'https://privacyassay.com/'});try{const first=await probe.ev(readback);await new Promise(r=>setTimeout(r,5000));const after5s=await probe.ev(readback);await new Promise(r=>setTimeout(r,30000));t.diagnostic(JSON.stringify({freshPage:{first,after5s,after35s:await probe.ev(readback)}}));}finally{await probe.close();}}
       const report=await runAudit(page,{timeout:120000});
       assert.equal(await page.ev('window.__KIT_DONE'),true);assert.equal(report.version,version);
       assert.equal(await page.ev('window.__paObsB&&window.__paObsB._repeatCount'),2);
