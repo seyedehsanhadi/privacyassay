@@ -1543,7 +1543,7 @@ function paCanvasClass(doc){
 }
 
 function paCanvasHash(doc){var c=doc.createElement("canvas");c.width=90;c.height=24;
-  var x=c.getContext("2d");x.textBaseline="top";x.font="13px Arial";
+  var x=c.getContext("2d",{willReadFrequently:true});x.textBaseline="top";x.font="13px Arial";
   x.fillStyle="#f60";x.fillRect(0,0,45,24);x.fillStyle="#069";x.fillText("privacyassay",2,4);
   return fnvBytes(x.getImageData(0,0,c.width,c.height).data);}
 function paTextMetrics(doc){var cv=doc.createElement("canvas").getContext("2d");cv.font="14px Arial";var tm=cv.measureText("Privacyassay mMwW");
