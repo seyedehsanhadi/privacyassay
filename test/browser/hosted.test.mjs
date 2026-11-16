@@ -34,7 +34,6 @@ test('public pair: native Safari audit and actual redacted exports',{
       assert.equal(await page.ev('document.getElementById("storageOptin").checked'),false);
       assert.equal(await page.ev('document.getElementById("webrtcOptin").checked'),false);
       assert.ok(fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8').includes('var PA_COMPANION="https://privacyassay.github.io/index.html";'));
-      if(run===1)t.diagnostic(JSON.stringify({readback:await page.ev(`(()=>{const out={};for(const wrf of [false,true])for(const text of [false,true]){const c=document.createElement('canvas');c.width=90;c.height=24;const x=c.getContext('2d',wrf?{willReadFrequently:true}:undefined);if(text)x.fillText('a',2,4);else x.fillRect(0,0,9,9);try{x.getImageData(0,0,90,24);out[(wrf?'wrf':'gpu')+(text?'Text':'Rect')]='ok'}catch(e){out[(wrf?'wrf':'gpu')+(text?'Text':'Rect')]=e.name}}return out})()`)}));
       const report=await runAudit(page,{timeout:120000});
       assert.equal(await page.ev('window.__KIT_DONE'),true);assert.equal(report.version,version);
       assert.equal(await page.ev('window.__paObsB&&window.__paObsB._repeatCount'),2);
@@ -42,7 +41,7 @@ test('public pair: native Safari audit and actual redacted exports',{
       assert.ok(report.findabilityCross,report.crossFailed||'Public companion did not answer');
       const gaps=f=>(f&&f.rows||[]).filter(r=>r.state==='unknown'||r.comparisonIncomplete).map(r=>({label:r.label,state:r.state,how:r.how,bypass:r.bypass,mask:r.mask,value:r.value,incomplete:r.comparisonIncomplete}));
       const flags=`(()=>{const o=window.__paObsB||{},pick=m=>Object.keys(m||{}).filter(k=>m[k]);return {incomplete:pick(o._incomplete),noisy:pick(o._noisy),mixed:pick(o._mixed),altUnstable:pick(o._altUnstable),altNoisy:pick(o._altNoisy),alt:o._alt||{},canvasClass:o.canvasClass,canvasHash:o.canvasHash}})()`;
-      if(!report.findability.complete||!report.findabilityCross.complete)t.diagnostic(JSON.stringify({run,gaps:gaps(report.findability),crossGaps:gaps(report.findabilityCross),crossFailed:report.crossFailed||null,companion:await page.ev(flags),probe:await page.ev(`(()=>{const run=free=>{for(let i=0;i<400;i++){const c=document.createElement('canvas');c.width=90;c.height=24;const x=c.getContext('2d');x.fillText('a',2,4);try{x.getImageData(0,0,90,24)}catch(e){return i+':'+e.name+':'+(x.isContextLost?x.isContextLost():'na')}finally{if(free)c.width=c.height=0}}return 'ok'};return {kept:run(false),freed:run(true)}})()`)}));
+      if(!report.findability.complete||!report.findabilityCross.complete)t.diagnostic(JSON.stringify({run,gaps:gaps(report.findability),crossGaps:gaps(report.findabilityCross),crossFailed:report.crossFailed||null,companion:await page.ev(flags)}));
       assert.equal(report.findability.complete,true);assert.equal(report.findabilityCross.complete,true);
       const exports=await page.ev(`(async()=>{const saved={},blobs=[],create=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;
         try{URL.createObjectURL=function(blob){blobs.push(blob);return create.call(URL,blob)};HTMLAnchorElement.prototype.click=function(){if(!this.download)return click.call(this)};
