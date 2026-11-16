@@ -1,6 +1,6 @@
-{
+{"sha256Note":"Re-pinned after a markup and color-token change only (contrast, aria-label, referrer meta, CSP base-uri/form-action, JSON-LD sameAs); scoring code unchanged since the measured file c05e312dfc2548e69ace48b4715cebcac4cea13c3698d334d9cafbfd44d73abe.",
   "methodology": "0.9.7",
-  "sha256": "c05e312dfc2548e69ace48b4715cebcac4cea13c3698d334d9cafbfd44d73abe",
+  "sha256": "ce455d65d526e6d581fdc076d503e2f2031bd88db9ab30b7e6776565ab28c7d0",
   "platform": "Windows 11",
   "headless": true,
   "runsPerSetting": 2,

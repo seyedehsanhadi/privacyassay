@@ -8,7 +8,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob: data:; child-src 'self' blob: data: http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; frame-src 'self' http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; form-action 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob: data:; child-src 'self' blob: data: http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; frame-src 'self' http://localhost:* http://127.0.0.1:* https://privacyassay.com https://privacyassay.github.io; base-uri 'none'; form-action 'none'">
 <script>
 
 (function(){try{var o={t:(performance&&performance.now)?performance.now():0};
@@ -36,7 +37,7 @@
 <meta property="og:image:alt" content="Privacyassay: what a website can read about your browser">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://privacyassay.com/og-card.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.7","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"codeRepository":"https://github.com/seyedehsanhadi/privacyassay"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Privacyassay","url":"https://privacyassay.com/","description":"Browser fingerprint and leak audit. Measures selected browser fingerprint exposure, masking and unknown outcomes, entirely on the page.","applicationCategory":"SecurityApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.apache.org/licenses/LICENSE-2.0","softwareVersion":"0.9.7","author":{"@type":"Person","name":"Seyed Ehsan Hadi"},"sameAs":"https://github.com/seyedehsanhadi/privacyassay"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='2' y='2' width='96' height='96' rx='26' fill='%232f6fed'/%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='75' cy='18' r='6'/%3E%3Ccircle cx='62' cy='39' r='6'/%3E%3Ccircle cx='88' cy='39' r='6'/%3E%3C/g%3E%3Cpath d='M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z' fill='none' stroke='%23ffffff' stroke-width='6'/%3E%3Ccircle cx='47' cy='58' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   
@@ -249,12 +250,12 @@
   /* RESULTS-VIEW DESIGN SYSTEM - dark-first tokens, verdict card, tiles, rea ==== */
   --bg:#0A0C11;--panel:#12151C;--panel-2:#14181F;--inset:#0E1117;
   --line:rgba(255,255,255,.08);--line-soft:rgba(255,255,255,.06);--line-strong:rgba(255,255,255,.16);--hover:rgba(255,255,255,.05);
-  --text:#EAEEF4;--text-2:#AEB7C4;--text-3:#737C8B;
+  --text:#EAEEF4;--text-2:#AEB7C4;--text-3:#7F889A;
   --accent:#6EA8FF;--accent-2:#93C0FF;--accent-bg:rgba(110,168,255,.14);--accent-border:rgba(110,168,255,.55);
   --header-bg:rgba(10,12,17,.74);--pop-bg:rgba(18,21,28,.92);--ring-track:rgba(255,255,255,.07);--bar-track:rgba(255,255,255,.08);
   --knob:#EAEEF4;--btn-bg:#EAEEF4;--btn-fg:#0A0C11;
   --gradeA:#5B8DFF;--gradeB:#3FC394;--gradeC:#E6B24D;--gradeD:#F2914D;--gradeF:#F26A68;
-  --red:#EE5A5F;--amber:#E9A23B;--green:#35C48A;--red-bg:rgba(238,90,95,.14);--amber-bg:rgba(233,162,59,.14);--green-bg:rgba(53,196,138,.14);--muted:#8A93A2;
+  --red:#F4747A;--amber:#E9A23B;--green:#35C48A;--red-bg:rgba(238,90,95,.14);--amber-bg:rgba(233,162,59,.14);--green-bg:rgba(53,196,138,.14);--muted:#8A93A2;
   --card-shadow:0 1px 0 rgba(255,255,255,.02);--scan:rgba(0,0,0,.32);
   --acc:var(--accent);--acc-soft:var(--accent-bg);--good:var(--green);--bad:var(--red);--warn:var(--amber);
   --good-soft:var(--green-bg);--bad-soft:var(--red-bg);--warn-soft:var(--amber-bg);--dim:var(--text-2);--card:var(--panel);--fg:var(--text);
@@ -262,12 +263,12 @@
 [data-theme="light"]{
   --bg:#F4F6F9;--panel:#FFFFFF;--panel-2:#FFFFFF;--inset:#F1F3F6;
   --line:rgba(17,24,39,.10);--line-soft:rgba(17,24,39,.07);--line-strong:rgba(17,24,39,.20);--hover:rgba(17,24,39,.04);
-  --text:#141821;--text-2:#4A5261;--text-3:#78818F;
+  --text:#141821;--text-2:#4A5261;--text-3:#646D7B;
   --accent:#2563EB;--accent-2:#1D4ED8;--accent-bg:rgba(37,99,235,.10);--accent-border:rgba(37,99,235,.45);
   --header-bg:rgba(244,246,249,.82);--pop-bg:rgba(255,255,255,.96);--ring-track:rgba(17,24,39,.09);--bar-track:rgba(17,24,39,.10);
   --knob:#FFFFFF;--btn-bg:#141821;--btn-fg:#FFFFFF;
-  --gradeA:#2563EB;--gradeB:#12996B;--gradeC:#C07F18;--gradeD:#E0701F;--gradeF:#DC4B4A;
-  --red:#DC2626;--amber:#B45309;--green:#0F9A67;--red-bg:rgba(220,38,38,.10);--amber-bg:rgba(180,83,9,.12);--green-bg:rgba(15,154,103,.13);--muted:#8A93A2;
+  --gradeA:#2563EB;--gradeB:#12996B;--gradeC:#C07F18;--gradeD:#E0701F;--gradeF:#C93A39;
+  --red:#C81E1E;--amber:#B45309;--green:#0F9A67;--red-bg:rgba(220,38,38,.10);--amber-bg:rgba(180,83,9,.12);--green-bg:rgba(15,154,103,.13);--muted:#646D7B;
   --card-shadow:0 1px 2px rgba(16,24,40,.06),0 10px 24px -12px rgba(16,24,40,.14);--scan:rgba(0,0,0,.05);
 }
 @keyframes paPulse{0%,100%{opacity:.35}50%{opacity:1}}
@@ -429,7 +430,7 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
 @media (prefers-reduced-motion:reduce){#pa-view *{animation:none !important;transition:none !important}}
 </style>
 <script>(function(){try{var s=localStorage.getItem("pa-theme");var d=s?s==="dark":matchMedia("(prefers-color-scheme:dark)").matches;document.documentElement.setAttribute("data-theme",d?"dark":"light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
-<div class="pa-cardwrap" id="paCardWrap">
+<div class="pa-cardwrap" id="paCardWrap" role="region" aria-labelledby="paBrand">
   <div class="pa-card" id="paCard">
     <h1 class="pa-brand" id="paBrand">
       <svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M15 63 A31 31 0 0 1 67 63 A31 31 0 0 1 15 63 Z" fill="none" stroke="currentColor" stroke-width="6.5"/><circle cx="47" cy="58" r="9" fill="currentColor"/><g fill="currentColor"><circle cx="75" cy="18" r="6"/><circle cx="62" cy="39" r="6"/><circle cx="88" cy="39" r="6"/></g></svg>
@@ -440,7 +441,7 @@ body.pa-pre .pa-cardwrap{animation:paCardIn .55s cubic-bezier(.16,1,.3,1) both}
     <div class="pa-ctrls" id="paCtrls">
       <span class="pa-mono pa-scan" id="scanAt"></span>
       <button class="pa-ibtn" id="themeBtn" aria-label="Toggle dark mode"></button>
-      <button class="pa-runbtn" id="runBtn" aria-label="Run benchmark" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span id="runLbl">Run the scan</span></button>
+      <button class="pa-runbtn" id="runBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span id="runLbl">Run the scan</span></button>
     </div>
     <p id="scriptStatus" role="status">The audit script has not started. If this message remains, this browser may be blocking scripts for this page.</p>
     <div class="pa-checks" id="paChecks">
@@ -2489,7 +2490,7 @@ function paRenderView(R){
     h+='<span style="flex:0 1 auto;min-width:150px;font-size:15px;font-weight:600;color:var(--text);">'+paEsc(g.reading)+'</span>';
     h+='<span style="flex:0 0 auto;width:clamp(78px,12vw,190px);height:6px;background:var(--bar-track);border-radius:3px;overflow:hidden;"><span style="display:block;height:100%;width:'+Math.round(g.weight/maxW*100)+'%;background:'+m.color+';opacity:'+(g.weight>=3?1:(g.weight===2?.6:.38))+';border-radius:3px;"></span></span>';
     h+='<span class="pa-mono" style="font-size:11.5px;color:var(--text-3);white-space:nowrap;">'+paEsc(g.exposedLabel)+'</span>';
-    h+='<span class="pa-prev pa-mono" style="flex:1 1 60px;min-width:0;font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.78;">'+paEsc(dv)+'</span>';
+    h+='<span class="pa-prev pa-mono" style="flex:1 1 60px;min-width:0;font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+paEsc(dv)+'</span>';
     h+='<span style="display:flex;align-items:center;gap:14px;"><span style="display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:'+m.bg+';color:'+m.color+';font-size:12px;font-weight:600;white-space:nowrap;"><span>'+m.icon+'</span><span>'+m.word+'</span></span>';
     h+='<span class="pa-mono" style="font-size:15px;font-weight:600;color:'+m.color+';min-width:38px;text-align:right;">'+sign+g.weight+'</span>';
     h+=paCaret(open)+'</span></button>';
