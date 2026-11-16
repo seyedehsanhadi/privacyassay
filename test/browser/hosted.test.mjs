@@ -34,13 +34,16 @@ test('public pair: native Safari audit and actual redacted exports',{
       assert.equal(await page.ev('document.getElementById("storageOptin").checked'),false);
       assert.equal(await page.ev('document.getElementById("webrtcOptin").checked'),false);
       assert.ok(fs.readFileSync(new URL('../../index.html',import.meta.url),'utf8').includes('var PA_COMPANION="https://privacyassay.github.io/index.html";'));
+      await page.ev(`(()=>{const merge=window.paRepeatMerge;window.__paRepeatLog=[];if(typeof merge!=='function')return;
+        const pick=(o,r)=>{const row=(r&&r.rows||[]).find(x=>x.label==='canvas drawing')||{};return {hash:o.canvasHash,cls:o.canvasClass,alt:(o._alt||{}).canvasClass,state:row.state,how:row.how,bypass:row.bypass,value:row.value}};
+        window.paRepeatMerge=function(f,s,a,b){const rec={a:pick(f,a),b:pick(s,b)};const out=merge.apply(this,arguments);rec.incomplete=!!(out._incomplete||{}).canvasClass;window.__paRepeatLog.push(rec);return out}})()`);
       const report=await runAudit(page,{timeout:120000});
       assert.equal(await page.ev('window.__KIT_DONE'),true);assert.equal(report.version,version);
       assert.equal(await page.ev('window.__paObsB&&window.__paObsB._repeatCount'),2);
       assert.equal(await page.ev('window.__paStoreDiag.fromPop'),true);
       assert.ok(report.findabilityCross,report.crossFailed||'Public companion did not answer');
       const gaps=f=>(f&&f.rows||[]).filter(r=>r.state==='unknown'||r.comparisonIncomplete).map(r=>({label:r.label,group:r.group,state:r.state,incomplete:r.comparisonIncomplete,why:r.why}));
-      if(!report.findability.complete||!report.findabilityCross.complete)t.diagnostic(JSON.stringify({run,gaps:gaps(report.findability),crossGaps:gaps(report.findabilityCross),crossFailed:report.crossFailed||null}));
+      if(!report.findability.complete||!report.findabilityCross.complete)t.diagnostic(JSON.stringify({run,gaps:gaps(report.findability),crossGaps:gaps(report.findabilityCross),crossFailed:report.crossFailed||null,repeats:await page.ev('window.__paRepeatLog')}));
       assert.equal(report.findability.complete,true);assert.equal(report.findabilityCross.complete,true);
       const exports=await page.ev(`(async()=>{const saved={},blobs=[],create=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;
         try{URL.createObjectURL=function(blob){blobs.push(blob);return create.call(URL,blob)};HTMLAnchorElement.prototype.click=function(){if(!this.download)return click.call(this)};
