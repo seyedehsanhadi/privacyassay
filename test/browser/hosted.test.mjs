@@ -39,6 +39,8 @@ test('public pair: native Safari audit and actual redacted exports',{
       assert.equal(await page.ev('window.__paObsB&&window.__paObsB._repeatCount'),2);
       assert.equal(await page.ev('window.__paStoreDiag.fromPop'),true);
       assert.ok(report.findabilityCross,report.crossFailed||'Public companion did not answer');
+      const gaps=f=>(f&&f.rows||[]).filter(r=>r.state==='unknown'||r.comparisonIncomplete).map(r=>({label:r.label,group:r.group,state:r.state,incomplete:r.comparisonIncomplete,why:r.why}));
+      if(!report.findability.complete||!report.findabilityCross.complete)t.diagnostic(JSON.stringify({run,gaps:gaps(report.findability),crossGaps:gaps(report.findabilityCross),crossFailed:report.crossFailed||null}));
       assert.equal(report.findability.complete,true);assert.equal(report.findabilityCross.complete,true);
       const exports=await page.ev(`(async()=>{const saved={},blobs=[],create=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;
         try{URL.createObjectURL=function(blob){blobs.push(blob);return create.call(URL,blob)};HTMLAnchorElement.prototype.click=function(){if(!this.download)return click.call(this)};
