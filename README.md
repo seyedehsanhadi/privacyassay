@@ -37,7 +37,7 @@ Everything runs on your machine; the fingerprint is never uploaded.
 |---|---|
 | **Size** | one HTML file, 312 kB |
 | **Needs** | JavaScript in a current browser; Node 22+ for the CLI |
-| **Status** | 0.9.7; failed reads keep established exposure; otherwise unknown; canvas compared on pixels; bypassed protections count as exposed |
+| **Status** | 0.9.8; failed reads keep established exposure; otherwise unknown; canvas compared on pixels; bypassed protections count as exposed |
 
 Each reading is an observable value (**shown**), an observed mask or repeated variation (**blended**), an unsupported or explicitly denied API or completed test with nothing exposed (**refused**), or a missing, invalid or failed measurement without established exposure (**unknown**). On the cross-site score a reading also counts as hidden when a Tor, Mullvad or resistFingerprinting browser reports its family's documented standard value on both sites. Whether users across cohorts and settings share that value is assumed, not measured. Unknown readings earn no credit; incomplete runs show grade **I**, coverage and score bounds. The score is the share of what this tool checks that your browser hides, using judgment-based weights for potential identifying value rather than measured identification probabilities. It does not estimate how rare you are, which would need a population of real fingerprints. [METHODOLOGY.md](METHODOLOGY.md) has the formula and the numbers.
 
@@ -49,25 +49,25 @@ A copy you run yourself contacts neither of those hosts: the second origin is re
 
 ## Results
 
-One machine, Windows 11, headless, 2026-10-14 UTC, 0.9.7 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's documented standard values that match on both (uniformizers, with population uniformity assumed). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
+One machine, Windows 11, headless, 2026-11-16 to 2026-11-17 UTC, 0.9.8 measured on the hosted pair (`privacyassay.com` against `privacyassay.github.io`). Two runs per setting, a fresh profile each. Two sites let the tool credit both kinds of protection: values that differ between the sites (randomizers) and a family's documented standard values that match on both (uniformizers, with population uniformity assumed). The score that uses both is the cross-site score. Higher means more of what this tool checks is hidden.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="chart-dark.svg">
-  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 58 (four-setting range 58–67), Mullvad Browser 58 (four-setting range 58–67), LibreWolf 46 (four-setting range 40–52), Brave 18 (four-setting range 16–30), Firefox 12 (four-setting range 11–23), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0), Vivaldi 0 (four-setting range 0)">
+  <img src="chart-light.svg" width="756" alt="Headless cross-site measurements: Tor Browser 53 (four-setting range 53–63), Mullvad Browser 53 (four-setting range 53–63), LibreWolf 41 (four-setting range 36–48), Brave 16–18 (four-setting range 14–34), Firefox 12 (four-setting range 11–23), Vivaldi 0 (four-setting range 0), Chrome 0 (four-setting range 0), Edge 0 (four-setting range 0)">
 </picture>
 
 | Browser | Version | Cross-site | Range | Single-site |
 |---|---|---:|---:|---:|
-| Tor Browser | 15.0.25 | 58 | 58–67 | 21 |
-| Mullvad Browser | 15.0.24 | 58 | 58–67 | 21 |
-| LibreWolf | 152.0.6-1 | 46 | 40–52 | 26 |
-| Brave | 1.98.60 | 18 | 16–30 | 0 |
-| Firefox | 157.0.1 | 12 | 11–23 | 12 |
-| Vivaldi | 8.2.4133.94 | 0 | 0 | 0 |
-| Chrome | 155.0.8059.85 | 0 | 0 | 0 |
-| Edge | 156.0.4314.42 | 0 | 0 | 0 |
+| Tor Browser | 16.0.1 | 53 | 53–63 | 16 |
+| Mullvad Browser | 15.0.24 | 53 | 53–63 | 16 |
+| LibreWolf | 152.0.6-1 | 41 | 36–48 | 21 |
+| Brave | 1.99.57 | 16–18 | 14–34 | 0 |
+| Firefox | 159.0.1 | 12 | 11–23 | 12 |
+| Vivaldi | 8.3.4191.44 | 0 | 0 | 0 |
+| Chrome | 157.0.8103.78 | 0 | 0 | 0 |
+| Edge | 157.0.4341.60 | 0 | 0 | 0 |
 
-Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; Tor is release 15.0.25 and Mullvad 15.0.24, both Gecko 140.17.0. Brave uses Chromium 156.0.8078.48. Raw captures stay private; [aggregate measurements](bench/results-0.9.7.json) contain no raw fingerprint values. Scores are not comparable with 0.9.6 or earlier.
+Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; Tor is release 16.0.1 on Gecko 153.7.0 and Mullvad 15.0.24 on Gecko 140.17.0. Brave uses Chromium 157.0.8103.79. Raw captures stay private; [aggregate measurements](bench/results-0.9.8.json) contain no raw fingerprint values. Scores are not comparable with 0.9.7 or earlier: an empty voice list now counts as an exposed reading, which lowers Tor, Mullvad and LibreWolf by 5 points.
 
 Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38562462345).
 

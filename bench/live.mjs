@@ -141,7 +141,7 @@ async function runChromium(key) {
   ws.onmessage = (e) => { const m = JSON.parse(e.data); if (pend.has(m.id)) { const p=pend.get(m.id);clearTimeout(p.timer);pend.delete(m.id);m.error?p.rej(new Error(m.error.message)):p.res(m); } };
   const cmd = (method, params = {}) => new Promise((res,rej) => { const i = ++id; const timer=setTimeout(()=>{pend.delete(i);rej(new Error(method+" timed out"));},15000);pend.set(i,{res,rej,timer}); ws.send(JSON.stringify({ id: i, method, params })); });
   // First-run pages can stall Runtime until navigation starts a normal renderer.
-  if(target.url!==URL_)await cmd('Page.navigate',{url:SOURCE?'about:blank':URL_});
+  if(target.url!==URL_||key==="vivaldi")await cmd('Page.navigate',{url:SOURCE?'about:blank':URL_});
   await cmd("Runtime.enable");
   if(HEADLESS)await cmd('Emulation.setDeviceMetricsOverride',{width:1600,height:1100,deviceScaleFactor:1,mobile:false});
   const browserVersion=(await cmd('Browser.getVersion')).result;
@@ -219,7 +219,10 @@ async function runGecko(key) {
       if(!initialized)throw new Error('Bundled Standard security policy did not initialize');
     }
     if(key==='tor'){
-      await cmd('browsingContext.navigate',{context:ctx,url:'about:torconnect',wait:'complete'});
+      for(const deadline=Date.now()+30000;Date.now()<deadline&&!/^about:torconnect/.test(await ev('location.href').catch(()=>'')||'');){
+        await cmd('browsingContext.navigate',{context:ctx,url:'about:torconnect',wait:'complete'}).catch(()=>{});
+        await sleep(500);
+      }
       const connect=JSON.parse(await ev(`JSON.stringify((function(){var b=document.getElementById("connectButton");if(!b)return null;var r=b.getBoundingClientRect();return{x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})())`));
       if(!connect)throw new Error('Tor connection page has no Connect button');
       await cmd('input.performActions',{context:ctx,actions:[{type:'pointer',id:'connect',parameters:{pointerType:'mouse'},actions:[{type:'pointerMove',origin:'viewport',...connect},{type:'pointerDown',button:0},{type:'pointerUp',button:0}]}]});
@@ -228,7 +231,7 @@ async function runGecko(key) {
         const stage=await ev(`typeof aboutTorConnect!=="undefined"?aboutTorConnect.shownStage:location.href`).catch(()=>last);
         if(stage!==last)console.log('tor bootstrap: '+stage);
         last=stage;
-        if(last==='Bootstrapped'||last==='about:tor'){connected=true;break;}
+        if(last==='Bootstrapped'||/^about:(?!torconnect)/.test(last)){connected=true;break;}
         await sleep(500);
       }
       if(!connected)throw new Error('Tor network bootstrap did not complete: '+last);

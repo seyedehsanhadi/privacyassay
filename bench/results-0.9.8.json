@@ -1,0 +1,518 @@
+{
+  "methodology": "0.9.8",
+  "sha256": "e70ec1c8c0de74334e3efd9b47d10b1c096f42d0fada51c113e8fa7edd1525f2",
+  "platform": "Windows 11",
+  "headless": true,
+  "runsPerSetting": 2,
+  "capturedFrom": "2026-11-16T23:25:11.878Z",
+  "capturedTo": "2026-11-17T08:09:43.586Z",
+  "rows": [
+    {
+      "browser": "tor",
+      "name": "Tor Browser",
+      "version": "16.0.1",
+      "engineVersion": "153.7.0",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            16,
+            16
+          ],
+          "cross": [
+            53,
+            53
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            27,
+            27
+          ],
+          "cross": [
+            59,
+            59
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            27,
+            27
+          ],
+          "cross": [
+            59,
+            59
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            35,
+            35
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        }
+      }
+    },
+    {
+      "browser": "mullvad",
+      "name": "Mullvad Browser",
+      "version": "15.0.24",
+      "engineVersion": "140.17.0",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            16,
+            16
+          ],
+          "cross": [
+            53,
+            53
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            27,
+            27
+          ],
+          "cross": [
+            59,
+            59
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            27,
+            27
+          ],
+          "cross": [
+            59,
+            59
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            35,
+            35
+          ],
+          "cross": [
+            63,
+            63
+          ]
+        }
+      }
+    },
+    {
+      "browser": "librewolf",
+      "name": "LibreWolf",
+      "version": "152.0.6-1",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            21,
+            21
+          ],
+          "cross": [
+            41,
+            41
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            31,
+            31
+          ],
+          "cross": [
+            48,
+            48
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            19,
+            19
+          ],
+          "cross": [
+            36,
+            36
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            28,
+            28
+          ],
+          "cross": [
+            43,
+            43
+          ]
+        }
+      }
+    },
+    {
+      "browser": "brave",
+      "name": "Brave",
+      "version": "1.99.57",
+      "engineVersion": "157.0.8103.79",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            16,
+            18
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            13,
+            13
+          ],
+          "cross": [
+            34,
+            29
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            14,
+            16
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            11,
+            11
+          ],
+          "cross": [
+            25,
+            25
+          ]
+        }
+      }
+    },
+    {
+      "browser": "firefox",
+      "name": "Firefox",
+      "version": "159.0.1",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            12,
+            12
+          ],
+          "cross": [
+            12,
+            12
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            23,
+            23
+          ],
+          "cross": [
+            23,
+            23
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            11,
+            11
+          ],
+          "cross": [
+            11,
+            11
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            21,
+            21
+          ],
+          "cross": [
+            21,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "browser": "vivaldi",
+      "name": "Vivaldi",
+      "version": "8.3.4191.44",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "browser": "chrome",
+      "name": "Chrome",
+      "version": "157.0.8103.78",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "browser": "edge",
+      "name": "Edge",
+      "version": "157.0.4341.60",
+      "measurements": {
+        "default": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "store": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "rtc": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        },
+        "both": {
+          "complete": true,
+          "attempts": 2,
+          "completed": 2,
+          "errors": 0,
+          "single": [
+            0,
+            0
+          ],
+          "cross": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}
