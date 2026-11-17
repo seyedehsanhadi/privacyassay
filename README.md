@@ -21,9 +21,9 @@ Everything runs on your machine; the fingerprint is never uploaded.
 
 </div>
 
-![Privacyassay 0.9.7 result: Brave, 0 of 100 hidden on this page, 16 on a second site, grade F](screenshot.png)
+![Privacyassay 0.9.8 result: Brave, 0 of 100 hidden on this page, 20 on a second site, grade F](screenshot.png)
 
-<div align="center"><sub>Brave 1.97.56, 0.9.7, headless, both opt-ins off, 2026-10-10, hosted pair. Your result will differ.</sub></div>
+<div align="center"><sub>Brave 1.99.57, 0.9.8, headless, both opt-ins off, 2026-11-17, hosted pair. Your result will differ.</sub></div>
 
 ---
 
@@ -69,7 +69,7 @@ One machine, Windows 11, headless, 2026-11-16 to 2026-11-17 UTC, 0.9.8 measured 
 
 Range covers both runs across all four opt-in settings (supercookies, WebRTC), which change the denominator; different settings are not equivalent. The bar is the two-run mean with opt-ins off; Cross-site and Single-site show those two runs, including any spread. Single-site earns no uniformity credit, so Tor and Mullvad read lower there. Brave re-seeds per session. Installed fonts earn no uniformity credit. Tor and Mullvad retained bundled extensions at Standard security; Tor is release 16.0.1 on Gecko 153.7.0 and Mullvad 15.0.24 on Gecko 140.17.0. Brave uses Chromium 157.0.8103.79. Raw captures stay private; [aggregate measurements](bench/results-0.9.8.json) contain no raw fingerprint values. Scores are not comparable with 0.9.7 or earlier: an empty voice list now counts as an exposed reading, which lowers Tor, Mullvad and LibreWolf by 5 points.
 
-Separate native Safari check: Safari 26.6.1 on macOS 15.7.9, the same hosted 0.9.7 build, opt-ins off. Two SafariDriver sessions each scored **12 single-site and 12 cross-site**, both complete. These sessions had no explicit profile reset or four-setting matrix, so they are outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/38562462345).
+Separate native Safari check: every push runs the hosted 0.9.8 pair in Safari 27.2 on macOS 15.8.2 (GitHub arm64 runner) and requires complete single-site and cross-site results. That check does not publish scores and has no profile reset or four-setting matrix, so it is outside the Windows comparison. [Test results](https://github.com/seyedehsanhadi/privacyassay/actions/runs/44044578618). The last published Safari scores are from 0.9.7: Safari 26.6.1 on macOS 15.7.9, **12 single-site and 12 cross-site**.
 
 ## Run it
 

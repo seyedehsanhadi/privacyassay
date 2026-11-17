@@ -21,6 +21,6 @@ The CI `safari` job uses Apple's native SafariDriver on a macOS runner. It runs 
 
 `calibration.mjs` and `sensitivity.mjs` analyze the historical 0.9.1-beta captures. Those figures are not validated browser rankings for 0.9.2. Preserve historical captures; do not silently mix methodology versions.
 
-The README chart and table are 0.9.7 headless measurements from `live.mjs`, two fresh profiles per opt-in setting. `results-0.9.7.json` publishes aggregate scores, release/engine versions, completion counts and the deployed source hash. `node bench/results.mjs <capture-directory>` validates the four capture files per browser plus `versions.json` and regenerates the aggregate JSON and charts; incomplete settings receive no range.
+The README chart and table are 0.9.8 headless measurements from `live.mjs`, two fresh profiles per opt-in setting. `results-0.9.8.json` publishes aggregate scores, release/engine versions, completion counts and the deployed source hash. `node bench/results.mjs <capture-directory>` validates the four capture files per browser plus `versions.json` and regenerates the aggregate JSON and charts; incomplete settings receive no range.
 
 Run `node bench/figures.mjs` to update the social-card SVG (`--check` verifies its version), then `node bench/render-assets.mjs` with Chrome installed to render the PNG.
